@@ -4,8 +4,13 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "preview": "turbo run preview",
+    "test": "turbo run test",
+    "test:unit": "turbo run test:unit",
+    "test:integration": "turbo run test:integration",
     "lint": "turbo run lint",
     "format": "prettier --write .",
+    "check": "turbo run check",
     "check-types": "turbo run check-types"
   },
   "devDependencies": {
