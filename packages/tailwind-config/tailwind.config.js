@@ -4,7 +4,8 @@ module.exports = {
     // App source files
     '../../apps/*/src/**/*.{html,js,svelte,ts}',
     // Include shared UI components
-    '../../packages/ui/**/*.{js,ts,jsx,tsx,svelte}'
+    '../../packages/ui/components/**/*.{js,ts,jsx,tsx,svelte}',
+    '../../packages/ui/index.ts'
   ],
   theme: {
     extend: {
