@@ -8,8 +8,7 @@
     ".": {
       "types": "./index.ts",
       "svelte": "./index.ts"
-    },
-    "./styles.css": "./styles.css"
+    }
   },
   "scripts": {
     "lint": "eslint ."
