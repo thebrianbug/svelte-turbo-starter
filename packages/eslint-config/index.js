@@ -16,6 +16,9 @@ export const config = ts.config(
     }
   },
   {
+    ignores: ['**/postcss.config.cjs', '**/tailwind.config.js']
+  },
+  {
     files: ['**/*.svelte'],
     ignores: ['.svelte-kit/*'],
     languageOptions: {

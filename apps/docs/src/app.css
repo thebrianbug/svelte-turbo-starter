@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom base styles can go here */
+@layer base {
+  html {
+    @apply antialiased;
+  }
+}
+
+/* Custom components can go here */
+@layer components {
+  /* Example component class
+  .btn-primary {
+    @apply px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors;
+  } */
+}
+
+/* Custom utilities can go here */
+@layer utilities {
+  /* Example utility class
+  .text-balance {
+    text-wrap: balance;
+  } */
+}
