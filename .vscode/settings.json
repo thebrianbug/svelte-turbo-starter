@@ -2,10 +2,8 @@
   "files.associations": {
     "*.pcss": "postcss"
   },
-  "css.validate": false,
+  "css.validate": true,
   "postcss.validate": true,
-  "scss.validate": false,
-  "less.validate": false,
   "tailwindCSS.experimental.configFile": "./packages/tailwind-config/tailwind.config.js",
   "tailwindCSS.includeLanguages": {
     "postcss": "css"
