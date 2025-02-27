@@ -4,6 +4,6 @@ import { defineConfig } from 'vite';
 export default defineConfig({
 	plugins: [sveltekit()],
 	test: {
-		exclude: ['**/node_modules/**', '**/tests/**']
+		exclude: ['**/node_modules/**', '**/tests/**', '**/tests-examples/**']
 	},
 });
