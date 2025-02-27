@@ -9,6 +9,7 @@
     "check-types": "turbo run check-types"
   },
   "devDependencies": {
+    "@types/node": "^22.13.5",
     "prettier": "^3.5.0",
     "prettier-plugin-svelte": "^3.3.3",
     "turbo": "^2.4.4"
