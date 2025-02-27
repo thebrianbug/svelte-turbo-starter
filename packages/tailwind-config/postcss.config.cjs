@@ -1,11 +1,11 @@
 const path = require('path');
 
 module.exports = {
-  plugins: {
-    'postcss-nesting': {},
-    tailwindcss: {
+  plugins: [
+    require('@tailwindcss/nesting'),
+    require('tailwindcss')({
       config: path.join(__dirname, 'tailwind.config.js')
-    },
-    autoprefixer: {}
-  }
+    }),
+    require('autoprefixer')
+  ]
 };
