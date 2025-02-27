@@ -8,14 +8,19 @@
     ".": {
       "types": "./index.ts",
       "svelte": "./index.ts"
-    }
+    },
+    "./styles.css": "./styles.css"
   },
   "scripts": {
     "lint": "eslint ."
   },
   "devDependencies": {
     "@repo/eslint-config": "*",
+    "@repo/tailwind-config": "^0.0.0",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9.21.0",
+    "postcss": "^8.5.3",
     "svelte": "^5.20.1",
-    "eslint": "^9.21.0"
+    "tailwindcss": "^4.0.9"
   }
 }
