@@ -31,6 +31,9 @@ A full-featured monorepo starter template using [Turborepo](https://turbo.build/
 - npm >= 10.8.2 (comes with Node.js)
   - Upgrade to latest version: `npm install -g npm@latest`
   - Verify installation: `npm --version`
+- Either [Docker](https://www.docker.com/) or [Podman](https://podman.io/) with compose plugin
+  - For Docker: Install Docker Desktop or Docker Engine with Docker Compose
+  - For Podman: Install Podman and podman-compose
 
 ## Getting Started
 
@@ -124,14 +127,15 @@ A full-featured monorepo starter template using [Turborepo](https://turbo.build/
 
 4. **Database**
 
-   The project includes a PostgreSQL database configuration using Docker Compose:
+   The project includes a PostgreSQL database configuration using Docker Compose or Podman Compose:
 
    ```sh
-   npm run db:up    # Start PostgreSQL
-   npm run db:down  # Stop PostgreSQL
+   npm run db:up    # Start PostgreSQL (uses Docker or falls back to Podman)
+   npm run db:down  # Stop PostgreSQL (uses Docker or falls back to Podman)
    ```
 
    Connection details:
+
    - Host: localhost
    - Port: 5432
    - User: postgres

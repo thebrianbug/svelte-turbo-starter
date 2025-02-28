@@ -5,16 +5,19 @@ Database package using Drizzle ORM with PostgreSQL.
 ## Setup
 
 1. Start the database:
+
 ```bash
 npm run db:up
 ```
 
 2. Generate migrations:
+
 ```bash
 npm run db:generate
 ```
 
 3. Push migrations to database:
+
 ```bash
 npm run db:push
 ```
@@ -25,10 +28,13 @@ npm run db:push
 import { db, users } from '@repo/db';
 
 // Example: Create a new user
-const newUser = await db.insert(users).values({
-  name: 'John Doe',
-  email: 'john@example.com'
-}).returning();
+const newUser = await db
+  .insert(users)
+  .values({
+    name: 'John Doe',
+    email: 'john@example.com'
+  })
+  .returning();
 
 // Example: Query users
 const allUsers = await db.select().from(users);
