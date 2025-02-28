@@ -26,7 +26,7 @@
       "inputs": ["src/**/*.{js,ts,svelte}", "tests/**/*.{js,ts}"]
     },
     "test:e2e": {
-      "dependsOn": ["build", "^test:e2e"],
+      "dependsOn": ["build"],
       "inputs": ["tests/**/*.{js,ts}"],
       "outputs": ["test-results/**"]
     },
