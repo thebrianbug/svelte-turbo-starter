@@ -12,14 +12,14 @@
       "persistent": true
     },
     "preview": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["build"],
       "cache": false
     },
     "lint": {
       "dependsOn": ["^lint"]
     },
     "test": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["build"],
       "inputs": ["src/**/*.{js,ts,svelte}", "tests/**/*.{js,ts}"]
     },
     "test:unit": {
