@@ -20,14 +20,14 @@ A full-featured monorepo starter template using [Turborepo](https://turbo.build/
 
 ## Getting Started
 
-1. Create a new project using this starter:
+1. Clone the repository:
    ```sh
-   npx create-turbo@latest -e with-svelte
+   git clone https://github.com/brianbug/dreambug.git
+   cd dreambug
    ```
 
 2. Install dependencies:
    ```sh
-   cd your-project-name
    npm install
    ```
 
