@@ -7,9 +7,20 @@ node_modules
 
 # testing
 coverage
+test-results
+playwright-report
+blob-report
+.cache
+
+# build
+/build
+/package
+dist
 
 # svelte
 .svelte-kit
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
 
 # misc
 .DS_Store
@@ -21,6 +32,9 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
+.env
+.env.*
+!.env.example
 .env.local
 .env.development.local
 .env.test.local
@@ -28,3 +42,6 @@ yarn-error.log*
 
 # turbo
 .turbo
+
+# Vercel
+.vercel
