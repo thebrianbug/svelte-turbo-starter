@@ -4,14 +4,14 @@ A full-featured monorepo starter template using [Turborepo](https://turbo.build/
 
 ## Features
 
-- 📦 Monorepo management with Turborepo
-- ⚡ SvelteKit 2 with Svelte 5 for both main app and documentation
-- 🚀 Vercel adapter pre-configured
-- 🎨 Tailwind CSS for styling
+- 📦 Monorepo management with [Turborepo](https://turbo.build/)
+- ⚡ [SvelteKit 2](https://kit.svelte.dev/) with [Svelte 5](https://svelte.dev/) for both main app and documentation
+- 🚀 [Vercel](https://vercel.com/) adapter pre-configured
+- 🎨 [Tailwind CSS](https://tailwindcss.com/) for styling
 - 📚 Shared UI component library
-- 🔍 TypeScript for type safety
-- 🧪 Testing setup with Vitest and Playwright
-- 📝 Consistent code style with ESLint and Prettier
+- 🔍 [TypeScript](https://www.typescriptlang.org/) for type safety
+- 🧪 Testing setup with [Vitest](https://vitest.dev/) and [Playwright](https://playwright.dev/)
+- 📝 Consistent code style with [ESLint](https://eslint.org/) and [Prettier](https://prettier.io/)
 
 ## TODO
 
@@ -66,26 +66,26 @@ A full-featured monorepo starter template using [Turborepo](https://turbo.build/
 
 ### Packages
 
-- `ui`: A shared Svelte component library used by both applications
+- `ui`: A shared [Svelte](https://svelte.dev/) component library used by both applications
 - `eslint-config`: Common ESLint configuration with Svelte and Prettier support
 - `tailwind-config`: Shared Tailwind CSS configuration
 - `typescript-config`: Shared TypeScript configuration for consistent type checking
 
 ## Available Scripts
 
-- `npm run dev` - Start all applications in development mode
+- `npm run dev` - Start all applications in development mode using [Vite](https://vitejs.dev/)
 - `npm run build` - Build all applications and packages
 - `npm run preview` - Preview the built applications
 - `npm run clean` - Clean build outputs and node_modules directories
-- `npm run format` - Format all files using Prettier
-- `npm run check` - Run SvelteKit sync, type checking, and format verification
-- `npm run lint` - Run ESLint across all projects
+- `npm run format` - Format all files using [Prettier](https://prettier.io/)
+- `npm run check` - Run [SvelteKit](https://kit.svelte.dev/) sync, type checking, and format verification
+- `npm run lint` - Run [ESLint](https://eslint.org/) across all projects
 
 ### Testing Scripts
 
 - `npm run test` - Run all tests (unit and e2e) across all applications
-- `npm run test:unit` - Run Vitest unit tests across all applications
-- `npm run test:e2e` - Run Playwright end-to-end tests for both apps
+- `npm run test:unit` - Run [Vitest](https://vitest.dev/) unit tests across all applications
+- `npm run test:e2e` - Run [Playwright](https://playwright.dev/) end-to-end tests for both apps
 - `npm run kill:e2e` - Kill any hanging Playwright browser processes
 
 ## Development Workflow
@@ -94,7 +94,7 @@ A full-featured monorepo starter template using [Turborepo](https://turbo.build/
    ```sh
    npm run dev
    ```
-   This will start both the main app and docs site in development mode using Vite's dev server. The URLs will be displayed in your terminal when the servers start.
+   This will start both the main app and docs site in development mode using [Vite's](https://vitejs.dev/) dev server. The URLs will be displayed in your terminal when the servers start.
 
 2. **Making Changes**
    - Components in the `ui` package can be used by both applications
@@ -102,8 +102,8 @@ A full-featured monorepo starter template using [Turborepo](https://turbo.build/
    - Use `npm run format` before committing to ensure consistent code style
 
 3. **Testing**
-   - Write unit tests with Vitest (`.test.ts` extension)
-   - Write end-to-end tests with Playwright in the `tests` directory
+   - Write unit tests with [Vitest](https://vitest.dev/) (`.test.ts` extension)
+   - Write end-to-end tests with [Playwright](https://playwright.dev/) in the `tests` directory
    - Each app runs tests with `npm run test` (runs e2e then unit tests)
    - Run `npm run test:unit` for unit tests only
    - Run `npm run test:e2e` for Playwright e2e tests
