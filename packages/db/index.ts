@@ -9,7 +9,7 @@ const connectionString =
 export const migrationClient = postgres(connectionString, { max: 1 });
 
 // Connection for query purposes
-const queryClient = postgres(connectionString, {
+export const queryClient = postgres(connectionString, {
   max: 10, // connection pool size
   idle_timeout: 20, // max idle time for connections
   connect_timeout: 10, // connection timeout in seconds
