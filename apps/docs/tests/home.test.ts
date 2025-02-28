@@ -10,11 +10,11 @@ test.describe('Docs App Home Page', () => {
   test('counter button should increment', async ({ page }) => {
     await page.goto('/');
     const button = page.getByRole('button');
-    
+
     // Get initial count
     const initialText = await button.textContent();
     expect(initialText).toContain('0');
-    
+
     // Click and verify increment
     await button.click();
     const updatedText = await button.textContent();

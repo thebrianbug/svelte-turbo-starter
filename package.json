@@ -11,7 +11,7 @@
     "test:e2e": "turbo run build && cd apps/web && npm run test:e2e && cd ../docs && npm run test:e2e && cd ../..",
     "lint": "turbo run lint",
     "format": "prettier --write .",
-    "check": "turbo run check",
+    "check": "prettier --check . && turbo run check",
     "kill:e2e": "turbo run kill:e2e"
   },
   "devDependencies": {

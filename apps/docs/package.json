@@ -9,7 +9,7 @@
     "clean": "rimraf .svelte-kit build test-results node_modules",
     "preview": "vite preview",
     "test": "npm run test:e2e && npm run test:unit",
-    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json && tsc --noEmit",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json && tsc --noEmit && prettier --check .",
     "check:watch": "svelte-kit sync && concurrently \"svelte-check --tsconfig ./tsconfig.json --watch\" \"tsc --noEmit --watch\"",
     "lint": "eslint .",
     "test:e2e": "playwright test",
