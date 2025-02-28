@@ -15,7 +15,7 @@ A full-featured monorepo starter template using [Turborepo](https://turbo.build/
 
 ## TODO
 
-- [ ] 📚 Add Storybook support in UI package with Svelte 5
+- [ ] 📚 Add Storybook [support](https://github.com/storybookjs/storybook/issues/25178) in UI package with [Svelte 5](https://storybook.js.org/blog/storybook-8-4/)
 - [ ] 🐳 Add example Dockerfile with [PostgreSQL](https://www.postgresql.org/) and [Drizzle ORM](https://orm.drizzle.team/) integration
 
 ## Prerequisites
