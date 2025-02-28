@@ -16,11 +16,17 @@
   "scripts": {
     "lint": "eslint .",
     "format": "prettier --write .",
-    "clean": "rimraf dist node_modules"
+    "clean": "rimraf dist node_modules",
+    "test": "vitest --environment jsdom"
   },
   "devDependencies": {
     "@repo/eslint-config": "*",
+    "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/svelte": "^5.2.7",
+    "@testing-library/user-event": "^14.6.1",
     "eslint": "^9.21.0",
+    "jsdom": "^26.0.0",
     "svelte": "^5.20.1"
   }
 }
