@@ -1,11 +1,12 @@
 # Turborepo Svelte Starter
 
-A full-featured monorepo starter template using [Turborepo](https://turbo.build/) and [SvelteKit](https://kit.svelte.dev/). This template provides a scalable foundation for building modern web applications with shared components, consistent tooling, and efficient workflows.
+A full-featured monorepo starter template using [Turborepo](https://turbo.build/) and [SvelteKit 2](https://kit.svelte.dev/) with [Svelte 5](https://svelte.dev/blog/svelte-5-preview). This template provides a scalable foundation for building modern web applications with shared components, consistent tooling, and efficient workflows.
 
 ## Features
 
 - 📦 Monorepo management with Turborepo
-- ⚡ SvelteKit for both main app and documentation
+- ⚡ SvelteKit 2 with Svelte 5 for both main app and documentation
+- 🚀 Vercel adapter pre-configured
 - 🎨 Tailwind CSS for styling
 - 📚 Shared UI component library
 - 🔍 TypeScript for type safety
@@ -66,17 +67,17 @@ A full-featured monorepo starter template using [Turborepo](https://turbo.build/
 - `npm run dev` - Start all applications in development mode
 - `npm run build` - Build all applications and packages
 - `npm run preview` - Preview the built applications
-- `npm run clean` - Clean all build outputs and node_modules
+- `npm run clean` - Clean build outputs and node_modules directories
 - `npm run format` - Format all files using Prettier
-- `npm run check` - Run type checking and format verification
+- `npm run check` - Run SvelteKit sync, type checking, and format verification
 - `npm run lint` - Run ESLint across all projects
 
 ### Testing Scripts
 
-- `npm run test` - Run all tests (unit and e2e)
-- `npm run test:unit` - Run unit tests only
-- `npm run test:e2e` - Run end-to-end tests (requires build)
-- `npm run kill:e2e` - Kill any hanging e2e test processes
+- `npm run test` - Run all tests (unit and e2e) across all applications
+- `npm run test:unit` - Run Vitest unit tests across all applications
+- `npm run test:e2e` - Run Playwright end-to-end tests for both apps
+- `npm run kill:e2e` - Kill any hanging Playwright browser processes
 
 ## Development Workflow
 
@@ -84,9 +85,7 @@ A full-featured monorepo starter template using [Turborepo](https://turbo.build/
    ```sh
    npm run dev
    ```
-   This will start both the main app and docs site in development mode.
-   - Main app: http://localhost:5173
-   - Docs: http://localhost:5174
+   This will start both the main app and docs site in development mode using Vite's dev server. The URLs will be displayed in your terminal when the servers start.
 
 2. **Making Changes**
    - Components in the `ui` package can be used by both applications
@@ -94,9 +93,12 @@ A full-featured monorepo starter template using [Turborepo](https://turbo.build/
    - Use `npm run format` before committing to ensure consistent code style
 
 3. **Testing**
-   - Write unit tests alongside your components with `.test.ts` extension
-   - Run `npm run test:unit` to execute unit tests
-   - End-to-end tests use Playwright and can be run with `npm run test:e2e`
+   - Write unit tests with Vitest (`.test.ts` extension)
+   - Write end-to-end tests with Playwright in the `tests` directory
+   - Each app runs tests with `npm run test` (runs e2e then unit tests)
+   - Run `npm run test:unit` for unit tests only
+   - Run `npm run test:e2e` for Playwright e2e tests
+   - Use `npm run kill:e2e` to clean up any hanging test processes
 
 4. **Building for Production**
    ```sh
