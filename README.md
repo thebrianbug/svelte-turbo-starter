@@ -12,6 +12,11 @@ A full-featured monorepo starter template using [Turborepo](https://turbo.build/
 - 🔍 [TypeScript](https://www.typescriptlang.org/) for type safety
 - 🧪 Testing setup with [Vitest](https://vitest.dev/) and [Playwright](https://playwright.dev/)
 - 📝 Consistent code style with [ESLint](https://eslint.org/) and [Prettier](https://prettier.io/)
+- 🔄 Comprehensive CI pipeline with:
+  - Static analysis (format and lint checks)
+  - Unit testing with [Vitest](https://vitest.dev/)
+  - End-to-end testing with [Playwright](https://playwright.dev/) in containers
+  - Efficient caching and concurrent job management
 
 ## TODO
 
