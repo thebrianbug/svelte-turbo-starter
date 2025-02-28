@@ -22,8 +22,8 @@ A full-featured monorepo starter template using [Turborepo](https://turbo.build/
 
 1. Clone the repository:
    ```sh
-   git clone https://github.com/brianbug/dreambug.git
-   cd dreambug
+   git clone git@github.com:thebrianbug/svelte-turbo-starter.git
+   cd svelte-turbo-starter
    ```
 
 2. Install dependencies:
