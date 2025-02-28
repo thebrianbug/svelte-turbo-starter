@@ -1,5 +1,10 @@
 import type { PlaywrightTestConfig } from '@playwright/test';
 const config: PlaywrightTestConfig = {
+  use: {
+    launchOptions: {
+      args: ['--no-sandbox'] // Required for unsupported OS using fallback build
+    }
+  },
   webServer: {
     command: 'npm run preview',
     port: 3001,
