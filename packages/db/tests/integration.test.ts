@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
-import { userQueries, type NewUser, checkDatabaseConnection, queryClient } from '../index';
+import { checkDatabaseConnection, queryClient } from '../src/database';
+import { userQueries, type NewUser } from '../src/models';
 import postgres from 'postgres';
 import { setup, teardown, cleanBetweenTests } from './setup';
 

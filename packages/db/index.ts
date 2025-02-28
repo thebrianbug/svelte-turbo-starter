@@ -1,34 +1,14 @@
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
-import * as schema from './schema';
+/**
+ * Database package entry point
+ * Exports database connection, models, and utilities
+ */
 
-const connectionString =
-  process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/svelte_turbo_db';
+// Export database connection and utilities
+export * from './src/database';
+export * from './src/utils';
 
-// Connection for migrations
-export const migrationClient = postgres(connectionString, { max: 1 });
+// Export models and types
+export * from './src/models';
 
-// Connection for query purposes
-export const queryClient = postgres(connectionString, {
-  max: 10, // connection pool size
-  idle_timeout: 20, // max idle time for connections
-  connect_timeout: 10, // connection timeout in seconds
-});
-
-export const db = drizzle(queryClient, { schema });
-
-// Export everything needed for bll package
-export * from './schema';
-export * from './utils';
-export * from './users';
-
-// Health check utility
-export async function checkDatabaseConnection(): Promise<boolean> {
-  try {
-    await queryClient`SELECT 1`;
-    return true;
-  } catch (error) {
-    console.error('Database connection check failed:', error);
-    return false;
-  }
-}
+// Export configuration (optional, mainly for internal use)
+export * from './src/config';
