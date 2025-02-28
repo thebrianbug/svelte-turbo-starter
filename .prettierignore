@@ -1,9 +1,14 @@
 # Dependencies and build outputs
-.DS_Store
 node_modules
+.DS_Store
 /build
 /.svelte-kit
 /package
+dist
+.next
+.turbo
+
+# Environment files
 .env
 .env.*
 !.env.example
@@ -25,9 +30,12 @@ yarn.lock
 **/_app/immutable
 **/*.css
 **/*.js.map
+**/*.tsbuildinfo
 
-# Test results
-**/test-results
+# Test and coverage
+coverage
+playwright-report
+
 
 # Config files
 vite.config.js*
