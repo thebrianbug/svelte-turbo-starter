@@ -3,6 +3,9 @@
   "version": "0.0.0",
   "type": "module",
   "module": "index.ts",
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "index.ts",
   "exports": {
     ".": {
