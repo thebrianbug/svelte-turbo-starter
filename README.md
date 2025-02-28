@@ -15,8 +15,12 @@ A full-featured monorepo starter template using [Turborepo](https://turbo.build/
 
 ## Prerequisites
 
-- Node.js >= 18
-- npm >= 10.8.2
+- [Node.js](https://nodejs.org/) >= 18
+  - Download from: https://nodejs.org/
+  - Verify installation: `node --version`
+- npm >= 10.8.2 (comes with Node.js)
+  - Upgrade to latest version: `npm install -g npm@latest`
+  - Verify installation: `npm --version`
 
 ## Getting Started
 
