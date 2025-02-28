@@ -6,13 +6,7 @@
     "rootDir": ".",
     "outDir": "dist",
     "declarationDir": "dist",
-    "sourceMap": true,
     "declaration": true,
-    "moduleResolution": "bundler",
-    "allowJs": true,
-    "checkJs": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
     "target": "ES2020",
     "verbatimModuleSyntax": true
   }
