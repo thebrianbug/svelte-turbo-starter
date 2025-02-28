@@ -17,7 +17,7 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "clean": "rimraf dist node_modules",
-    "test": "vitest --environment jsdom",
+    "test:unit": "vitest --environment jsdom",
     "check": "svelte-check --tsconfig ./tsconfig.json && tsc --noEmit && prettier --check .",
     "check:watch": "concurrently \"svelte-check --tsconfig ./tsconfig.json --watch\" \"tsc --noEmit --watch\""
   },
