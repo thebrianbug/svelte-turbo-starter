@@ -30,12 +30,14 @@ A full-featured monorepo starter template using [Turborepo](https://turbo.build/
 ## Getting Started
 
 1. Clone the repository:
+
    ```sh
    git clone git@github.com:thebrianbug/svelte-turbo-starter.git
    cd svelte-turbo-starter
    ```
 
 2. Install dependencies:
+
    ```sh
    npm install
    ```
@@ -91,17 +93,21 @@ A full-featured monorepo starter template using [Turborepo](https://turbo.build/
 ## Development Workflow
 
 1. **Start Development**
+
    ```sh
    npm run dev
    ```
+
    This will start both the main app and docs site in development mode using [Vite's](https://vitejs.dev/) dev server. The URLs will be displayed in your terminal when the servers start.
 
 2. **Making Changes**
+
    - Components in the `ui` package can be used by both applications
    - Changes to shared packages will automatically trigger rebuilds in dependent apps
    - Use `npm run format` before committing to ensure consistent code style
 
 3. **Testing**
+
    - Write unit tests with [Vitest](https://vitest.dev/) (`.test.ts` extension)
    - Write end-to-end tests with [Playwright](https://playwright.dev/) in the `tests` directory
    - Each app runs tests with `npm run test` (runs e2e then unit tests)
