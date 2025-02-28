@@ -1,6 +1,6 @@
 # Turborepo Svelte Starter
 
-A full-featured monorepo starter template using [Turborepo](https://turbo.build/) and [SvelteKit 2](https://kit.svelte.dev/) with [Svelte 5](https://svelte.dev/blog/svelte-5-preview). This template provides a scalable foundation for building modern web applications with shared components, consistent tooling, and efficient workflows.
+A full-featured monorepo starter template using [Turborepo](https://turbo.build/) and [SvelteKit 2](https://kit.svelte.dev/) with [Svelte 5](https://svelte.dev/docs/svelte/overview). This template provides a scalable foundation for building modern web applications with shared components, consistent tooling, and efficient workflows.
 
 ## Features
 
