@@ -14,7 +14,8 @@
     "lint": "eslint .",
     "test:e2e": "playwright test",
     "test:unit": "vitest",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "kill:e2e": "for pid in $(ps aux | grep -E 'playwright.*chromium|playwright.*webkit|playwright.*firefox' | grep -v grep | awk '{print $2}'); do kill $pid 2>/dev/null || true; done"
   },
   "dependencies": {
     "@repo/ui": "*"

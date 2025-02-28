@@ -38,6 +38,9 @@
     },
     "clean": {
       "cache": false
+    },
+    "kill:e2e": {
+      "cache": false
     }
   }
 }
