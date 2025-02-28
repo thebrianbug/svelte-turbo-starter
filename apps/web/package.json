@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "test": "npm run test:integration && npm run test:unit",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json && tsc --noEmit",
-    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+    "check:watch": "svelte-kit sync && concurrently \"svelte-check --tsconfig ./tsconfig.json --watch\" \"tsc --noEmit --watch\"",
     "lint": "eslint .",
     "test:integration": "playwright test",
     "test:unit": "vitest",
@@ -26,6 +26,7 @@
     "@sveltejs/kit": "^2.17.2",
     "@sveltejs/vite-plugin-svelte": "^5.0.3",
     "svelte": "^5.20.1",
-    "svelte-check": "^4.1.4"
+    "svelte-check": "^4.1.4",
+    "concurrently": "^8.2.2"
   }
 }
