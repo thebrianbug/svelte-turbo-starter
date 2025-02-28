@@ -20,6 +20,7 @@ export const db = drizzle(queryClient, { schema });
 // Export everything needed for bll package
 export * from './schema';
 export * from './utils';
+export * from './users';
 
 // Health check utility
 export async function checkDatabaseConnection(): Promise<boolean> {
