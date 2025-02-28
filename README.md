@@ -114,6 +114,10 @@ The project uses TypeScript for static type checking:
 - TypeScript configuration is shared through the `typescript-config` package
 - Each app and package has its own `tsconfig.json` that extends the shared config
 
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
 ## Contributing
 
 1. Ensure you have the prerequisites installed
