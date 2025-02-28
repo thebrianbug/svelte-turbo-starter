@@ -33,9 +33,6 @@
     "check": {
       "dependsOn": ["^check"]
     },
-    "check-types": {
-      "dependsOn": ["^check-types"]
-    },
     "format": {
       "outputs": ["*/**"]
     }

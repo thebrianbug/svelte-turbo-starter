@@ -10,8 +10,7 @@
     "test:integration": "turbo run test:integration",
     "lint": "turbo run lint",
     "format": "prettier --write .",
-    "check": "turbo run check",
-    "check-types": "turbo run check-types"
+    "check": "turbo run check"
   },
   "devDependencies": {
     "@playwright/test": "^1.50.1",
