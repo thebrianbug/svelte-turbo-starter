@@ -8,7 +8,7 @@
     "preview": "turbo run preview",
     "test": "turbo run test",
     "test:unit": "turbo run test:unit",
-    "test:e2e": "turbo run test:e2e",
+    "test:e2e": "turbo run build && cd apps/web && npm run test:e2e && cd ../docs && npm run test:e2e && cd ../..",
     "lint": "turbo run lint",
     "format": "prettier --write .",
     "check": "turbo run check",
