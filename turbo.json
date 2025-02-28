@@ -27,7 +27,8 @@
     },
     "test:integration": {
       "dependsOn": ["build"],
-      "inputs": ["src/**/*.{js,ts,svelte}", "tests/**/*.{js,ts}"]
+      "inputs": ["src/**/*.{js,ts,svelte}", "tests/**/*.{js,ts}"],
+      "outputs": ["playwright-report/**", "test-results/**"]
     },
     "check": {
       "dependsOn": ["^check"]
