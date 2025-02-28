@@ -27,7 +27,7 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/svelte": "^5.2.7",
     "@testing-library/user-event": "^14.6.1",
-    "concurrently": "^8.2.2",
+    "concurrently": "^9.1.2",
     "eslint": "^9.21.0",
     "jsdom": "^26.0.0",
     "svelte": "^5.20.1",
