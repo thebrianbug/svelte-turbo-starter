@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { DatabaseError, dbOperation } from '../utils';
+import { DatabaseError, dbOperation } from './db-operation';
 
 describe('Database Utilities', () => {
   describe('DatabaseError', () => {

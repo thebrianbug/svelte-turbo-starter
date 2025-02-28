@@ -1,6 +1,6 @@
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
-import { db, migrationClient, queryClient, checkDatabaseConnection } from '../src/database';
-import { users } from '../src/models';
+import { db, migrationClient, queryClient, checkDatabaseConnection } from './connection';
+import { users } from '../models';
 import path from 'path';
 
 class DatabaseSetupError extends Error {
@@ -78,16 +78,22 @@ export async function teardown({ timeout = 30 }: DatabaseOptions = {}): Promise<
 
   try {
     // Close all database connections with timeout
+    const closePromise = Promise.all([
+      migrationClient.end({ timeout: timeoutMs }),
+      queryClient.end({ timeout: timeoutMs })
+    ]);
+
     await Promise.race([
-      Promise.all([
-        migrationClient.end(),
-        queryClient.end()
-      ]),
+      closePromise,
       new Promise((_, reject) => 
         setTimeout(() => reject(new Error('Connection close timeout')), timeoutMs)
       )
     ]);
+
+    // Additional delay to ensure connections are fully closed
+    await new Promise(resolve => setTimeout(resolve, 1000));
   } catch (error) {
+    console.error('Teardown error:', error);
     throw new DatabaseSetupError('Failed to teardown database', error);
   }
 }
