@@ -1,12 +1,11 @@
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { expect, test } from 'vitest';
-import type { SvelteComponent } from 'svelte';
 import MyCounterButton from './MyCounterButton.svelte';
 
 test('MyCounterButton', async () => {
   const user = userEvent.setup();
-  render(MyCounterButton as typeof SvelteComponent);
+  render(MyCounterButton);
 
   // Get button by its role
   const button = screen.getByRole('button');
