@@ -1,25 +1,28 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
-import { db, userQueries, type NewUser, checkDatabaseConnection, users, migrationClient, queryClient } from '../index';
+import { db, userQueries, type NewUser, users } from '../index';
+import { setup, teardown } from './setup';
 
 describe('Database Integration Tests', () => {
-  // Ensure database is connected before running tests
+  // Setup database before all tests
   beforeAll(async () => {
-    const isConnected = await checkDatabaseConnection();
-    expect(isConnected).toBe(true);
+    await setup({
+      runMigrations: true,
+      cleanData: true,
+      timeout: 30
+    });
   });
 
-  // Clean up test data before each test
+  // Clean test data before each test
   beforeEach(async () => {
     await db.delete(users).execute();
   });
 
   // Clean up and close all connections after tests
   afterAll(async () => {
-    await db.delete(users).execute();
-    await Promise.all([
-      migrationClient.end(),
-      queryClient.end()
-    ]);
+    await teardown({
+      cleanData: true,
+      timeout: 30
+    });
   });
 
   describe('User Operations', () => {
