@@ -1,8 +1,56 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
-import { userQueries, type NewUser } from '../index';
+import { userQueries, type NewUser, checkDatabaseConnection, queryClient } from '../index';
+import postgres from 'postgres';
 import { setup, teardown, cleanBetweenTests } from './setup';
 
 describe('Database Integration Tests', () => {
+  describe('Database Connection', () => {
+    it('should successfully connect to database', async () => {
+      const isConnected = await checkDatabaseConnection();
+      expect(isConnected).toBe(true);
+    });
+
+    it('should handle connection timeout', async () => {
+      // Create a new client with a very short timeout
+      const timeoutClient = postgres(
+        'postgres://postgres:postgres@localhost:5432/svelte_turbo_db',
+        { connect_timeout: 0.001 } // 1ms timeout
+      );
+
+      try {
+        await timeoutClient`SELECT 1`;
+        expect(true).toBe(false); // Should not reach here
+      } catch (error) {
+        expect(error).toBeDefined();
+      } finally {
+        await timeoutClient.end();
+      }
+    });
+
+    it('should handle invalid credentials', async () => {
+      // Create a new client with invalid credentials
+      const invalidClient = postgres('postgres://invalid:invalid@localhost:5432/invalid_db');
+
+      try {
+        await invalidClient`SELECT 1`;
+        expect(true).toBe(false); // Should not reach here
+      } catch (error) {
+        expect(error).toBeDefined();
+      } finally {
+        await invalidClient.end();
+      }
+    });
+
+    it('should handle multiple concurrent connections', async () => {
+      // Test connection pool by making multiple concurrent requests
+      const concurrentChecks = Array(15).fill(null).map(() => checkDatabaseConnection());
+      const results = await Promise.all(concurrentChecks);
+      
+      // All connections should succeed
+      expect(results.every(result => result === true)).toBe(true);
+    });
+  });
+
   // Setup database before all tests
   beforeAll(async () => {
     await setup({
