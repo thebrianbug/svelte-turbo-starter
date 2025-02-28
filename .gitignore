@@ -43,5 +43,8 @@ yarn-error.log*
 # turbo
 .turbo
 
+# drizzle
+**/.drizzle
+
 # Vercel
 .vercel
