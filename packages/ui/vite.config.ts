@@ -4,6 +4,21 @@ import { svelteTesting } from '@testing-library/svelte/vite';
 
 export default defineConfig({
   plugins: [svelte(), svelteTesting()],
+  build: {
+    lib: {
+      entry: './index.ts',
+      name: 'UI',
+      fileName: 'index'
+    },
+    rollupOptions: {
+      external: ['svelte'],
+      output: {
+        globals: {
+          svelte: 'Svelte'
+        }
+      }
+    }
+  },
   test: {
     environment: 'jsdom',
     include: ['**/*.{test,spec}.{js,ts}'],
