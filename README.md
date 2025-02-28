@@ -13,6 +13,11 @@ A full-featured monorepo starter template using [Turborepo](https://turbo.build/
 - 🧪 Testing setup with Vitest and Playwright
 - 📝 Consistent code style with ESLint and Prettier
 
+## TODO
+
+- [ ] 📚 Add Storybook support in UI package with Svelte 5
+- [ ] 🐳 Add example Dockerfile with [PostgreSQL](https://www.postgresql.org/) and [Drizzle ORM](https://orm.drizzle.team/) integration
+
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/) >= 18
