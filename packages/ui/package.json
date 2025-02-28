@@ -15,7 +15,8 @@
   },
   "scripts": {
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "clean": "rimraf dist node_modules"
   },
   "devDependencies": {
     "@repo/eslint-config": "*",

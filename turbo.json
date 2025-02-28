@@ -35,6 +35,9 @@
     },
     "format": {
       "outputs": ["*/**"]
+    },
+    "clean": {
+      "cache": false
     }
   }
 }

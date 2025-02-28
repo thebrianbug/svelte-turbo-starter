@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "build": "turbo run build",
+    "clean": "turbo run clean && rimraf node_modules",
     "dev": "turbo run dev",
     "preview": "turbo run preview",
     "test": "turbo run test",
@@ -20,6 +21,7 @@
     "postcss": "^8.4.35",
     "prettier": "^3.5.0",
     "prettier-plugin-svelte": "^3.3.3",
+    "rimraf": "^6.0.1",
     "tailwindcss": "^3.4.1",
     "tslib": "^2.8.1",
     "turbo": "^2.4.4",
