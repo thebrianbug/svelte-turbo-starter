@@ -1,91 +1,99 @@
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import { db, migrationClient, queryClient, checkDatabaseConnection, users } from '../index';
+import path from 'path';
 
-interface SetupOptions {
-  /**
-   * Whether to run migrations during setup
-   * @default true
-   */
-  runMigrations?: boolean;
-  /**
-   * Whether to clean existing data during setup
-   * @default true
-   */
-  cleanData?: boolean;
+class DatabaseSetupError extends Error {
+  constructor(message: string, public originalError?: unknown) {
+    super(message);
+    this.name = 'DatabaseSetupError';
+  }
+}
+
+interface DatabaseOptions {
   /**
    * Timeout in seconds for database operations
    * @default 30
    */
   timeout?: number;
+  /**
+   * Path to migrations folder
+   * @default './drizzle'
+   */
+  migrationsPath?: string;
 }
 
-export async function setup(options: SetupOptions = {}): Promise<void> {
-  const {
-    runMigrations = true,
-    cleanData = true,
-    timeout = 30
-  } = options;
+/**
+ * Cleans all test data from the database
+ */
+async function cleanTestData(timeoutMs: number): Promise<void> {
+  try {
+    await Promise.race([
+      db.delete(users).execute(),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Clean data timeout')), timeoutMs)
+      )
+    ]);
+  } catch (error) {
+    throw new DatabaseSetupError('Failed to clean test data', error);
+  }
+}
+
+export async function setup({ 
+  timeout = 30,
+  migrationsPath = './drizzle'
+}: DatabaseOptions = {}): Promise<void> {
+  const timeoutMs = timeout * 1000;
 
   try {
-    // First verify database connection
-    const isConnected = await checkDatabaseConnection();
+    // Verify database connection with timeout
+    const connectionPromise = checkDatabaseConnection();
+    const isConnected = await Promise.race([
+      connectionPromise,
+      new Promise<boolean>((_, reject) => 
+        setTimeout(() => reject(new Error('Connection timeout')), timeoutMs)
+      )
+    ]);
+
     if (!isConnected) {
-      throw new Error('Failed to establish database connection');
+      throw new DatabaseSetupError('Failed to establish database connection');
     }
 
-    if (runMigrations) {
-      // Run migrations to ensure database schema is up to date
-      await migrate(db, { migrationsFolder: './drizzle' });
-      console.log('Migrations completed successfully');
-    }
+    // Run migrations with absolute path
+    const absoluteMigrationsPath = path.resolve(process.cwd(), migrationsPath);
+    await migrate(db, { migrationsFolder: absoluteMigrationsPath });
 
-    if (cleanData) {
-      // Clean existing test data
-      await db.delete(users).execute();
-      console.log('Test data cleaned successfully');
-    }
+    // Initial data cleanup
+    await cleanTestData(timeoutMs);
   } catch (error) {
     console.error('Setup failed:', error);
     // Attempt to close connections on setup failure
     await teardown({ timeout });
-    throw error;
+    throw error instanceof DatabaseSetupError ? error : new DatabaseSetupError('Setup failed', error);
   }
 }
 
-interface TeardownOptions {
-  /**
-   * Whether to clean existing data during teardown
-   * @default true
-   */
-  cleanData?: boolean;
-  /**
-   * Timeout in seconds for closing connections
-   * @default 30
-   */
-  timeout?: number;
-}
-
-export async function teardown(options: TeardownOptions = {}): Promise<void> {
-  const {
-    cleanData = true,
-    timeout = 30
-  } = options;
+export async function teardown({ timeout = 30 }: DatabaseOptions = {}): Promise<void> {
+  const timeoutMs = timeout * 1000;
 
   try {
-    if (cleanData) {
-      // Clean up test data
-      await db.delete(users).execute();
-      console.log('Test data cleaned successfully');
-    }
-
-    // Close all database connections with configurable timeout
-    await Promise.all([
-      migrationClient.end({ timeout }),
-      queryClient.end({ timeout })
+    // Close all database connections with timeout
+    await Promise.race([
+      Promise.all([
+        migrationClient.end(),
+        queryClient.end()
+      ]),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Connection close timeout')), timeoutMs)
+      )
     ]);
-    console.log('Database connections closed successfully');
   } catch (error) {
-    console.error('Teardown failed:', error);
-    throw error;
+    throw new DatabaseSetupError('Failed to teardown database', error);
   }
+}
+
+/**
+ * Utility function to clean test data between tests
+ */
+export async function cleanBetweenTests(): Promise<void> {
+  await cleanTestData(5000); // 5 second timeout for between-test cleanup
 }

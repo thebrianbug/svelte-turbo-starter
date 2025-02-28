@@ -1,28 +1,24 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
-import { db, userQueries, type NewUser, users } from '../index';
-import { setup, teardown } from './setup';
+import { userQueries, type NewUser } from '../index';
+import { setup, teardown, cleanBetweenTests } from './setup';
 
 describe('Database Integration Tests', () => {
   // Setup database before all tests
   beforeAll(async () => {
     await setup({
-      runMigrations: true,
-      cleanData: true,
-      timeout: 30
+      timeout: 30,
+      migrationsPath: './drizzle'
     });
   });
 
   // Clean test data before each test
   beforeEach(async () => {
-    await db.delete(users).execute();
+    await cleanBetweenTests();
   });
 
   // Clean up and close all connections after tests
   afterAll(async () => {
-    await teardown({
-      cleanData: true,
-      timeout: 30
-    });
+    await teardown({ timeout: 30 });
   });
 
   describe('User Operations', () => {
