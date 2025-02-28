@@ -12,23 +12,23 @@
       "persistent": true
     },
     "preview": {
-      "dependsOn": ["build"],
+      "dependsOn": ["^build"],
       "cache": false
     },
     "lint": {
       "dependsOn": ["^lint"]
     },
     "test": {
-      "dependsOn": ["build"],
+      "dependsOn": ["^build"],
       "inputs": ["src/**/*.{js,ts,svelte}", "tests/**/*.{js,ts}"]
     },
     "test:unit": {
       "inputs": ["src/**/*.{js,ts,svelte}", "tests/**/*.{js,ts}"]
     },
-    "test:integration": {
-      "dependsOn": ["build", "^test:integration"],
-      "inputs": ["src/**/*.{js,ts,svelte}", "tests/**/*.{js,ts}"],
-      "outputs": ["playwright-report/**", "test-results/**"]
+    "test:e2e": {
+      "dependsOn": ["build", "^test:e2e"],
+      "inputs": ["tests/**/*.{js,ts}"],
+      "outputs": ["test-results/**"]
     },
     "check": {
       "dependsOn": ["^check"]
