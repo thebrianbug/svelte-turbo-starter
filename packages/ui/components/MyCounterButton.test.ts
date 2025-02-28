@@ -5,12 +5,11 @@ import MyCounterButton from './MyCounterButton.svelte';
 
 test('MyCounterButton', async () => {
   const user = userEvent.setup();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  render(MyCounterButton as any); // Type assertion needed for Svelte component
+  render(MyCounterButton);
 
   // Get button by its role
   const button = screen.getByRole('button');
-  
+
   // Check initial state
   expect(button).toHaveTextContent('clicks: 0');
 
