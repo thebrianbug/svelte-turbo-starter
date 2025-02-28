@@ -22,7 +22,6 @@ A full-featured monorepo starter template using [Turborepo](https://turbo.build/
 ## TODO
 
 - [ ] 📚 Add Storybook support in UI package with [Svelte 5](https://storybook.js.org/blog/storybook-8-4/)
-- [ ] 🐳 Add example Dockerfile with [PostgreSQL](https://www.postgresql.org/) and [Drizzle ORM](https://orm.drizzle.team/) integration
 
 ## Prerequisites
 
@@ -95,6 +94,8 @@ A full-featured monorepo starter template using [Turborepo](https://turbo.build/
 - `npm run test:unit` - Run [Vitest](https://vitest.dev/) unit tests across all applications
 - `npm run test:e2e` - Run [Playwright](https://playwright.dev/) end-to-end tests for both apps
 - `npm run kill:e2e` - Kill any hanging Playwright browser processes
+- `npm run db:up` - Start PostgreSQL database in Docker
+- `npm run db:down` - Stop and remove PostgreSQL container
 
 ## Development Workflow
 
@@ -121,7 +122,23 @@ A full-featured monorepo starter template using [Turborepo](https://turbo.build/
    - Run `npm run test:e2e` for Playwright e2e tests
    - Use `npm run kill:e2e` to clean up any hanging test processes
 
-4. **Building for Production**
+4. **Database**
+
+   The project includes a PostgreSQL database configuration using Docker Compose:
+
+   ```sh
+   npm run db:up    # Start PostgreSQL
+   npm run db:down  # Stop PostgreSQL
+   ```
+
+   Connection details:
+   - Host: localhost
+   - Port: 5432
+   - User: postgres
+   - Password: postgres
+   - Database: svelte_turbo_db
+
+5. **Building for Production**
    ```sh
    npm run build
    npm run preview  # Preview the built applications
