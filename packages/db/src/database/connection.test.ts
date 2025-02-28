@@ -7,14 +7,14 @@ describe('Database Connection', () => {
   // Setup database before all tests
   beforeAll(async () => {
     await setup({
-      timeout: 30,
+      timeout: 10,
       migrationsPath: './drizzle'
     });
   });
 
   // Clean up and close all connections after tests
   afterAll(async () => {
-    await teardown({ timeout: 30 });
+    await teardown({ timeout: 10 });
   });
 
   it('should successfully connect to database', async () => {

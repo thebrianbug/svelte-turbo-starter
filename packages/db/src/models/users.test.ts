@@ -7,7 +7,7 @@ describe('User Operations', () => {
   // Setup database before all tests
   beforeAll(async () => {
     await setup({
-      timeout: 30,
+      timeout: 10,
       migrationsPath: './drizzle'
     });
   });
@@ -19,7 +19,7 @@ describe('User Operations', () => {
 
   // Clean up and close all connections after tests
   afterAll(async () => {
-    await teardown({ timeout: 30 });
+    await teardown({ timeout: 10 });
   });
 
   const testUser: NewUser = {

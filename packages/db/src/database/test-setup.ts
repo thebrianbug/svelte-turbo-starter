@@ -43,7 +43,7 @@ async function cleanTestData(timeoutMs: number): Promise<void> {
 }
 
 export async function setup({ 
-  timeout = 30,
+  timeout = 10, // Reduced from 30s to 10s
   migrationsPath = './drizzle'
 }: DatabaseOptions = {}): Promise<void> {
   const timeoutMs = timeout * 1000;
@@ -90,7 +90,7 @@ export async function setup({
   }
 }
 
-export async function teardown({ timeout = 30 }: DatabaseOptions = {}): Promise<void> {
+export async function teardown({ timeout = 10 }: DatabaseOptions = {}): Promise<void> {
   const timeoutMs = timeout * 1000;
   const errors: Error[] = [];
 
@@ -115,5 +115,5 @@ export async function teardown({ timeout = 30 }: DatabaseOptions = {}): Promise<
  * Utility function to clean test data between tests
  */
 export async function cleanBetweenTests(): Promise<void> {
-  await cleanTestData(5000); // 5 second timeout for between-test cleanup
+  await cleanTestData(3000); // Reduced from 5s to 3s for between-test cleanup
 }
