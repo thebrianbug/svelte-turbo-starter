@@ -56,7 +56,7 @@ describe('Zod User Validator', () => {
   });
 
   it('should handle partial updates', () => {
-    const result = userSchema.partial().parse({
+    const result = validateUser({
       name: '  John   Doe  '
     });
 
