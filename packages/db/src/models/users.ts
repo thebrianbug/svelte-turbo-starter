@@ -1,38 +1,11 @@
-import { eq } from 'drizzle-orm';
-import { users, type User, type NewUser } from './schema';
+import { eq, and, sql } from 'drizzle-orm';
+import { users, type User, type NewUser, type UserStatus } from './schema';
 import { db } from '../database/connection';
 import { dbOperation } from '../config';
+import { userValidation, userTransformation } from './validation';
+import { DatabaseError, DatabaseErrorCode } from '../config/operations';
 
 export const userQueries = {
-  // Validation methods
-  validateEmail: (email: string): void => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      throw new Error('Invalid email format');
-    }
-  },
-
-  validateName: (name: string): void => {
-    if (name.length < 1 || name.length > 100) {
-      throw new Error('Name must be between 1 and 100 characters');
-    }
-  },
-
-  validateStatus: (status: string): void => {
-    if (status !== 'active' && status !== 'inactive') {
-      throw new Error('Invalid status');
-    }
-  },
-
-  // Data transformation methods
-  normalizeEmail: (email: string): string => {
-    return email.trim().toLowerCase();
-  },
-
-  sanitizeName: (name: string): string => {
-    return name.trim().replace(/\s+/g, ' ');
-  },
-
   findById: async (id: number): Promise<User | undefined> => {
     return dbOperation(async () => {
       const result = await db.select().from(users).where(eq(users.id, id));
@@ -42,7 +15,8 @@ export const userQueries = {
 
   findByEmail: async (email: string): Promise<User | undefined> => {
     return dbOperation(async () => {
-      const result = await db.select().from(users).where(eq(users.email, email));
+      const normalizedEmail = userTransformation.email(email);
+      const result = await db.select().from(users).where(eq(users.email, normalizedEmail));
       return result[0];
     });
   },
@@ -55,20 +29,22 @@ export const userQueries = {
 
   create: async (newUser: NewUser): Promise<User> => {
     return dbOperation(async () => {
-      // Ensure required fields are present and validate
-      if (typeof newUser.email !== 'string') throw new Error('Email is required');
-      if (typeof newUser.name !== 'string') throw new Error('Name is required');
-      if (typeof newUser.status !== 'string') throw new Error('Status is required');
+      // Validate required fields
+      if (!newUser.email || !newUser.name || !newUser.status) {
+        throw new DatabaseError('Missing required fields', DatabaseErrorCode.VALIDATION_ERROR);
+      }
 
-      userQueries.validateEmail(newUser.email);
-      userQueries.validateName(newUser.name);
-      userQueries.validateStatus(newUser.status);
+      // Validate and transform input
+      userValidation.email(newUser.email);
+      userValidation.name(newUser.name);
+      if (!userValidation.status(newUser.status)) {
+        throw new DatabaseError('Invalid status', DatabaseErrorCode.VALIDATION_ERROR);
+      }
 
-      // Transform data
       const transformedUser = {
         ...newUser,
-        email: userQueries.normalizeEmail(newUser.email),
-        name: userQueries.sanitizeName(newUser.name)
+        email: userTransformation.email(newUser.email),
+        name: userTransformation.name(newUser.name)
       };
 
       const result = await db.insert(users).values(transformedUser).returning();
@@ -76,23 +52,48 @@ export const userQueries = {
     });
   },
 
+  createMany: async (newUsers: NewUser[]): Promise<User[]> => {
+    return dbOperation(async () => {
+      // Validate and transform all users first
+      const transformedUsers = newUsers.map(user => {
+        if (!user.email || !user.name || !user.status) {
+          throw new DatabaseError('Missing required fields', DatabaseErrorCode.VALIDATION_ERROR);
+        }
+
+        userValidation.email(user.email);
+        userValidation.name(user.name);
+        if (!userValidation.status(user.status)) {
+          throw new DatabaseError('Invalid status', DatabaseErrorCode.VALIDATION_ERROR);
+        }
+
+        return {
+          ...user,
+          email: userTransformation.email(user.email),
+          name: userTransformation.name(user.name)
+        };
+      });
+
+      const result = await db.insert(users).values(transformedUsers).returning();
+      return result;
+    });
+  },
+
   update: async (id: number, userData: Partial<NewUser>): Promise<User | undefined> => {
     return dbOperation(async () => {
-      // Validate and transform input fields if present
       const transformedData: Partial<NewUser> = { ...userData };
 
-      if (typeof userData.email === 'string') {
-        userQueries.validateEmail(userData.email);
-        transformedData.email = userQueries.normalizeEmail(userData.email);
+      if (userData.email) {
+        userValidation.email(userData.email);
+        transformedData.email = userTransformation.email(userData.email);
       }
 
-      if (typeof userData.name === 'string') {
-        userQueries.validateName(userData.name);
-        transformedData.name = userQueries.sanitizeName(userData.name);
+      if (userData.name) {
+        userValidation.name(userData.name);
+        transformedData.name = userTransformation.name(userData.name);
       }
 
-      if (typeof userData.status === 'string') {
-        userQueries.validateStatus(userData.status);
+      if (userData.status && !userValidation.status(userData.status)) {
+        throw new DatabaseError('Invalid status', DatabaseErrorCode.VALIDATION_ERROR);
       }
 
       const result = await db
@@ -100,19 +101,81 @@ export const userQueries = {
         .set({ ...transformedData, updatedAt: new Date() })
         .where(eq(users.id, id))
         .returning();
+
+      if (!result.length) {
+        throw new DatabaseError('User not found', DatabaseErrorCode.NOT_FOUND);
+      }
+
       return result[0];
     });
   },
 
-  // Soft delete by updating status
+  updateMany: async (filter: { status: UserStatus }, update: Partial<NewUser>): Promise<number> => {
+    return dbOperation(async () => {
+      const transformedData: Partial<NewUser> = { ...update };
+
+      if (update.email) {
+        userValidation.email(update.email);
+        transformedData.email = userTransformation.email(update.email);
+      }
+
+      if (update.name) {
+        userValidation.name(update.name);
+        transformedData.name = userTransformation.name(update.name);
+      }
+
+      if (update.status && !userValidation.status(update.status)) {
+        throw new DatabaseError('Invalid status', DatabaseErrorCode.VALIDATION_ERROR);
+      }
+
+      const result = await db
+        .update(users)
+        .set({ ...transformedData, updatedAt: new Date() })
+        .where(eq(users.status, filter.status))
+        .returning();
+
+      return result.length;
+    });
+  },
+
   delete: async (id: number): Promise<boolean> => {
     return dbOperation(async () => {
       const result = await db
         .update(users)
         .set({ status: 'inactive', updatedAt: new Date() })
-        .where(eq(users.id, id))
+        .where(and(eq(users.id, id), eq(users.status, 'active')))
         .returning();
-      return result.length > 0;
+
+      if (!result.length) {
+        throw new DatabaseError('User not found or already inactive', DatabaseErrorCode.NOT_FOUND);
+      }
+
+      return true;
+    });
+  },
+
+  deleteMany: async (filter: { status: 'active' }): Promise<number> => {
+    return dbOperation(async () => {
+      const result = await db
+        .update(users)
+        .set({ status: 'inactive', updatedAt: new Date() })
+        .where(eq(users.status, filter.status))
+        .returning();
+
+      return result.length;
+    });
+  },
+
+  count: async (filter?: { status?: UserStatus }): Promise<number> => {
+    return dbOperation(async () => {
+      const query = db.select({ count: sql<number>`count(*)` }).from(users);
+      
+      if (filter?.status) {
+        query.where(eq(users.status, filter.status));
+      }
+
+      const result = await query;
+      return Number(result[0].count);
     });
   }
 };

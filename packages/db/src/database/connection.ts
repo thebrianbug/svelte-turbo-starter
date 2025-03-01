@@ -3,22 +3,22 @@ import postgres from 'postgres';
 import { databaseConfig } from '../config/database';
 import * as schema from '../models';
 
-// Connection for migrations - single connection that closes immediately when idle
+// Connection for migrations
 export const migrationClient = postgres(databaseConfig.url, {
-  max: 1,
-  idle_timeout: 1, // Close after 1s idle
-  max_lifetime: 5, // Max 5s connection lifetime
+  max: databaseConfig.migration.max,
+  idle_timeout: databaseConfig.migration.idleTimeout,
+  max_lifetime: databaseConfig.migration.maxLifetime,
   connection: {
     application_name: 'db_migration_client'
   }
 });
 
-// Connection for query purposes - minimal pool with aggressive timeouts
+// Connection for queries with optimized pooling
 export const queryClient = postgres(databaseConfig.url, {
-  max: 3, // Reduce max connections
-  idle_timeout: 2, // Close after 2s idle
-  max_lifetime: 10, // Max 10s connection lifetime
-  connect_timeout: 5, // 5s connect timeout
+  max: databaseConfig.pool.max,
+  idle_timeout: databaseConfig.pool.idleTimeout,
+  max_lifetime: databaseConfig.pool.maxLifetime,
+  connect_timeout: databaseConfig.pool.connectTimeout,
   connection: {
     application_name: 'db_query_client'
   }
@@ -29,6 +29,7 @@ export const db = drizzle(queryClient, { schema });
 
 /**
  * Health check utility for database connection
+ * @returns Promise<boolean> true if connection is healthy, false otherwise
  */
 export async function checkDatabaseConnection(): Promise<boolean> {
   try {
@@ -39,3 +40,11 @@ export async function checkDatabaseConnection(): Promise<boolean> {
     return false;
   }
 }
+
+// Ensure connections are properly closed on process termination
+process.on('SIGTERM', () => {
+  void Promise.all([
+    migrationClient.end(),
+    queryClient.end()
+  ]).then(() => process.exit(0));
+});

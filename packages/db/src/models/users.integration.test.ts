@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest';
 import { userQueries } from './users';
 import type { NewUser } from './schema';
 import { setup, teardown, cleanBetweenTests } from '../database/test-setup';
+import { DatabaseErrorCode } from '../config/operations';
 
 describe('User Integration Tests', () => {
   // Setup database before all tests
@@ -85,13 +86,31 @@ describe('User Integration Tests', () => {
   describe('Database Constraints', () => {
     it('should enforce unique email constraint', async () => {
       await userQueries.create(testUser);
-      await expect(userQueries.create(testUser)).rejects.toThrow('Database operation failed');
+      const error = await userQueries.create(testUser).catch(e => e);
+      expect(error.code).toBe(DatabaseErrorCode.DUPLICATE_KEY);
     });
 
     it('should handle non-existent user queries', async () => {
       const nonExistentId = 99999;
-      const result = await userQueries.findById(nonExistentId);
-      expect(result).toBeUndefined();
+      await expect(userQueries.update(nonExistentId, { name: 'New Name' }))
+        .rejects
+        .toMatchObject({
+          code: DatabaseErrorCode.NOT_FOUND,
+          message: 'User not found'
+        });
+    });
+
+    it('should validate user input', async () => {
+      const invalidUser = {
+        ...testUser,
+        email: 'invalid-email'
+      };
+      await expect(userQueries.create(invalidUser))
+        .rejects
+        .toMatchObject({
+          code: DatabaseErrorCode.VALIDATION_ERROR,
+          message: 'Invalid email format'
+        });
     });
   });
 });
