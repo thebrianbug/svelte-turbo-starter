@@ -1,6 +1,4 @@
 import { z } from 'zod';
-import type { UserStatus } from '../../schema';
-import { ValidationError } from '../base';
 
 const NAME_LENGTH_MESSAGE = 'Name must be between 1 and 100 characters';
 
@@ -25,15 +23,8 @@ export const validateUser = (
   data: Partial<UserValidation>,
   options: { requireAll?: boolean } = {}
 ): Partial<UserValidation> => {
-  try {
-    const schema = options.requireAll ? userSchema : userSchema.partial();
-    return schema.parse(data);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      throw new ValidationError(error.errors[0].message);
-    }
-    throw error;
-  }
+  const schema = options.requireAll ? userSchema : userSchema.partial();
+  return schema.parse(data);
 };
 
 export const validateManyUsers = (
@@ -41,12 +32,5 @@ export const validateManyUsers = (
   options: { requireAll?: boolean } = {}
 ): Partial<UserValidation>[] => {
   const schema = options.requireAll ? userSchema.array() : userSchema.partial().array();
-  try {
-    return schema.parse(users);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      throw new ValidationError(error.errors[0].message);
-    }
-    throw error;
-  }
+  return schema.parse(users);
 };

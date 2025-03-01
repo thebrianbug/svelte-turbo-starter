@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { userSchema, validateUser, validateManyUsers } from './user';
 import type { UserStatus } from '../../schema';
+import { ZodError } from 'zod';
 
 describe('Zod User Validator', () => {
   it('should validate and transform valid user data', () => {
@@ -24,35 +25,61 @@ describe('Zod User Validator', () => {
         email: 'invalid-email',
         status: 'active' as UserStatus
       })
-    ).toThrow('Invalid email format');
+    ).toThrow(ZodError);
+
+    try {
+      validateUser({
+        name: 'John Doe',
+        email: 'invalid-email',
+        status: 'active' as UserStatus
+      });
+    } catch (error) {
+      expect(error).toBeInstanceOf(ZodError);
+      expect((error as ZodError).errors[0].message).toBe('Invalid email format');
+    }
   });
 
   it('should validate name length', () => {
-    expect(() =>
+    try {
       validateUser({
         name: '',
         email: 'test@example.com',
         status: 'active' as UserStatus
-      })
-    ).toThrow('Name must be between 1 and 100 characters');
+      });
+    } catch (error) {
+      expect(error).toBeInstanceOf(ZodError);
+      expect((error as ZodError).errors[0].message).toBe(
+        'Name must be between 1 and 100 characters'
+      );
+    }
 
-    expect(() =>
+    try {
       validateUser({
         name: 'a'.repeat(101),
         email: 'test@example.com',
         status: 'active' as UserStatus
-      })
-    ).toThrow('Name must be between 1 and 100 characters');
+      });
+    } catch (error) {
+      expect(error).toBeInstanceOf(ZodError);
+      expect((error as ZodError).errors[0].message).toBe(
+        'Name must be between 1 and 100 characters'
+      );
+    }
   });
 
   it('should validate status values', () => {
-    expect(() =>
+    try {
       validateUser({
         name: 'John Doe',
         email: 'test@example.com',
         status: 'invalid' as UserStatus
-      })
-    ).toThrow('Status must be either "active" or "inactive"');
+      });
+    } catch (error) {
+      expect(error).toBeInstanceOf(ZodError);
+      expect((error as ZodError).errors[0].message).toBe(
+        'Status must be either "active" or "inactive"'
+      );
+    }
   });
 
   it('should handle partial updates', () => {
@@ -108,6 +135,11 @@ describe('Zod User Validator', () => {
       }
     ];
 
-    expect(() => validateManyUsers(users)).toThrow('Invalid email format');
+    try {
+      validateManyUsers(users);
+    } catch (error) {
+      expect(error).toBeInstanceOf(ZodError);
+      expect((error as ZodError).errors[0].message).toBe('Invalid email format');
+    }
   });
 });
