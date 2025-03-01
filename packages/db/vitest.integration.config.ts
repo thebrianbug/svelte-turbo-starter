@@ -16,6 +16,7 @@ export default defineConfig({
         maxThreads: 1
       }
     },
-    reporters: ['default']
+    reporters: ['default'],
+    silent: true
   }
 });
