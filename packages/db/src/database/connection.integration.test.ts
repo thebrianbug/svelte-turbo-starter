@@ -26,14 +26,11 @@ describe('Database Connection', () => {
     let timeoutClient: postgres.Sql | null = null;
     try {
       // Create a new client with a very short timeout
-      timeoutClient = postgres(
-        'postgres://postgres:postgres@localhost:5432/svelte_turbo_db',
-        { 
-          connect_timeout: 0.001, // 1ms timeout
-          max: 1, // Limit to single connection
-          idle_timeout: 0 // Close immediately when idle
-        }
-      );
+      timeoutClient = postgres('postgres://postgres:postgres@localhost:5432/svelte_turbo_db', {
+        connect_timeout: 0.001, // 1ms timeout
+        max: 1, // Limit to single connection
+        idle_timeout: 0 // Close immediately when idle
+      });
 
       await timeoutClient`SELECT 1`;
       expect(true).toBe(false); // Should not reach here
@@ -52,13 +49,10 @@ describe('Database Connection', () => {
     let invalidClient: postgres.Sql | null = null;
     try {
       // Create a new client with invalid credentials
-      invalidClient = postgres(
-        'postgres://invalid:invalid@localhost:5432/invalid_db',
-        {
-          max: 1, // Limit to single connection
-          idle_timeout: 0 // Close immediately when idle
-        }
-      );
+      invalidClient = postgres('postgres://invalid:invalid@localhost:5432/invalid_db', {
+        max: 1, // Limit to single connection
+        idle_timeout: 0 // Close immediately when idle
+      });
 
       await invalidClient`SELECT 1`;
       expect(true).toBe(false); // Should not reach here
@@ -78,8 +72,8 @@ describe('Database Connection', () => {
     const concurrentChecks = Array(maxConnections)
       .fill(null)
       .map(() => checkDatabaseConnection());
-    
+
     const results = await Promise.all(concurrentChecks);
-    expect(results.every(result => result === true)).toBe(true);
+    expect(results.every((result) => result === true)).toBe(true);
   });
 });

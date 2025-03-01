@@ -4,7 +4,10 @@ import { users } from '../models';
 import path from 'path';
 
 class DatabaseSetupError extends Error {
-  constructor(message: string, public originalError?: unknown) {
+  constructor(
+    message: string,
+    public originalError?: unknown
+  ) {
     super(message);
     this.name = 'DatabaseSetupError';
   }
@@ -42,7 +45,7 @@ async function cleanTestData(timeoutMs: number): Promise<void> {
   }
 }
 
-export async function setup({ 
+export async function setup({
   timeout = 10, // Reduced from 30s to 10s
   migrationsPath = './drizzle'
 }: DatabaseOptions = {}): Promise<void> {
@@ -60,7 +63,7 @@ export async function setup({
     // Run migrations with absolute path and timeout
     const absoluteMigrationsPath = path.resolve(process.cwd(), migrationsPath);
     const migrationPromise = migrate(db, { migrationsFolder: absoluteMigrationsPath });
-    
+
     await Promise.race([
       migrationPromise,
       new Promise((_, reject) => {
@@ -84,7 +87,9 @@ export async function setup({
     await teardown({ timeout: 5 }).catch(() => {
       // Ignore teardown errors on setup failure
     });
-    throw error instanceof DatabaseSetupError ? error : new DatabaseSetupError('Setup failed', error);
+    throw error instanceof DatabaseSetupError
+      ? error
+      : new DatabaseSetupError('Setup failed', error);
   } finally {
     clearTimeout(timeoutId);
   }
@@ -96,17 +101,17 @@ export async function teardown({ timeout = 10 }: DatabaseOptions = {}): Promise<
 
   // Close connections with individual timeouts to prevent one hanging connection from blocking others
   await Promise.all([
-    migrationClient.end({ timeout: timeoutMs }).catch(error => {
+    migrationClient.end({ timeout: timeoutMs }).catch((error) => {
       errors.push(new Error('Migration client close failed: ' + error.message));
     }),
-    queryClient.end({ timeout: timeoutMs }).catch(error => {
+    queryClient.end({ timeout: timeoutMs }).catch((error) => {
       errors.push(new Error('Query client close failed: ' + error.message));
     })
   ]);
 
   if (errors.length > 0) {
     throw new DatabaseSetupError(
-      'Failed to teardown database: ' + errors.map(e => e.message).join(', ')
+      'Failed to teardown database: ' + errors.map((e) => e.message).join(', ')
     );
   }
 }
