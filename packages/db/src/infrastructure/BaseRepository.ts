@@ -1,33 +1,28 @@
 import { PostgresError } from 'postgres';
-import { sql, SQL } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 import type { PgTable } from 'drizzle-orm/pg-core';
 import { db } from '../database';
 
 export class DatabaseError extends Error {
-  constructor(operation: string, message: string) {
-    super(`Failed to ${operation}: ${message}`);
+  constructor(
+    public code: string,
+    message: string,
+    public field?: string
+  ) {
+    super(message);
     this.name = 'DatabaseError';
   }
-}
 
-export class ValidationError extends Error {
-  constructor(message: string) {
-    super(`Validation error: ${message}`);
-    this.name = 'ValidationError';
-  }
-}
-
-export class NotFoundError extends Error {
-  constructor(entity: string, identifier: string | number) {
-    super(`${entity} not found: ${identifier}`);
-    this.name = 'NotFoundError';
-  }
-}
-
-export class UniqueConstraintError extends Error {
-  constructor(entity: string, field: string, value: string) {
-    super(`${entity} with ${field} already exists: ${value}`);
-    this.name = 'UniqueConstraintError';
+  static from(error: unknown, operation: string): DatabaseError {
+    if (error instanceof PostgresError) {
+      if (error.code === '23505') {
+        return new DatabaseError('UNIQUE_VIOLATION', 'Unique constraint violation');
+      }
+    }
+    return new DatabaseError(
+      'OPERATION_FAILED',
+      `Failed to ${operation}: ${error instanceof Error ? error.message : String(error)}`
+    );
   }
 }
 
@@ -37,60 +32,36 @@ export interface BaseEntity {
   updatedAt: Date;
 }
 
-export type DatabaseRecord = Record<string, unknown>;
-
-export abstract class BaseRepository<
-  T extends BaseEntity,
-  TCreate extends DatabaseRecord = Omit<T, keyof BaseEntity>,
-  TUpdate extends DatabaseRecord = Partial<TCreate>
-> {
-  protected abstract readonly tableName: string;
+export abstract class BaseRepository<T extends BaseEntity> {
   protected abstract readonly table: PgTable;
 
-  protected handleError(error: unknown, operation: string): never {
-    if (error instanceof PostgresError) {
-      if (error.code === '23505') {
-        // unique_violation
-        throw new UniqueConstraintError(this.tableName, 'unknown', 'value');
-      }
-    }
-    if (error instanceof Error) {
-      throw new DatabaseError(operation, error.message);
-    }
-    throw new DatabaseError(operation, 'Unknown error occurred');
-  }
-
-  protected async executeQuery<R>(operation: string, query: () => Promise<R>): Promise<R> {
-    try {
-      return await query();
-    } catch (error: unknown) {
-      throw this.handleError(error, operation);
-    }
-  }
-
-  protected mapToEntity(record: DatabaseRecord): T {
-    return record as unknown as T;
+  protected mapToEntity(record: Record<string, unknown>): T {
+    return record as T;
   }
 
   async findById(id: number): Promise<T | undefined> {
-    return this.executeQuery('findById', async () => {
+    try {
       const [result] = await db
         .select()
         .from(this.table)
         .where(sql`${this.table}.id = ${id}`);
       return result ? this.mapToEntity(result) : undefined;
-    });
+    } catch (error) {
+      throw DatabaseError.from(error, 'findById');
+    }
   }
 
   async findAll(): Promise<T[]> {
-    return this.executeQuery('findAll', async () => {
+    try {
       const results = await db.select().from(this.table);
-      return results.map((record) => this.mapToEntity(record));
-    });
+      return results.map(this.mapToEntity);
+    } catch (error) {
+      throw DatabaseError.from(error, 'findAll');
+    }
   }
 
-  async create(data: TCreate): Promise<T> {
-    return this.executeQuery('create', async () => {
+  async create(data: Omit<T, keyof BaseEntity>): Promise<T> {
+    try {
       const now = new Date();
       const [result] = await db
         .insert(this.table)
@@ -98,51 +69,48 @@ export abstract class BaseRepository<
           ...data,
           createdAt: now,
           updatedAt: now
-        } as unknown as DatabaseRecord)
+        })
         .returning();
       return this.mapToEntity(result);
-    });
+    } catch (error) {
+      throw DatabaseError.from(error, 'create');
+    }
   }
 
-  async update(id: number, data: TUpdate): Promise<T> {
-    return this.executeQuery('update', async () => {
+  async update(id: number, data: Partial<Omit<T, keyof BaseEntity>>): Promise<T> {
+    try {
       const [result] = await db
         .update(this.table)
         .set({
           ...data,
           updatedAt: new Date()
-        } as unknown as DatabaseRecord)
+        })
         .where(sql`${this.table}.id = ${id}`)
         .returning();
 
       if (!result) {
-        throw new NotFoundError(this.tableName, id);
+        throw new DatabaseError('NOT_FOUND', `Entity with id ${id} not found`);
       }
 
       return this.mapToEntity(result);
-    });
+    } catch (error) {
+      throw DatabaseError.from(error, 'update');
+    }
   }
 
   async delete(id: number): Promise<boolean> {
-    return this.executeQuery('delete', async () => {
+    try {
       const [result] = await db
         .delete(this.table)
         .where(sql`${this.table}.id = ${id}`)
         .returning();
       return !!result;
-    });
+    } catch (error) {
+      throw DatabaseError.from(error, 'delete');
+    }
   }
 
   async transaction<R>(callback: (tx: typeof db) => Promise<R>): Promise<R> {
-    return db.transaction(async (tx) => {
-      try {
-        return await callback(tx);
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          throw new DatabaseError('transaction', error.message);
-        }
-        throw new DatabaseError('transaction', 'Unknown error occurred');
-      }
-    });
+    return db.transaction(callback);
   }
 }
