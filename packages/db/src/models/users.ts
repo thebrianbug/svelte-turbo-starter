@@ -2,7 +2,7 @@ import { eq, and, sql } from 'drizzle-orm';
 import { users, type User, type NewUser, type UserStatus } from './schema';
 import { db } from '../database/connection';
 import { dbOperation } from '../config';
-import { userValidation, userTransformation } from './validation';
+import { userValidator } from './validation';
 import { DatabaseError, DatabaseErrorCode } from '../config/operations';
 
 export const userQueries = {
@@ -15,7 +15,7 @@ export const userQueries = {
 
   findByEmail: async (email: string): Promise<User | undefined> => {
     return dbOperation(async () => {
-      const normalizedEmail = userTransformation.email(email);
+      const { email: normalizedEmail } = userValidator.validate({ email }, { requireAll: false }) as { email: string };
       const result = await db.select().from(users).where(eq(users.email, normalizedEmail));
       return result[0];
     });
@@ -29,98 +29,43 @@ export const userQueries = {
 
   create: async (newUser: NewUser): Promise<User> => {
     return dbOperation(async () => {
-      try {
-        // Validate input format first
-        if (newUser.name !== undefined) {
-          userValidation.name(newUser.name);
-        }
-        if (newUser.email !== undefined) {
-          userValidation.email(newUser.email);
-        }
-        if (newUser.status !== undefined) {
-          userValidation.status(newUser.status);
-        }
-      } catch (error) {
-        if (error instanceof DatabaseError) {
-          throw error;
-        }
-        throw new DatabaseError('Validation error', DatabaseErrorCode.VALIDATION_ERROR);
-      }
-
-      // Check required fields after validation
-      if (!newUser.email || !newUser.name || !newUser.status) {
-        throw new DatabaseError('Missing required fields', DatabaseErrorCode.VALIDATION_ERROR);
-      }
-
-      const transformedUser = {
-        ...newUser,
-        email: userTransformation.email(newUser.email),
-        name: userTransformation.name(newUser.name)
-      };
-
-      const result = await db.insert(users).values(transformedUser).returning();
+      const validatedUser = userValidator.validate(newUser, { requireAll: true }) as Required<NewUser>;
+      const result = await db.insert(users).values(validatedUser).returning();
       return result[0];
     });
   },
 
   createMany: async (newUsers: NewUser[]): Promise<User[]> => {
     return dbOperation(async () => {
-      // Handle empty array case
       if (newUsers.length === 0) {
         return [];
       }
 
-      // Validate and transform all users first
-      const transformedUsers = newUsers.map(user => {
-        if (!user.email || !user.name || !user.status) {
-          throw new DatabaseError('Missing required fields', DatabaseErrorCode.VALIDATION_ERROR);
-        }
-
-        userValidation.email(user.email);
-        userValidation.name(user.name);
-        if (!userValidation.status(user.status)) {
-          throw new DatabaseError('Invalid status', DatabaseErrorCode.VALIDATION_ERROR);
-        }
-
-        return {
-          ...user,
-          email: userTransformation.email(user.email),
-          name: userTransformation.name(user.name)
-        };
-      });
-
-      const result = await db.insert(users).values(transformedUsers).returning();
+      const validatedUsers = userValidator.validateMany(newUsers, { requireAll: true }) as Required<NewUser>[];
+      const result = await db.insert(users).values(validatedUsers).returning();
       return result;
     });
   },
 
   update: async (id: number, userData: Partial<NewUser>): Promise<User | undefined> => {
     return dbOperation(async () => {
-      const transformedData: Partial<NewUser> = { ...userData };
-
-      if (userData.email) {
-        userValidation.email(userData.email);
-        transformedData.email = userTransformation.email(userData.email);
-      }
-
-      if (userData.name) {
-        userValidation.name(userData.name);
-        transformedData.name = userTransformation.name(userData.name);
-      }
-
-      if (userData.status && !userValidation.status(userData.status)) {
-        throw new DatabaseError('Invalid status', DatabaseErrorCode.VALIDATION_ERROR);
-      }
-
-      const result = await db
-        .update(users)
-        .set({ ...transformedData, updatedAt: new Date() })
-        .where(eq(users.id, id))
-        .returning();
-
-      if (!result.length) {
+      // Check if user exists first
+      const existingUser = await db.select().from(users).where(eq(users.id, id));
+      if (!existingUser.length) {
         throw new DatabaseError('User not found', DatabaseErrorCode.NOT_FOUND);
       }
+
+      const validatedData = userValidator.validate(userData, { requireAll: false }) as Partial<{
+        email: string;
+        name: string;
+        status: UserStatus;
+      }>;
+      
+      const result = await db
+        .update(users)
+        .set({ ...validatedData, updatedAt: new Date() })
+        .where(eq(users.id, id))
+        .returning();
 
       return result[0];
     });
@@ -128,25 +73,15 @@ export const userQueries = {
 
   updateMany: async (filter: { status: UserStatus }, update: Partial<NewUser>): Promise<number> => {
     return dbOperation(async () => {
-      const transformedData: Partial<NewUser> = { ...update };
-
-      if (update.email) {
-        userValidation.email(update.email);
-        transformedData.email = userTransformation.email(update.email);
-      }
-
-      if (update.name) {
-        userValidation.name(update.name);
-        transformedData.name = userTransformation.name(update.name);
-      }
-
-      if (update.status && !userValidation.status(update.status)) {
-        throw new DatabaseError('Invalid status', DatabaseErrorCode.VALIDATION_ERROR);
-      }
+      const validatedData = userValidator.validate(update, { requireAll: false }) as Partial<{
+        email: string;
+        name: string;
+        status: UserStatus;
+      }>;
 
       const result = await db
         .update(users)
-        .set({ ...transformedData, updatedAt: new Date() })
+        .set({ ...validatedData, updatedAt: new Date() })
         .where(eq(users.status, filter.status))
         .returning();
 
