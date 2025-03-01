@@ -10,11 +10,6 @@ on:
         type: boolean
         default: false
 
-# Cancel redundant jobs
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}-postgres
-  cancel-in-progress: true
-
 jobs:
   postgres-job:
     runs-on: ubuntu-latest

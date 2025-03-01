@@ -6,14 +6,12 @@ on:
   pull_request:
     branches: [main, master]
 
-# Cancel in-progress runs on new commits to same PR
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
-
 jobs:
   static-analysis:
     runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-static-analysis-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-node
@@ -24,6 +22,9 @@ jobs:
 
   unit-test:
     runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-unit-test-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-node
@@ -32,12 +33,18 @@ jobs:
 
   integration-test:
     needs: [unit-test]
+    concurrency:
+      group: ${{ github.workflow }}-integration-test-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
     uses: ./.github/workflows/postgres-job.yml
     with:
       run_command: npm run test:integration
 
   e2e:
     needs: [static-analysis, unit-test]
+    concurrency:
+      group: ${{ github.workflow }}-e2e-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
     uses: ./.github/workflows/postgres-job.yml
     with:
       run_command: NODE_OPTIONS='--max-old-space-size=4096' npm run test:e2e
