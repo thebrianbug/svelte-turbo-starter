@@ -2,7 +2,7 @@ import { Validator } from '../base';
 import { validateEmail, transformEmail } from '../rules/email';
 import { validateString, transformString } from '../rules/string';
 import { validateStatus } from '../rules/status';
-import { type UserStatus } from '../../../schema';
+import { type UserStatus } from '../../schema';
 
 interface UserValidation {
   email: string;
