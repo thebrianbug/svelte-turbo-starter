@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Validator, ValidationError, userValidator } from './validation';
-import type { UserStatus } from './schema';
+import { type UserStatus } from '../../schema';
 
 describe('Validator', () => {
   describe('Generic Validator Class', () => {

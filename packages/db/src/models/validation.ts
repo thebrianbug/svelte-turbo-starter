@@ -1,5 +1,5 @@
 import { DatabaseError, DatabaseErrorCode } from '../config/operations';
-import type { UserStatus } from './schema';
+import { type UserStatus } from '../../schema';
 
 export class ValidationError extends DatabaseError {
   constructor(message: string) {

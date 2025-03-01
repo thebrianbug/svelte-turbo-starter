@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest';
 import { userQueries } from './users';
-import type { NewUser } from './schema';
+import type { NewUser } from '../../schema';
 import { setup, teardown, cleanBetweenTests } from '../database/test-setup';
 import { DatabaseErrorCode } from '../config/operations';
 
