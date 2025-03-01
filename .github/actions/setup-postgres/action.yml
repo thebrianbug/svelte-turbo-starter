@@ -10,18 +10,23 @@ runs:
         sudo apt-get update
         sudo apt-get install -y postgresql-client
 
-    - name: Wait for PostgreSQL
+    - name: Wait for PostgreSQL and setup database
       shell: bash
       run: |
-        # More aggressive polling with shorter timeout
-        timeout 10s bash -c 'until pg_isready -h localhost -p 5432 -U postgres; do sleep 0.2; done'
-
-    - name: Setup test database
-      shell: bash
-      run: |
-        # Parallel database creation and schema push
-        psql -h localhost -c 'CREATE DATABASE test;' || true
-        cd packages/db
-        # Use pre-compiled drizzle-kit for faster execution
-        NODE_ENV=production npx drizzle-kit push:pg
-        cd ../..
+        # Aggressive polling with shorter timeout
+        timeout 5s bash -c 'until pg_isready -h localhost -p 5432 -U postgres; do sleep 0.1; done'
+        
+        # Run database setup in parallel
+        {
+          psql -h localhost -c 'CREATE DATABASE test;' || true
+        } &
+        
+        {
+          cd packages/db
+          NODE_ENV=production npx drizzle-kit push:pg &
+          wait $!
+          cd ../..
+        } &
+        
+        # Wait for all background processes
+        wait
