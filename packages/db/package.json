@@ -8,8 +8,7 @@
     "db:generate": "drizzle-kit generate:pg",
     "db:push": "drizzle-kit push:pg",
     "db:studio": "drizzle-kit studio",
-    "test": "vitest run",
-    "test:watch": "vitest watch",
+    "test": "npm run test:integration",
     "test:integration": "vitest run --config ./vitest.config.ts src/**/*.integration.test.ts"
   },
   "dependencies": {
