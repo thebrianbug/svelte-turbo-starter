@@ -1,0 +1,22 @@
+{
+  "name": "@repo/bll",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "scripts": {
+    "test": "vitest",
+    "test:watch": "vitest watch",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@repo/db": "*"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "*",
+    "@repo/typescript-config": "*",
+    "typescript": "^5.3.3",
+    "vitest": "^3.0.5"
+  }
+}

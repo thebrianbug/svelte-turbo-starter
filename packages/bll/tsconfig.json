@@ -1,0 +1,11 @@
+{
+  "extends": "../typescript-config/svelte.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@svelte-turbo/db/*": ["../db/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["dist", "build", "node_modules"]
+}
