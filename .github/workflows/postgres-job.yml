@@ -1,42 +1,58 @@
-name: PostgreSQL Job
+name: Reusable PostgreSQL Job
 on:
   workflow_call:
     inputs:
-      cancel-in-progress:
+      run_command:
+        required: true
+        type: string
+      needs_playwright:
+        required: false
         type: boolean
         default: false
 
 jobs:
-  test:
+  postgres-job:
     runs-on: ubuntu-latest
+    timeout-minutes: 5 # Prevent hanging jobs
     services:
       postgres:
         image: postgres:16-alpine
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: svelte_turbo_db
+          POSTGRES_DB: test
         ports:
           - 5432:5432
         options: >-
           --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
+          --health-interval 2s
+          --health-timeout 2s
+          --health-retries 3
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-node
+      - uses: ./.github/actions/postgres-service
+      - uses: ./.github/actions/setup-postgres
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      # Conditional Playwright setup
+      - if: inputs.needs_playwright
+        name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
         with:
-          node-version: '18'
-          cache: 'npm'
+          path: |
+            ~/.cache/ms-playwright
+            **/node_modules/playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/playwright.config.ts') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
 
-      - name: Install dependencies
-        run: npm ci
+      - if: inputs.needs_playwright && steps.playwright-cache.outputs.cache-hit != 'true'
+        name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
 
-      - name: Run integration tests
-        run: npm run test:integration
+      - name: Run tests
         env:
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/svelte_turbo_db
+          NODE_ENV: test
+          CI: true
+        run: ${{ inputs.run_command }}
