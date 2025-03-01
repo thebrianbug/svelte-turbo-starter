@@ -14,8 +14,11 @@ export interface DatabaseConfig {
 }
 
 // Default configuration with more reasonable timeouts
+// Make URL resolution dynamic by using a getter
 export const databaseConfig: DatabaseConfig = {
-  url: process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/postgres',
+  get url() {
+    return process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/svelte_turbo_db';
+  },
   pool: {
     max: 10,
     idleTimeout: 20,
