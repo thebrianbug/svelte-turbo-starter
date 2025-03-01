@@ -1,5 +1,5 @@
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
-import { db, migrationClient, queryClient, checkDatabaseConnection } from './connection';
+import { db, client } from './connection';
 import { users } from '../schema';
 import path from 'path';
 
@@ -16,7 +16,7 @@ class DatabaseSetupError extends Error {
 interface DatabaseOptions {
   /**
    * Timeout in seconds for database operations
-   * @default 30
+   * @default 10
    */
   timeout?: number;
   /**
@@ -39,14 +39,13 @@ async function cleanTestData(timeoutMs: number): Promise<void> {
     if (!(error instanceof Error && error.name === 'AbortError')) {
       throw error;
     }
-    // Don't throw, just log the error
   } finally {
     clearTimeout(timeout);
   }
 }
 
 export async function setup({
-  timeout = 10, // Reduced from 30s to 10s
+  timeout = 10,
   migrationsPath = './drizzle'
 }: DatabaseOptions = {}): Promise<void> {
   const timeoutMs = timeout * 1000;
@@ -54,12 +53,6 @@ export async function setup({
   const timeoutId = setTimeout(() => abortController.abort(), timeoutMs);
 
   try {
-    // Verify database connection
-    const isConnected = await checkDatabaseConnection();
-    if (!isConnected) {
-      throw new DatabaseSetupError('Failed to establish database connection during setup');
-    }
-
     // Run migrations with absolute path and timeout
     try {
       const absoluteMigrationsPath = path.resolve(process.cwd(), migrationsPath);
@@ -94,21 +87,10 @@ export async function setup({
 }
 
 export async function teardown({ timeout = 10 }: DatabaseOptions = {}): Promise<void> {
-  const timeoutMs = timeout * 1000;
-  const errors: Error[] = [];
-
-  // Close connections with individual timeouts to prevent one hanging connection from blocking others
-  await Promise.all([
-    migrationClient.end({ timeout: timeoutMs }).catch((error) => {
-      errors.push(new Error('Migration client close failed: ' + error.message));
-    }),
-    queryClient.end({ timeout: timeoutMs }).catch((error) => {
-      errors.push(new Error('Query client close failed: ' + error.message));
-    })
-  ]);
-
-  if (errors.length > 0) {
-    throw new DatabaseSetupError('Teardown failed: ' + errors.map((e) => e.message).join(', '));
+  try {
+    await client.end({ timeout: timeout * 1000 });
+  } catch (error) {
+    throw new DatabaseSetupError('Teardown failed', error);
   }
 }
 
@@ -116,5 +98,5 @@ export async function teardown({ timeout = 10 }: DatabaseOptions = {}): Promise<
  * Utility function to clean test data between tests
  */
 export async function cleanBetweenTests(): Promise<void> {
-  await cleanTestData(3000); // Reduced from 5s to 3s for between-test cleanup
+  await cleanTestData(3000);
 }
