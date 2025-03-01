@@ -7,13 +7,16 @@ export const userSchema = z.object({
 });
 
 export type UserSchema = typeof userSchema;
-export type User = z.infer<typeof userSchema>;
+export type ValidatedUser = z.infer<typeof userSchema>;
 
 interface ValidationOptions {
   requireAll?: boolean;
 }
 
-export function validateUser(data: unknown, options: ValidationOptions = {}): Partial<User> {
+export function validateUser(
+  data: unknown,
+  options: ValidationOptions = {}
+): Partial<ValidatedUser> {
   const schema = options.requireAll ? userSchema : userSchema.partial();
   return schema.parse(data);
 }
@@ -21,6 +24,6 @@ export function validateUser(data: unknown, options: ValidationOptions = {}): Pa
 export function validateManyUsers(
   data: unknown[],
   options: ValidationOptions = {}
-): Partial<User>[] {
+): Partial<ValidatedUser>[] {
   return data.map((item) => validateUser(item, options));
 }

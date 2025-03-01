@@ -1,11 +1,4 @@
-// Export database connection and utilities
 export * from './src/database';
-
-// Export schema and types
-export * from './src/schema';
-
-// Export models/repositories
-export * from './src/models';
-
-// Export validators
-export * from './src/validators/schemas/user';
+export * from './src/domains/users/schema';
+export * from './src/domains/users/repository';
+export * from './src/domains/users/validator';
