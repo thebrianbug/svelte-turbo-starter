@@ -8,9 +8,8 @@
     "db:generate": "drizzle-kit generate:pg",
     "db:push": "drizzle-kit push:pg",
     "db:studio": "drizzle-kit studio",
-    "test": "npm run test:unit:run && npm run test:integration",
+    "test": "vitest run --config ./vitest.config.ts src/**/*.test.ts --exclude src/**/*.integration.test.ts && npm run test:integration",
     "test:unit": "vitest --config ./vitest.config.ts src/**/*.test.ts --exclude src/**/*.integration.test.ts",
-    "test:unit:run": "vitest run --config ./vitest.config.ts src/**/*.test.ts --exclude src/**/*.integration.test.ts",
     "test:integration": "vitest run --config ./vitest.config.ts src/**/*.integration.test.ts"
   },
   "dependencies": {
