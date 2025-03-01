@@ -16,7 +16,8 @@
     "@repo/typescript-config": "*",
     "dotenv": "^16.3.1",
     "drizzle-orm": "^0.29.1",
-    "postgres": "^3.4.3"
+    "postgres": "^3.4.3",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "drizzle-kit": "^0.20.6",
