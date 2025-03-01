@@ -37,8 +37,8 @@ jobs:
       run_command: npm run test:integration
 
   e2e:
-    needs: [static-analysis, unit-test, integration-test]
+    needs: [static-analysis, unit-test]
     uses: ./.github/workflows/postgres-job.yml
     with:
-      run_command: npm run test:e2e
+      run_command: NODE_OPTIONS='--max-old-space-size=4096' npm run test:e2e
       needs_playwright: true

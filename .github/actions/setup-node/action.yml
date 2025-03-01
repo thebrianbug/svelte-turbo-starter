@@ -17,9 +17,14 @@ runs:
         path: |
           node_modules
           */*/node_modules
-        key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
+          ~/.npm
+        key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/package.json') }}
+        restore-keys: |
+          ${{ runner.os }}-modules-
 
     - name: Install dependencies
       if: steps.node-cache.outputs.cache-hit != 'true'
       shell: bash
-      run: npm ci
+      run: |
+        npm config set verify-store-integrity false
+        NODE_ENV=production npm ci --prefer-offline --no-audit

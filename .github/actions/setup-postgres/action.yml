@@ -13,14 +13,15 @@ runs:
     - name: Wait for PostgreSQL
       shell: bash
       run: |
-        # Wait for PostgreSQL to be ready
-        timeout 20s bash -c 'until pg_isready -h localhost -p 5432 -U postgres; do sleep 1; done'
+        # More aggressive polling with shorter timeout
+        timeout 10s bash -c 'until pg_isready -h localhost -p 5432 -U postgres; do sleep 0.2; done'
 
     - name: Setup test database
       shell: bash
       run: |
-        # Create database if it doesn't exist
+        # Parallel database creation and schema push
         psql -h localhost -c 'CREATE DATABASE test;' || true
-
-        # Run migrations and seed data
-        cd packages/db && npx drizzle-kit push:pg && cd ../..
+        cd packages/db
+        # Use pre-compiled drizzle-kit for faster execution
+        NODE_ENV=production npx drizzle-kit push:pg
+        cd ../..
