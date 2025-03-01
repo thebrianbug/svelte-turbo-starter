@@ -1,12 +1,13 @@
 import { defineConfig } from 'vitest/config';
-import type { UserConfig } from 'vitest';
 
 export default defineConfig({
   test: {
-    globalSetup: './src/database/test-setup.ts',
-    globalTeardown: './src/database/test-teardown.ts',
-    setupFiles: ['dotenv/config'],
-    testTimeout: 10000,
+    setupFiles: [
+      'dotenv/config',
+      './src/database/test-setup.ts',
+      './src/database/test-teardown.ts'
+    ],
+    testTimeout: 5000,
     poolOptions: {
       threads: {
         singleThread: true,
