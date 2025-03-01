@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest';
 import { userQueries } from './users';
 import type { NewUser } from '../schema/users';
-import { setup, teardown, cleanBetweenTests } from '../database/test-setup';
+import { setup, teardown, cleanBetweenTests } from '../test-utils/database';
 import { PostgresError } from 'postgres';
 import { ZodError } from 'zod';
 

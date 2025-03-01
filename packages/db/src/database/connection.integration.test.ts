@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { checkDatabaseConnection, getDatabaseConfig } from './index';
 import postgres from 'postgres';
-import { setup, teardown } from './test-setup';
+import { setup, teardown } from '../test-utils/database';
 
 const databaseConfig = getDatabaseConfig();
 
