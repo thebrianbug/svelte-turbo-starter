@@ -75,6 +75,10 @@ jobs:
   integration-test:
     needs: [unit-test]
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/test
+      PGUSER: postgres
+      PGPASSWORD: postgres
     services:
       postgres:
         image: postgres:16-alpine
@@ -123,19 +127,38 @@ jobs:
           # Wait for PostgreSQL to be ready
           timeout 20s bash -c 'until pg_isready -h localhost -p 5432 -U postgres; do sleep 1; done'
 
-      - name: Run integration tests
+      - name: Setup test database
         run: |
           # Create database if it doesn't exist
-          PGPASSWORD=postgres psql -h localhost -U postgres -c 'CREATE DATABASE test;' || true
-          npm run test:integration
-        env:
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/test
-          PGUSER: postgres
-          PGPASSWORD: postgres
+          psql -h localhost -c 'CREATE DATABASE test;' || true
+          
+          # Run migrations and seed data
+          cd packages/db && npx drizzle-kit push:pg && cd ../..
+
+      - name: Run integration tests
+        run: npm run test:integration
 
   e2e:
     needs: [static-analysis, unit-test, integration-test]
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/test
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
 
@@ -158,6 +181,24 @@ jobs:
       - name: Install dependencies
         if: steps.node-cache.outputs.cache-hit != 'true'
         run: npm ci
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Wait for PostgreSQL
+        run: |
+          # Wait for PostgreSQL to be ready
+          timeout 20s bash -c 'until pg_isready -h localhost -p 5432 -U postgres; do sleep 1; done'
+
+      - name: Setup test database
+        run: |
+          # Create database if it doesn't exist
+          psql -h localhost -c 'CREATE DATABASE test;' || true
+          
+          # Run migrations and seed data
+          cd packages/db && npx drizzle-kit push:pg && cd ../..
 
       # Cache Playwright browsers
       - name: Cache Playwright browsers
