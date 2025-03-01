@@ -1,6 +1,6 @@
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import { db, client } from '../database';
-import { users } from '../schema/users';
+import { users } from '../schema';
 import path from 'path';
 
 class DatabaseSetupError extends Error {
@@ -30,17 +30,18 @@ interface DatabaseOptions {
  * Cleans all test data from the database
  */
 async function cleanTestData(timeoutMs: number): Promise<void> {
-  const abortController = new AbortController();
-  const timeout = setTimeout(() => abortController.abort(), timeoutMs);
+  const cleanupPromise = db.delete(users).execute();
 
   try {
-    await db.delete(users).execute();
+    await Promise.race([
+      cleanupPromise,
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Cleanup timeout')), timeoutMs))
+    ]);
   } catch (error) {
-    if (!(error instanceof Error && error.name === 'AbortError')) {
-      throw error;
+    if (error instanceof Error && error.message === 'Cleanup timeout') {
+      throw new DatabaseSetupError('Database cleanup timed out');
     }
-  } finally {
-    clearTimeout(timeout);
+    throw error;
   }
 }
 
@@ -49,47 +50,62 @@ export async function setup({
   migrationsPath = './drizzle'
 }: DatabaseOptions = {}): Promise<void> {
   const timeoutMs = timeout * 1000;
-  const abortController = new AbortController();
-  const timeoutId = setTimeout(() => abortController.abort(), timeoutMs);
 
   try {
     // Run migrations with absolute path and timeout
-    try {
-      const absoluteMigrationsPath = path.resolve(process.cwd(), migrationsPath);
-      const migrationPromise = migrate(db, { migrationsFolder: absoluteMigrationsPath });
+    const absoluteMigrationsPath = path.resolve(process.cwd(), migrationsPath);
+    const migrationPromise = migrate(db, { migrationsFolder: absoluteMigrationsPath });
 
+    try {
       await Promise.race([
         migrationPromise,
-        new Promise((_, reject) => {
-          const id = setTimeout(() => {
-            reject(new Error('Migration timeout'));
-          }, timeoutMs);
-          abortController.signal.addEventListener('abort', () => {
-            clearTimeout(id);
-            reject(new Error('Migration aborted'));
-          });
-        })
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Migration timeout')), timeoutMs)
+        )
       ]);
     } catch (error) {
+      if (error instanceof Error && error.message === 'Migration timeout') {
+        throw new DatabaseSetupError('Database migration timed out');
+      }
       throw new DatabaseSetupError('Migration failed', error);
     }
 
     // Initial data cleanup
     await cleanTestData(timeoutMs);
   } catch (error) {
-    await teardown({ timeout: 5 });
+    // Ensure teardown happens if setup fails
+    try {
+      await teardown({ timeout: 5 });
+    } catch (teardownError) {
+      console.error('Teardown failed during setup error handling:', teardownError);
+    }
     throw error instanceof DatabaseSetupError
       ? error
       : new DatabaseSetupError('Setup failed', error);
-  } finally {
-    clearTimeout(timeoutId);
   }
 }
 
 export async function teardown({ timeout = 10 }: DatabaseOptions = {}): Promise<void> {
+  const timeoutMs = timeout * 1000;
+
   try {
-    await client.end({ timeout: timeout * 1000 });
+    // First try to clean up any remaining test data
+    try {
+      await cleanTestData(timeoutMs);
+    } catch (error) {
+      console.warn('Failed to clean test data during teardown:', error);
+    }
+
+    // End the database connection
+    const endPromise = client.end();
+    await Promise.race([
+      endPromise,
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Teardown timeout')), timeoutMs))
+    ]);
   } catch (error) {
+    if (error instanceof Error && error.message === 'Teardown timeout') {
+      throw new DatabaseSetupError('Database teardown timed out');
+    }
     throw new DatabaseSetupError('Teardown failed', error);
   }
 }

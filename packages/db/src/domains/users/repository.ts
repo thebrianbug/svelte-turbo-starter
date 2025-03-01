@@ -1,7 +1,7 @@
 import { eq, and, sql } from 'drizzle-orm';
-import { users, type User, type NewUser, type UserStatus } from '../schema/users';
-import { db } from '../database';
-import { validateUser, validateManyUsers } from '../validators/user';
+import { users, type User, type NewUser, type UserStatus } from './schema';
+import { db } from '../../database';
+import { validateUser, validateManyUsers } from './validator';
 
 class UserRepository {
   private normalizeEmail(email: string): string {

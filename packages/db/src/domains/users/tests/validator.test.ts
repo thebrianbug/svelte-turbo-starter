@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { userSchema } from './user';
+import { userSchema } from '../validator';
 
 describe('User Schema Validation', () => {
   const validUser = {
