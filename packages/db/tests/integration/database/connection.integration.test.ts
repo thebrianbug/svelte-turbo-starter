@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { checkDatabaseConnection, getDatabaseConfig } from './index';
+import { checkDatabaseConnection, getDatabaseConfig } from '../../../src/database';
 import postgres from 'postgres';
 import { setup, teardown } from '../test-utils/database';
 
