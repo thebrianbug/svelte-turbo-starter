@@ -14,6 +14,6 @@ export default defineConfig({
         maxThreads: 1
       }
     },
-    reporters: ['default', 'hanging-process']
+    reporters: ['default']
   }
 });

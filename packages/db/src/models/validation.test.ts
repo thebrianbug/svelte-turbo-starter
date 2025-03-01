@@ -45,7 +45,7 @@ describe('Validator', () => {
     it('should throw error for missing required fields', () => {
       expect(() => testValidator.validate({
         field1: 'test'
-      })).toThrow('Missing required field: field2');
+      }, { requireAll: true })).toThrow('Missing required field: field2');
     });
 
     it('should allow optional fields', () => {
@@ -68,7 +68,7 @@ describe('Validator', () => {
         { field1: 'test2', field2: 2 }
       ];
 
-      const results = testValidator.validateMany(items);
+      const results = testValidator.validateMany(items, { requireAll: true });
       expect(results).toEqual([
         { field1: 'TEST1', field2: 1 },
         { field1: 'TEST2', field2: 2 }
@@ -152,7 +152,7 @@ describe('Validator', () => {
         }
       ];
 
-      const results = userValidator.validateMany(users);
+      const results = userValidator.validateMany(users, { requireAll: true });
       expect(results).toEqual([
         {
           name: 'User One',

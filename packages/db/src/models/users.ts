@@ -15,7 +15,7 @@ export const userQueries = {
 
   findByEmail: async (email: string): Promise<User | undefined> => {
     return dbOperation(async () => {
-      const { email: normalizedEmail } = userValidator.validate({ email }, { requireAll: false }) as { email: string };
+      const normalizedEmail = email.trim().toLowerCase();
       const result = await db.select().from(users).where(eq(users.email, normalizedEmail));
       return result[0];
     });

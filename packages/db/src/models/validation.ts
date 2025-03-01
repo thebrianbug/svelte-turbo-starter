@@ -68,7 +68,11 @@ export class Validator<T extends Record<string, any>> {
 // Email validation
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const validateEmail = (email: unknown): void => {
-  if (typeof email !== 'string' || !emailRegex.test(email)) {
+  if (typeof email !== 'string') {
+    throw new ValidationError('Email must be a string');
+  }
+  const trimmedEmail = email.trim();
+  if (!emailRegex.test(trimmedEmail)) {
     throw new ValidationError('Invalid email format');
   }
 };
