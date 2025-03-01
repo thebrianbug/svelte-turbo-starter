@@ -10,6 +10,7 @@
     "preview": "turbo run preview",
     "test": "turbo run test:unit -- run && npm run test:e2e",
     "test:unit": "turbo run test:unit",
+    "test:integration": "turbo run test:integration",
     "test:e2e": "turbo run build && cd apps/web && npm run test:e2e && cd ../docs && npm run test:e2e && cd ../..",
     "lint": "turbo run lint",
     "format": "prettier --write .",
