@@ -18,27 +18,61 @@ class UserRepository {
   }
 
   async findById(id: number): Promise<User | undefined> {
-    const [result] = await db.select().from(users).where(eq(users.id, id));
+    const [result] = await db
+      .select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        status: users.status,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt
+      })
+      .from(users)
+      .where(eq(users.id, id));
     return result;
   }
 
   async findByEmail(email: string): Promise<User | undefined> {
     const [result] = await db
-      .select()
+      .select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        status: users.status,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt
+      })
       .from(users)
       .where(eq(users.email, this.normalizeEmail(email)));
     return result;
   }
 
   async findActive(): Promise<User[]> {
-    return db.select().from(users).where(eq(users.status, 'active'));
+    return db
+      .select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        status: users.status,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt
+      })
+      .from(users)
+      .where(eq(users.status, 'active'));
   }
 
   async create(newUser: NewUser): Promise<User> {
     const validatedUser = validateUser(newUser, { requireAll: true }) as Required<NewUser>;
     validatedUser.email = this.normalizeEmail(validatedUser.email);
 
-    const [result] = await db.insert(users).values(validatedUser).returning();
+    const [result] = await db.insert(users).values(validatedUser).returning({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      status: users.status,
+      createdAt: users.createdAt,
+      updatedAt: users.updatedAt
+    });
     return result;
   }
 
@@ -51,14 +85,28 @@ class UserRepository {
       email: this.normalizeEmail(user.email)
     }));
 
-    return db.insert(users).values(normalizedUsers).returning();
+    return db.insert(users).values(normalizedUsers).returning({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      status: users.status,
+      createdAt: users.createdAt,
+      updatedAt: users.updatedAt
+    });
   }
 
   async update(id: number, userData: Partial<NewUser>): Promise<User | undefined> {
     const validatedData = validateUser(userData, { requireAll: false });
     const preparedData = this.prepareForUpdate(validatedData);
 
-    const [result] = await db.update(users).set(preparedData).where(eq(users.id, id)).returning();
+    const [result] = await db.update(users).set(preparedData).where(eq(users.id, id)).returning({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      status: users.status,
+      createdAt: users.createdAt,
+      updatedAt: users.updatedAt
+    });
     return result;
   }
 
@@ -70,7 +118,14 @@ class UserRepository {
       .update(users)
       .set(preparedData)
       .where(eq(users.status, filter.status))
-      .returning();
+      .returning({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        status: users.status,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt
+      });
     return result.length;
   }
 
@@ -79,7 +134,14 @@ class UserRepository {
       .update(users)
       .set(this.prepareForUpdate({ status: 'inactive' }))
       .where(and(eq(users.id, id), eq(users.status, 'active')))
-      .returning();
+      .returning({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        status: users.status,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt
+      });
     return result.length > 0;
   }
 
@@ -88,7 +150,14 @@ class UserRepository {
       .update(users)
       .set(this.prepareForUpdate({ status: 'inactive' }))
       .where(eq(users.status, filter.status))
-      .returning();
+      .returning({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        status: users.status,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt
+      });
     return result.length;
   }
 
