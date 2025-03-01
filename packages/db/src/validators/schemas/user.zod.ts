@@ -29,18 +29,33 @@ export const userSchema = z.object({
 
 export type UserValidation = z.infer<typeof userSchema>;
 
-export const validateUser = (data: Partial<UserValidation>): UserValidation => {
+class ValidationError extends Error {
+  code: string;
+  constructor(message: string) {
+    super(message);
+    this.name = 'ValidationError';
+    this.code = 'VALIDATION_ERROR';
+  }
+}
+
+export const validateUser = (
+  data: Partial<UserValidation>,
+  options: { requireAll?: boolean } = {}
+): Partial<UserValidation> => {
   try {
-    return userSchema.parse(data);
+    const schema = options.requireAll ? userSchema : userSchema.partial();
+    return schema.parse(data);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      // Get the first error message
-      throw new Error(error.errors[0].message);
+      throw new ValidationError(error.errors[0].message);
     }
     throw error;
   }
 };
 
-export const validateManyUsers = (users: Partial<UserValidation>[]): UserValidation[] => {
-  return users.map((user) => validateUser(user));
+export const validateManyUsers = (
+  users: Partial<UserValidation>[],
+  options: { requireAll?: boolean } = {}
+): Partial<UserValidation>[] => {
+  return users.map((user) => validateUser(user, options));
 };

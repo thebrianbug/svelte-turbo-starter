@@ -2,7 +2,7 @@ import { eq, and, sql } from 'drizzle-orm';
 import { users, type User, type NewUser, type UserStatus } from '../schema';
 import { db } from '../database/connection';
 import { dbOperation } from '../config';
-import { userValidator } from '../validators/schemas/user';
+import { validateUser, validateManyUsers } from '../validators/schemas/user.zod';
 import { DatabaseError, DatabaseErrorCode } from '../config/operations';
 
 export const userQueries = {
@@ -29,9 +29,7 @@ export const userQueries = {
 
   create: async (newUser: NewUser): Promise<User> => {
     return dbOperation(async () => {
-      const validatedUser = userValidator.validate(newUser, {
-        requireAll: true
-      }) as Required<NewUser>;
+      const validatedUser = validateUser(newUser, { requireAll: true }) as Required<NewUser>;
       const result = await db.insert(users).values(validatedUser).returning();
       return result[0];
     });
@@ -43,7 +41,7 @@ export const userQueries = {
         return [];
       }
 
-      const validatedUsers = userValidator.validateMany(newUsers, {
+      const validatedUsers = validateManyUsers(newUsers, {
         requireAll: true
       }) as Required<NewUser>[];
       const result = await db.insert(users).values(validatedUsers).returning();
@@ -59,7 +57,7 @@ export const userQueries = {
         throw new DatabaseError('User not found', DatabaseErrorCode.NOT_FOUND);
       }
 
-      const validatedData = userValidator.validate(userData, { requireAll: false }) as Partial<{
+      const validatedData = validateUser(userData, { requireAll: false }) as Partial<{
         email: string;
         name: string;
         status: UserStatus;
@@ -77,7 +75,7 @@ export const userQueries = {
 
   updateMany: async (filter: { status: UserStatus }, update: Partial<NewUser>): Promise<number> => {
     return dbOperation(async () => {
-      const validatedData = userValidator.validate(update, { requireAll: false }) as Partial<{
+      const validatedData = validateUser(update, { requireAll: false }) as Partial<{
         email: string;
         name: string;
         status: UserStatus;
