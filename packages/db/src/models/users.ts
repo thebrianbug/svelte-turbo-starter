@@ -2,7 +2,7 @@ import { eq, and, sql } from 'drizzle-orm';
 import { users, type User, type NewUser, type UserStatus } from '../schema';
 import { db } from '../database/connection';
 import { dbOperation } from '../config';
-import { validateUser, validateManyUsers } from '../validators/schemas/user.zod';
+import { validateUser, validateManyUsers } from '../validators/schemas/user';
 import { DatabaseError, DatabaseErrorCode } from '../config/operations';
 
 export const userQueries = {

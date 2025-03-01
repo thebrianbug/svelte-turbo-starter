@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { userValidator } from './user';
-import type { UserStatus } from '../../../schema';
+import { userSchema, validateUser, validateManyUsers } from './user';
+import type { UserStatus } from '../../schema';
 
-describe('User Validator', () => {
+describe('Zod User Validator', () => {
   it('should validate and transform valid user data', () => {
-    const result = userValidator.validate({
+    const result = validateUser({
       name: '  John   Doe  ',
       email: '  USER@EXAMPLE.COM  ',
       status: 'active' as UserStatus
@@ -19,7 +19,7 @@ describe('User Validator', () => {
 
   it('should validate email format', () => {
     expect(() =>
-      userValidator.validate({
+      validateUser({
         name: 'John Doe',
         email: 'invalid-email',
         status: 'active' as UserStatus
@@ -29,7 +29,7 @@ describe('User Validator', () => {
 
   it('should validate name length', () => {
     expect(() =>
-      userValidator.validate({
+      validateUser({
         name: '',
         email: 'test@example.com',
         status: 'active' as UserStatus
@@ -37,7 +37,7 @@ describe('User Validator', () => {
     ).toThrow('Name must be between 1 and 100 characters');
 
     expect(() =>
-      userValidator.validate({
+      validateUser({
         name: 'a'.repeat(101),
         email: 'test@example.com',
         status: 'active' as UserStatus
@@ -47,7 +47,7 @@ describe('User Validator', () => {
 
   it('should validate status values', () => {
     expect(() =>
-      userValidator.validate({
+      validateUser({
         name: 'John Doe',
         email: 'test@example.com',
         status: 'invalid' as UserStatus
@@ -56,7 +56,7 @@ describe('User Validator', () => {
   });
 
   it('should handle partial updates', () => {
-    const result = userValidator.validate({
+    const result = userSchema.partial().parse({
       name: '  John   Doe  '
     });
 
@@ -79,7 +79,7 @@ describe('User Validator', () => {
       }
     ];
 
-    const results = userValidator.validateMany(users, { requireAll: true });
+    const results = validateManyUsers(users);
     expect(results).toEqual([
       {
         name: 'User One',
@@ -108,6 +108,6 @@ describe('User Validator', () => {
       }
     ];
 
-    expect(() => userValidator.validateMany(users)).toThrow('Invalid email format');
+    expect(() => validateManyUsers(users)).toThrow('Invalid email format');
   });
 });
