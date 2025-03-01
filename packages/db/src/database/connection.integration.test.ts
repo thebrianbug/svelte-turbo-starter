@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { checkDatabaseConnection } from './connection';
+import { checkDatabaseConnection, getDatabaseConfig } from './index';
 import postgres from 'postgres';
 import { setup, teardown } from './test-setup';
-import { databaseConfig } from '../config/database';
+
+const databaseConfig = getDatabaseConfig();
 
 describe('Database Connection', () => {
   // Setup database before all tests

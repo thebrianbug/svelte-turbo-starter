@@ -1,6 +1,6 @@
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
-import { db, client } from './connection';
-import { users } from '../schema';
+import { db, client } from './index';
+import { users } from '../schema/users';
 import path from 'path';
 
 class DatabaseSetupError extends Error {

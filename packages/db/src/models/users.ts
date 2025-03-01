@@ -1,6 +1,6 @@
 import { eq, and, sql } from 'drizzle-orm';
-import { users, type User, type NewUser, type UserStatus } from '../schema';
-import { db } from '../database/connection';
+import { users, type User, type NewUser, type UserStatus } from '../schema/users';
+import { db } from '../database';
 import { validateUser, validateManyUsers } from '../validators/schemas/user';
 
 class UserRepository {
