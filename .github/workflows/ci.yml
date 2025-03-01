@@ -73,11 +73,11 @@ jobs:
         run: npm run test:unit
 
   integration-test:
-    needs: [static-analysis, unit-test]
+    needs: [unit-test]
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:15
+        image: postgres:16-alpine
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -113,10 +113,25 @@ jobs:
         if: steps.node-cache.outputs.cache-hit != 'true'
         run: npm ci
 
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Wait for PostgreSQL
+        run: |
+          # Wait for PostgreSQL to be ready
+          timeout 20s bash -c 'until pg_isready -h localhost -p 5432 -U postgres; do sleep 1; done'
+
       - name: Run integration tests
-        run: npm run test:integration
+        run: |
+          # Create database if it doesn't exist
+          PGPASSWORD=postgres psql -h localhost -U postgres -c 'CREATE DATABASE test;' || true
+          npm run test:integration
         env:
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/test
+          PGUSER: postgres
+          PGPASSWORD: postgres
 
   e2e:
     needs: [static-analysis, unit-test, integration-test]
