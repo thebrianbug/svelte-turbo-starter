@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { checkDatabaseConnection, queryClient } from './connection';
+import { checkDatabaseConnection } from './connection';
 import postgres from 'postgres';
 import { setup, teardown } from './test-setup';
 
