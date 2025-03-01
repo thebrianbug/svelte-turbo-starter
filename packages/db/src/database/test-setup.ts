@@ -36,10 +36,8 @@ async function cleanTestData(timeoutMs: number): Promise<void> {
   try {
     await db.delete(users).execute();
   } catch (error) {
-    if (error instanceof Error && error.name === 'AbortError') {
-      console.error('Warning: Clean data operation timed out');
-    } else {
-      console.error('Warning: Failed to clean test data', error);
+    if (!(error instanceof Error && error.name === 'AbortError')) {
+      throw error;
     }
     // Don't throw, just log the error
   } finally {
@@ -59,8 +57,7 @@ export async function setup({
     // Verify database connection
     const isConnected = await checkDatabaseConnection();
     if (!isConnected) {
-      console.error('Warning: Failed to establish database connection during setup');
-      return; // Return early instead of throwing
+      throw new DatabaseSetupError('Failed to establish database connection during setup');
     }
 
     // Run migrations with absolute path and timeout
@@ -81,18 +78,16 @@ export async function setup({
         })
       ]);
     } catch (error) {
-      console.error('Warning: Migration failed:', error);
-      // Continue even if migration fails
+      throw new DatabaseSetupError('Migration failed', error);
     }
 
     // Initial data cleanup
     await cleanTestData(timeoutMs);
   } catch (error) {
-    console.error('Setup encountered errors:', error);
-    await teardown({ timeout: 5 }).catch((teardownError) => {
-      console.error('Additional error during teardown:', teardownError);
-    });
-    // Don't throw, let tests handle connection issues
+    await teardown({ timeout: 5 });
+    throw error instanceof DatabaseSetupError
+      ? error
+      : new DatabaseSetupError('Setup failed', error);
   } finally {
     clearTimeout(timeoutId);
   }
@@ -113,9 +108,7 @@ export async function teardown({ timeout = 10 }: DatabaseOptions = {}): Promise<
   ]);
 
   if (errors.length > 0) {
-    console.error(
-      'Warning: Teardown encountered errors: ' + errors.map((e) => e.message).join(', ')
-    );
+    throw new DatabaseSetupError('Teardown failed: ' + errors.map((e) => e.message).join(', '));
   }
 }
 
