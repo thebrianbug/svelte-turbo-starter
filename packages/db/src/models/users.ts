@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { users, type User, type NewUser } from './schema';
 import { db } from '../database/connection';
-import { dbOperation } from '../utils/db-operation';
+import { dbOperation } from '../config';
 
 export const userQueries = {
   // Validation methods
