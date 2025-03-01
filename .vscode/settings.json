@@ -8,5 +8,7 @@
   "tailwindCSS.includeLanguages": {
     "postcss": "css"
   },
-  "vitest.disableWorkspaceWarning": true
+  "vitest.disableWorkspaceWarning": true,
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode"
 }
