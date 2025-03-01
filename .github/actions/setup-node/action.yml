@@ -26,4 +26,4 @@ runs:
       if: steps.node-cache.outputs.cache-hit != 'true'
       shell: bash
       run: |
-        NODE_ENV=production npm ci --prefer-offline --no-audit --no-progress
+        npm ci --prefer-offline --no-audit --no-progress
