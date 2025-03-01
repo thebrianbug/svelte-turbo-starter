@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { checkDatabaseConnection } from './connection';
 import postgres from 'postgres';
 import { setup, teardown } from './test-setup';
+import { databaseConfig } from '../config/database';
 
 describe('Database Connection', () => {
   // Setup database before all tests
@@ -26,10 +27,11 @@ describe('Database Connection', () => {
     let timeoutClient: postgres.Sql | null = null;
     try {
       // Create a new client with a very short timeout
-      timeoutClient = postgres('postgres://postgres:postgres@localhost:5432/svelte_turbo_db', {
-        connect_timeout: 0.001, // 1ms timeout
-        max: 1, // Limit to single connection
-        idle_timeout: 0 // Close immediately when idle
+      timeoutClient = postgres(databaseConfig.url, {
+        ...databaseConfig.pool,
+        connect_timeout: 0.001, // 1ms timeout for testing
+        max: 1,
+        idle_timeout: 0
       });
 
       await timeoutClient`SELECT 1`;
@@ -50,8 +52,9 @@ describe('Database Connection', () => {
     try {
       // Create a new client with invalid credentials
       invalidClient = postgres('postgres://invalid:invalid@localhost:5432/invalid_db', {
-        max: 1, // Limit to single connection
-        idle_timeout: 0 // Close immediately when idle
+        ...databaseConfig.pool,
+        max: 1,
+        idle_timeout: 0
       });
 
       await invalidClient`SELECT 1`;
@@ -68,7 +71,7 @@ describe('Database Connection', () => {
   });
 
   it('should handle multiple concurrent connections', async () => {
-    const maxConnections = 5; // Reduce from 15 to stay within pool limits
+    const maxConnections = Math.min(5, databaseConfig.pool.max); // Stay within configured pool limits
     const concurrentChecks = Array(maxConnections)
       .fill(null)
       .map(() => checkDatabaseConnection());

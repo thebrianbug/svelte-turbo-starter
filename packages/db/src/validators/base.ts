@@ -1,8 +1,7 @@
-import { DatabaseError, DatabaseErrorCode } from '../config/operations';
-
-export class ValidationError extends DatabaseError {
+export class ValidationError extends Error {
   constructor(message: string) {
-    super(message, DatabaseErrorCode.VALIDATION_ERROR);
+    super(message);
+    this.name = 'ValidationError';
   }
 }
 
@@ -20,43 +19,36 @@ export class Validator<T extends Record<string, any>> {
   }
 
   validate(data: Partial<T>, options: { requireAll?: boolean } = {}): Partial<T> {
-    try {
-      // Create type-safe result object
-      const result = {} as Partial<T>;
+    // Create type-safe result object
+    const result = {} as Partial<T>;
 
-      // Check required fields only when creating new records
-      if (options.requireAll) {
-        for (const [field, validator] of Object.entries(this.validators)) {
-          const key = field as keyof T;
-          if (validator?.required && !(key in data)) {
-            throw new ValidationError(`Missing required field: ${field}`);
-          }
-        }
-      }
-
-      // Validate and transform fields
-      for (const [field, value] of Object.entries(data)) {
+    // Check required fields only when creating new records
+    if (options.requireAll) {
+      for (const [field, validator] of Object.entries(this.validators)) {
         const key = field as keyof T;
-        const validator = this.validators[key];
-
-        if (validator) {
-          if (value !== undefined) {
-            validator.validate(value);
-            result[key] = validator.transform ? validator.transform(value as any) : value;
-          }
-        } else {
-          // Pass through fields without validators
-          result[key] = value as T[keyof T];
+        if (validator?.required && !(key in data)) {
+          throw new ValidationError(`Missing required field: ${field}`);
         }
       }
-
-      return result;
-    } catch (error) {
-      if (error instanceof DatabaseError) {
-        throw error;
-      }
-      throw new DatabaseError('Validation error', DatabaseErrorCode.VALIDATION_ERROR);
     }
+
+    // Validate and transform fields
+    for (const [field, value] of Object.entries(data)) {
+      const key = field as keyof T;
+      const validator = this.validators[key];
+
+      if (validator) {
+        if (value !== undefined) {
+          validator.validate(value);
+          result[key] = validator.transform ? validator.transform(value as any) : value;
+        }
+      } else {
+        // Pass through fields without validators
+        result[key] = value as T[keyof T];
+      }
+    }
+
+    return result;
   }
 
   validateMany(dataArray: Partial<T>[], options: { requireAll?: boolean } = {}): Partial<T>[] {

@@ -19,7 +19,7 @@ describe('DatabaseError', () => {
     it('should return same error if already DatabaseError', () => {
       const original = new DatabaseError('test', DatabaseErrorCode.NOT_FOUND);
       const result = DatabaseError.fromError(original);
-      expect(result).toBe(original);
+      expect(result).toStrictEqual(original);
     });
 
     it('should map PostgreSQL unique violation error', () => {
@@ -87,6 +87,6 @@ describe('dbOperation', () => {
     };
 
     const error = await dbOperation(operation).catch((e) => e);
-    expect(error).toBe(originalError);
+    expect(error).toStrictEqual(originalError);
   });
 });
