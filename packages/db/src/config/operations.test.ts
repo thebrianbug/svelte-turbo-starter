@@ -74,7 +74,10 @@ describe('dbOperation', () => {
     };
 
     await expect(dbOperation(operation)).rejects.toBeInstanceOf(DatabaseError);
-    await expect(dbOperation(operation)).rejects.toHaveProperty('code', DatabaseErrorCode.UNKNOWN_ERROR);
+    await expect(dbOperation(operation)).rejects.toHaveProperty(
+      'code',
+      DatabaseErrorCode.UNKNOWN_ERROR
+    );
   });
 
   it('should pass through DatabaseErrors unchanged', async () => {
@@ -83,7 +86,7 @@ describe('dbOperation', () => {
       throw originalError;
     };
 
-    const error = await dbOperation(operation).catch(e => e);
+    const error = await dbOperation(operation).catch((e) => e);
     expect(error).toBe(originalError);
   });
 });

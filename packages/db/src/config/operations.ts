@@ -7,7 +7,7 @@ export const DatabaseErrorCode = {
   UNKNOWN_ERROR: 'UNKNOWN_ERROR'
 } as const;
 
-export type DatabaseErrorCode = typeof DatabaseErrorCode[keyof typeof DatabaseErrorCode];
+export type DatabaseErrorCode = (typeof DatabaseErrorCode)[keyof typeof DatabaseErrorCode];
 
 // Custom error class for database operations
 export class DatabaseError extends Error {
@@ -26,7 +26,7 @@ export class DatabaseError extends Error {
     }
 
     const message = error instanceof Error ? error.message : 'Unknown database error';
-    
+
     // PostgreSQL error codes
     if (error && typeof error === 'object' && 'code' in error) {
       switch (error.code) {

@@ -29,7 +29,9 @@ export const userQueries = {
 
   create: async (newUser: NewUser): Promise<User> => {
     return dbOperation(async () => {
-      const validatedUser = userValidator.validate(newUser, { requireAll: true }) as Required<NewUser>;
+      const validatedUser = userValidator.validate(newUser, {
+        requireAll: true
+      }) as Required<NewUser>;
       const result = await db.insert(users).values(validatedUser).returning();
       return result[0];
     });
@@ -41,7 +43,9 @@ export const userQueries = {
         return [];
       }
 
-      const validatedUsers = userValidator.validateMany(newUsers, { requireAll: true }) as Required<NewUser>[];
+      const validatedUsers = userValidator.validateMany(newUsers, {
+        requireAll: true
+      }) as Required<NewUser>[];
       const result = await db.insert(users).values(validatedUsers).returning();
       return result;
     });
@@ -60,7 +64,7 @@ export const userQueries = {
         name: string;
         status: UserStatus;
       }>;
-      
+
       const result = await db
         .update(users)
         .set({ ...validatedData, updatedAt: new Date() })
@@ -120,7 +124,7 @@ export const userQueries = {
   count: async (filter?: { status?: UserStatus }): Promise<number> => {
     return dbOperation(async () => {
       const query = db.select({ count: sql<number>`count(*)` }).from(users);
-      
+
       if (filter?.status) {
         query.where(eq(users.status, filter.status));
       }

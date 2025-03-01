@@ -24,7 +24,7 @@ export class Validator<T extends Record<string, any>> {
     try {
       // Create type-safe result object
       const result = {} as Partial<T>;
-      
+
       // Check required fields only when creating new records
       if (options.requireAll) {
         for (const [field, validator] of Object.entries(this.validators)) {
@@ -39,7 +39,7 @@ export class Validator<T extends Record<string, any>> {
       for (const [field, value] of Object.entries(data)) {
         const key = field as keyof T;
         const validator = this.validators[key];
-        
+
         if (validator) {
           if (value !== undefined) {
             validator.validate(value);
@@ -61,7 +61,7 @@ export class Validator<T extends Record<string, any>> {
   }
 
   validateMany(dataArray: Partial<T>[], options: { requireAll?: boolean } = {}): Partial<T>[] {
-    return dataArray.map(data => this.validate(data, options));
+    return dataArray.map((data) => this.validate(data, options));
   }
 }
 

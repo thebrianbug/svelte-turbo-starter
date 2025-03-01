@@ -17,7 +17,9 @@ export interface DatabaseConfig {
 // Make URL resolution dynamic by using a getter
 export const databaseConfig: DatabaseConfig = {
   get url() {
-    return process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/svelte_turbo_db';
+    return (
+      process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/svelte_turbo_db'
+    );
   },
   pool: {
     max: 10,

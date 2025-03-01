@@ -43,8 +43,5 @@ export async function checkDatabaseConnection(): Promise<boolean> {
 
 // Ensure connections are properly closed on process termination
 process.on('SIGTERM', () => {
-  void Promise.all([
-    migrationClient.end(),
-    queryClient.end()
-  ]).then(() => process.exit(0));
+  void Promise.all([migrationClient.end(), queryClient.end()]).then(() => process.exit(0));
 });

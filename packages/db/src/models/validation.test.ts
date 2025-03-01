@@ -43,9 +43,14 @@ describe('Validator', () => {
     });
 
     it('should throw error for missing required fields', () => {
-      expect(() => testValidator.validate({
-        field1: 'test'
-      }, { requireAll: true })).toThrow('Missing required field: field2');
+      expect(() =>
+        testValidator.validate(
+          {
+            field1: 'test'
+          },
+          { requireAll: true }
+        )
+      ).toThrow('Missing required field: field2');
     });
 
     it('should allow optional fields', () => {
@@ -76,10 +81,12 @@ describe('Validator', () => {
     });
 
     it('should throw error for invalid data', () => {
-      expect(() => testValidator.validate({
-        field1: 'test',
-        field2: -1
-      })).toThrow('field2 must be a positive number');
+      expect(() =>
+        testValidator.validate({
+          field1: 'test',
+          field2: -1
+        })
+      ).toThrow('field2 must be a positive number');
     });
   });
 
@@ -99,33 +106,41 @@ describe('Validator', () => {
     });
 
     it('should validate email format', () => {
-      expect(() => userValidator.validate({
-        name: 'John Doe',
-        email: 'invalid-email',
-        status: 'active' as UserStatus
-      })).toThrow('Invalid email format');
+      expect(() =>
+        userValidator.validate({
+          name: 'John Doe',
+          email: 'invalid-email',
+          status: 'active' as UserStatus
+        })
+      ).toThrow('Invalid email format');
     });
 
     it('should validate name length', () => {
-      expect(() => userValidator.validate({
-        name: '',
-        email: 'test@example.com',
-        status: 'active' as UserStatus
-      })).toThrow('Name must be between 1 and 100 characters');
+      expect(() =>
+        userValidator.validate({
+          name: '',
+          email: 'test@example.com',
+          status: 'active' as UserStatus
+        })
+      ).toThrow('Name must be between 1 and 100 characters');
 
-      expect(() => userValidator.validate({
-        name: 'a'.repeat(101),
-        email: 'test@example.com',
-        status: 'active' as UserStatus
-      })).toThrow('Name must be between 1 and 100 characters');
+      expect(() =>
+        userValidator.validate({
+          name: 'a'.repeat(101),
+          email: 'test@example.com',
+          status: 'active' as UserStatus
+        })
+      ).toThrow('Name must be between 1 and 100 characters');
     });
 
     it('should validate status values', () => {
-      expect(() => userValidator.validate({
-        name: 'John Doe',
-        email: 'test@example.com',
-        status: 'invalid' as UserStatus
-      })).toThrow('Status must be either "active" or "inactive"');
+      expect(() =>
+        userValidator.validate({
+          name: 'John Doe',
+          email: 'test@example.com',
+          status: 'invalid' as UserStatus
+        })
+      ).toThrow('Status must be either "active" or "inactive"');
     });
 
     it('should handle partial updates', () => {
@@ -181,8 +196,7 @@ describe('Validator', () => {
         }
       ];
 
-      expect(() => userValidator.validateMany(users))
-        .toThrow('Invalid email format');
+      expect(() => userValidator.validateMany(users)).toThrow('Invalid email format');
     });
   });
 });
