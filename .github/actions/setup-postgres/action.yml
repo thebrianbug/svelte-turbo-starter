@@ -15,18 +15,18 @@ runs:
       run: |
         # Aggressive polling with shorter timeout
         timeout 5s bash -c 'until pg_isready -h localhost -p 5432 -U postgres; do sleep 0.1; done'
-        
+
         # Run database setup in parallel
         {
           psql -h localhost -c 'CREATE DATABASE test;' || true
         } &
-        
+
         {
           cd packages/db
           NODE_ENV=production npx drizzle-kit push:pg &
           wait $!
           cd ../..
         } &
-        
+
         # Wait for all background processes
         wait
