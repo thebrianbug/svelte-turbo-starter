@@ -5,7 +5,6 @@
 
 // Export database connection and utilities
 export * from './src/database';
-export * from './src/utils';
 
 // Export models and types
 export * from './src/models';
