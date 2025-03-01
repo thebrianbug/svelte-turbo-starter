@@ -1,32 +1,25 @@
 import { z } from 'zod';
 import type { UserStatus } from '../../schema';
+import { ValidationError } from '../base';
+
+const NAME_LENGTH_MESSAGE = 'Name must be between 1 and 100 characters';
 
 export const userSchema = z.object({
   name: z
     .string()
-    .min(1, { message: 'Name must be between 1 and 100 characters' })
-    .max(100, { message: 'Name must be between 1 and 100 characters' })
+    .min(1, { message: NAME_LENGTH_MESSAGE })
+    .max(100, { message: NAME_LENGTH_MESSAGE })
     .transform((str) => str.trim().replace(/\s+/g, ' ')),
   email: z
     .string()
-    .transform((str: string) => str.trim())
-    .pipe(z.string().email({ message: 'Invalid email format' }))
-    .transform((str: string) => str.toLowerCase()),
+    .transform((str) => str.trim().toLowerCase())
+    .pipe(z.string().email({ message: 'Invalid email format' })),
   status: z.enum(['active', 'inactive'] as const, {
     errorMap: () => ({ message: 'Status must be either "active" or "inactive"' })
   })
 });
 
 export type UserValidation = z.infer<typeof userSchema>;
-
-class ValidationError extends Error {
-  code: string;
-  constructor(message: string) {
-    super(message);
-    this.name = 'ValidationError';
-    this.code = 'VALIDATION_ERROR';
-  }
-}
 
 export const validateUser = (
   data: Partial<UserValidation>,
@@ -47,5 +40,13 @@ export const validateManyUsers = (
   users: Partial<UserValidation>[],
   options: { requireAll?: boolean } = {}
 ): Partial<UserValidation>[] => {
-  return users.map((user) => validateUser(user, options));
+  const schema = options.requireAll ? userSchema.array() : userSchema.partial().array();
+  try {
+    return schema.parse(users);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      throw new ValidationError(error.errors[0].message);
+    }
+    throw error;
+  }
 };
