@@ -1,5 +1,4 @@
 import { DatabaseError, DatabaseErrorCode } from '../config/operations';
-import { type UserStatus } from '../../schema';
 
 export class ValidationError extends DatabaseError {
   constructor(message: string) {
@@ -64,48 +63,3 @@ export class Validator<T extends Record<string, any>> {
     return dataArray.map((data) => this.validate(data, options));
   }
 }
-
-// Email validation
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const validateEmail = (email: unknown): void => {
-  if (typeof email !== 'string') {
-    throw new ValidationError('Email must be a string');
-  }
-  const trimmedEmail = email.trim();
-  if (!emailRegex.test(trimmedEmail)) {
-    throw new ValidationError('Invalid email format');
-  }
-};
-
-// Name validation
-const validateName = (name: unknown): void => {
-  if (typeof name !== 'string' || name.length < 1 || name.length > 100) {
-    throw new ValidationError('Name must be between 1 and 100 characters');
-  }
-};
-
-// Status validation
-const validateStatus = (status: unknown): status is UserStatus => {
-  if (typeof status !== 'string' || (status !== 'active' && status !== 'inactive')) {
-    throw new ValidationError('Status must be either "active" or "inactive"');
-  }
-  return true;
-};
-
-// Create user validator instance
-export const userValidator = new Validator({
-  email: {
-    validate: validateEmail,
-    transform: (email: string) => email.trim().toLowerCase(),
-    required: true
-  },
-  name: {
-    validate: validateName,
-    transform: (name: string) => name.trim().replace(/\s+/g, ' '),
-    required: true
-  },
-  status: {
-    validate: validateStatus,
-    required: true
-  }
-});
