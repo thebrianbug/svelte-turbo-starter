@@ -1,0 +1,12 @@
+name: PostgreSQL Service Configuration
+description: Sets up PostgreSQL service and environment variables
+
+runs:
+  using: composite
+  steps:
+    - name: Set PostgreSQL environment variables
+      shell: bash
+      run: |
+        echo "DATABASE_URL=postgres://postgres:postgres@localhost:5432/test" >> $GITHUB_ENV
+        echo "PGUSER=postgres" >> $GITHUB_ENV
+        echo "PGPASSWORD=postgres" >> $GITHUB_ENV

@@ -1,0 +1,26 @@
+name: Setup PostgreSQL
+description: Sets up PostgreSQL client and initializes test database
+
+runs:
+  using: composite
+  steps:
+    - name: Install PostgreSQL client
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y postgresql-client
+
+    - name: Wait for PostgreSQL
+      shell: bash
+      run: |
+        # Wait for PostgreSQL to be ready
+        timeout 20s bash -c 'until pg_isready -h localhost -p 5432 -U postgres; do sleep 1; done'
+
+    - name: Setup test database
+      shell: bash
+      run: |
+        # Create database if it doesn't exist
+        psql -h localhost -c 'CREATE DATABASE test;' || true
+
+        # Run migrations and seed data
+        cd packages/db && npx drizzle-kit push:pg && cd ../..

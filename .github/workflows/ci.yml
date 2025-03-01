@@ -11,36 +11,15 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+# Reusable job configuration for PostgreSQL service
 jobs:
   static-analysis:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      # Setup cache for node_modules
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
-
-      # Cache the node_modules folder
-      - name: Cache node_modules
-        uses: actions/cache@v4
-        id: node-cache
-        with:
-          path: |
-            node_modules
-            */*/node_modules
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
-
-      - name: Install dependencies
-        if: steps.node-cache.outputs.cache-hit != 'true'
-        run: npm ci
-
+      - uses: ./.github/actions/setup-node
       - name: Run format check
         run: npm run check
-
       - name: Run lint
         run: npm run lint
 
@@ -48,37 +27,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
-
-      # Reuse cached node_modules
-      - name: Cache node_modules
-        uses: actions/cache@v4
-        id: node-cache
-        with:
-          path: |
-            node_modules
-            */*/node_modules
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
-
-      - name: Install dependencies
-        if: steps.node-cache.outputs.cache-hit != 'true'
-        run: npm ci
-
+      - uses: ./.github/actions/setup-node
       - name: Run unit tests
         run: npm run test:unit
 
-  integration-test:
-    needs: [unit-test]
-    runs-on: ubuntu-latest
-    env:
-      DATABASE_URL: postgres://postgres:postgres@localhost:5432/test
-      PGUSER: postgres
-      PGPASSWORD: postgres
+  .postgres: &postgres_config
     services:
       postgres:
         image: postgres:16-alpine
@@ -94,111 +47,27 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+  integration-test:
+    needs: [unit-test]
+    runs-on: ubuntu-latest
+    <<: *postgres_config
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
-
-      # Reuse cached node_modules
-      - name: Cache node_modules
-        uses: actions/cache@v4
-        id: node-cache
-        with:
-          path: |
-            node_modules
-            */*/node_modules
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
-
-      - name: Install dependencies
-        if: steps.node-cache.outputs.cache-hit != 'true'
-        run: npm ci
-
-      - name: Install PostgreSQL client
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y postgresql-client
-
-      - name: Wait for PostgreSQL
-        run: |
-          # Wait for PostgreSQL to be ready
-          timeout 20s bash -c 'until pg_isready -h localhost -p 5432 -U postgres; do sleep 1; done'
-
-      - name: Setup test database
-        run: |
-          # Create database if it doesn't exist
-          psql -h localhost -c 'CREATE DATABASE test;' || true
-          
-          # Run migrations and seed data
-          cd packages/db && npx drizzle-kit push:pg && cd ../..
-
+      - uses: ./.github/actions/setup-node
+      - uses: ./.github/actions/postgres-service
+      - uses: ./.github/actions/setup-postgres
       - name: Run integration tests
         run: npm run test:integration
 
   e2e:
     needs: [static-analysis, unit-test, integration-test]
     runs-on: ubuntu-latest
-    env:
-      DATABASE_URL: postgres://postgres:postgres@localhost:5432/test
-      PGUSER: postgres
-      PGPASSWORD: postgres
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+    <<: *postgres_config
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
-
-      # Reuse cached node_modules
-      - name: Cache node_modules
-        uses: actions/cache@v4
-        id: node-cache
-        with:
-          path: |
-            node_modules
-            */*/node_modules
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
-
-      - name: Install dependencies
-        if: steps.node-cache.outputs.cache-hit != 'true'
-        run: npm ci
-
-      - name: Install PostgreSQL client
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y postgresql-client
-
-      - name: Wait for PostgreSQL
-        run: |
-          # Wait for PostgreSQL to be ready
-          timeout 20s bash -c 'until pg_isready -h localhost -p 5432 -U postgres; do sleep 1; done'
-
-      - name: Setup test database
-        run: |
-          # Create database if it doesn't exist
-          psql -h localhost -c 'CREATE DATABASE test;' || true
-          
-          # Run migrations and seed data
-          cd packages/db && npx drizzle-kit push:pg && cd ../..
+      - uses: ./.github/actions/setup-node
+      - uses: ./.github/actions/postgres-service
+      - uses: ./.github/actions/setup-postgres
 
       # Cache Playwright browsers
       - name: Cache Playwright browsers
