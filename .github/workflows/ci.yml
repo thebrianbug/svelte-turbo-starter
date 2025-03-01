@@ -11,7 +11,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
-# Reusable job configuration for PostgreSQL service
 jobs:
   static-analysis:
     runs-on: ubuntu-latest
@@ -31,55 +30,15 @@ jobs:
       - name: Run unit tests
         run: npm run test:unit
 
-  .postgres: &postgres_config
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
   integration-test:
     needs: [unit-test]
-    runs-on: ubuntu-latest
-    <<: *postgres_config
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-node
-      - uses: ./.github/actions/postgres-service
-      - uses: ./.github/actions/setup-postgres
-      - name: Run integration tests
-        run: npm run test:integration
+    uses: ./.github/workflows/postgres-job.yml
+    with:
+      run_command: npm run test:integration
 
   e2e:
     needs: [static-analysis, unit-test, integration-test]
-    runs-on: ubuntu-latest
-    <<: *postgres_config
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-node
-      - uses: ./.github/actions/postgres-service
-      - uses: ./.github/actions/setup-postgres
-
-      # Cache Playwright browsers
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        id: playwright-cache
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
-
-      - name: Install Playwright browsers
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps chromium
-
-      - name: Run e2e tests
-        run: npm run test:e2e
+    uses: ./.github/workflows/postgres-job.yml
+    with:
+      run_command: npm run test:e2e
+      needs_playwright: true
