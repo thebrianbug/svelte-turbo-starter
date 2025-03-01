@@ -9,6 +9,11 @@
     "./postcss.config.cjs": "./postcss.config.cjs",
     "./tailwind.config.js": "./tailwind.config.js"
   },
+  "scripts": {
+    "clean": "rimraf node_modules",
+    "format": "prettier --write .",
+    "check": "prettier --check ."
+  },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.7",
     "@tailwindcss/nesting": "^0.0.0-insiders.565cd3e",

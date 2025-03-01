@@ -5,10 +5,13 @@
   "main": "./index.ts",
   "types": "./index.ts",
   "scripts": {
-    "test": "vitest",
-    "test:watch": "vitest watch",
+    "test": "npm run test:unit -- run",
+    "test:unit": "vitest",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf node_modules",
+    "format": "prettier --write .",
+    "check": "prettier --check ."
   },
   "dependencies": {
     "@repo/db": "*"
