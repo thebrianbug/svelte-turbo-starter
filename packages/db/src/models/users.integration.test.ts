@@ -112,5 +112,140 @@ describe('User Integration Tests', () => {
           message: 'Invalid email format'
         });
     });
+
+    it('should validate name length', async () => {
+      const emptyNameUser = { ...testUser, name: '' };
+      const longNameUser = { ...testUser, name: 'a'.repeat(101) };
+      
+      await expect(userQueries.create(emptyNameUser))
+        .rejects
+        .toMatchObject({
+          code: DatabaseErrorCode.VALIDATION_ERROR,
+          message: 'Name must be between 1 and 100 characters'
+        });
+
+      await expect(userQueries.create(longNameUser))
+        .rejects
+        .toMatchObject({
+          code: DatabaseErrorCode.VALIDATION_ERROR,
+          message: 'Name must be between 1 and 100 characters'
+        });
+    });
+  });
+
+  describe('Bulk Operations', () => {
+    it('should create multiple users', async () => {
+      const users = [
+        testUser,
+        { ...testUser, email: 'test2@example.com', name: 'Test User 2' },
+        { ...testUser, email: 'test3@example.com', name: 'Test User 3' }
+      ];
+
+      const created = await userQueries.createMany(users);
+      expect(created).toHaveLength(3);
+      expect(created[0].email).toBe(testUser.email);
+      expect(created[1].email).toBe('test2@example.com');
+      expect(created[2].email).toBe('test3@example.com');
+    });
+
+    it('should handle empty array in createMany', async () => {
+      const created = await userQueries.createMany([]);
+      expect(created).toHaveLength(0);
+    });
+
+    it('should update multiple users by status', async () => {
+      // Create test users
+      await userQueries.create(testUser);
+      await userQueries.create({ ...testUser, email: 'test2@example.com' });
+      
+      // Update all active users
+      const updateCount = await userQueries.updateMany(
+        { status: 'active' },
+        { name: 'Updated Name' }
+      );
+      
+      expect(updateCount).toBe(2);
+      
+      // Verify updates
+      const activeUsers = await userQueries.findActive();
+      expect(activeUsers).toHaveLength(2);
+      activeUsers.forEach(user => {
+        expect(user.name).toBe('Updated Name');
+      });
+    });
+
+    it('should delete multiple users by status', async () => {
+      // Create test users
+      await userQueries.create(testUser);
+      await userQueries.create({ ...testUser, email: 'test2@example.com' });
+      
+      // Delete all active users
+      const deleteCount = await userQueries.deleteMany({ status: 'active' });
+      expect(deleteCount).toBe(2);
+      
+      // Verify deletions
+      const activeUsers = await userQueries.findActive();
+      expect(activeUsers).toHaveLength(0);
+    });
+  });
+
+  describe('Count Operations', () => {
+    it('should count all users', async () => {
+      await userQueries.create(testUser);
+      await userQueries.create({ ...testUser, email: 'test2@example.com' });
+      
+      const totalCount = await userQueries.count();
+      expect(totalCount).toBe(2);
+    });
+
+    it('should count users by status', async () => {
+      // Create active and inactive users
+      await userQueries.create(testUser);
+      const inactiveUser = await userQueries.create({ ...testUser, email: 'inactive@example.com' });
+      await userQueries.delete(inactiveUser.id);
+
+      const activeCount = await userQueries.count({ status: 'active' });
+      expect(activeCount).toBe(1);
+
+      const inactiveCount = await userQueries.count({ status: 'inactive' });
+      expect(inactiveCount).toBe(1);
+    });
+  });
+
+  describe('Name Transformation', () => {
+    it('should properly transform names', async () => {
+      const userWithSpaces = {
+        ...testUser,
+        name: '  Test   User  With   Spaces  '
+      };
+
+      const created = await userQueries.create(userWithSpaces);
+      expect(created.name).toBe('Test User With Spaces');
+    });
+  });
+
+  describe('Status Updates and Deletion Edge Cases', () => {
+    it('should handle direct status updates', async () => {
+      const user = await userQueries.create(testUser);
+      
+      // Direct update to inactive
+      const updated = await userQueries.update(user.id, { status: 'inactive' });
+      expect(updated?.status).toBe('inactive');
+    });
+
+    it('should handle deleting already inactive user', async () => {
+      const user = await userQueries.create(testUser);
+      
+      // First deletion should succeed
+      await userQueries.delete(user.id);
+      
+      // Second deletion should fail
+      await expect(userQueries.delete(user.id))
+        .rejects
+        .toMatchObject({
+          code: DatabaseErrorCode.NOT_FOUND,
+          message: 'User not found or already inactive'
+        });
+    });
   });
 });

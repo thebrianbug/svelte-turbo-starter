@@ -29,16 +29,27 @@ export const userQueries = {
 
   create: async (newUser: NewUser): Promise<User> => {
     return dbOperation(async () => {
-      // Validate required fields
-      if (!newUser.email || !newUser.name || !newUser.status) {
-        throw new DatabaseError('Missing required fields', DatabaseErrorCode.VALIDATION_ERROR);
+      try {
+        // Validate input format first
+        if (newUser.name !== undefined) {
+          userValidation.name(newUser.name);
+        }
+        if (newUser.email !== undefined) {
+          userValidation.email(newUser.email);
+        }
+        if (newUser.status !== undefined) {
+          userValidation.status(newUser.status);
+        }
+      } catch (error) {
+        if (error instanceof DatabaseError) {
+          throw error;
+        }
+        throw new DatabaseError('Validation error', DatabaseErrorCode.VALIDATION_ERROR);
       }
 
-      // Validate and transform input
-      userValidation.email(newUser.email);
-      userValidation.name(newUser.name);
-      if (!userValidation.status(newUser.status)) {
-        throw new DatabaseError('Invalid status', DatabaseErrorCode.VALIDATION_ERROR);
+      // Check required fields after validation
+      if (!newUser.email || !newUser.name || !newUser.status) {
+        throw new DatabaseError('Missing required fields', DatabaseErrorCode.VALIDATION_ERROR);
       }
 
       const transformedUser = {
@@ -54,6 +65,11 @@ export const userQueries = {
 
   createMany: async (newUsers: NewUser[]): Promise<User[]> => {
     return dbOperation(async () => {
+      // Handle empty array case
+      if (newUsers.length === 0) {
+        return [];
+      }
+
       // Validate and transform all users first
       const transformedUsers = newUsers.map(user => {
         if (!user.email || !user.name || !user.status) {
