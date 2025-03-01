@@ -8,6 +8,8 @@ export default defineConfig({
       './src/database/test-teardown.ts'
     ],
     testTimeout: 5000,
+    include: ['src/**/*.integration.test.ts'],
+    exclude: ['src/**/!(*integration).test.ts'],
     poolOptions: {
       threads: {
         singleThread: true,
