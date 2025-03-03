@@ -14,12 +14,35 @@ export type DatabaseConfig = {
 
 export function getDatabaseConfig(): DatabaseConfig {
   const isTest = process.env.NODE_ENV === 'test';
+  const defaultDb = isTest ? 'svelte_turbo_test_db' : 'svelte_turbo_db';
 
-  // Get database URL from environment or use default
-  const url =
-    process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@localhost:5432/svelte_turbo_db';
+  // Construct URL from PGUSER/PGPASSWORD if available
+  const constructUrlFromCredentials = () => {
+    const user = process.env.PGUSER ?? 'postgres';
+    const password = process.env.PGPASSWORD ?? 'postgres';
+    return `postgresql://${user}:${password}@localhost:5432/${defaultDb}`;
+  };
 
-  // If in test environment and URL doesn't include a specific database, append test database name
+  // Get database URL from environment or construct from credentials
+  let url = process.env.DATABASE_URL;
+
+  // Handle masked DATABASE_URL
+  if (url?.includes('***')) {
+    url = constructUrlFromCredentials();
+  }
+
+  // Handle invalid or missing DATABASE_URL
+  try {
+    if (url) {
+      new URL(url); // Validate URL format
+    } else {
+      url = constructUrlFromCredentials();
+    }
+  } catch {
+    url = constructUrlFromCredentials();
+  }
+
+  // If in test environment and URL doesn't include test database, append test database name
   const finalUrl =
     isTest && !url.includes('svelte_turbo_test_db')
       ? url.replace(/\/([^/]*)$/, '/svelte_turbo_test_db')
