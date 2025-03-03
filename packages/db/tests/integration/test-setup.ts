@@ -1,5 +1,16 @@
+import 'dotenv/config';
+
 // Type-safe environment variable checking
 const REQUIRED_ENV_VARS = ['DATABASE_URL', 'PGUSER', 'PGPASSWORD'] as const;
+
+// Log all environment variables for debugging
+console.log('All environment variables:', {
+  DATABASE_URL: process.env.DATABASE_URL,
+  PGUSER: process.env.PGUSER,
+  PGPASSWORD: process.env.PGPASSWORD,
+  NODE_ENV: process.env.NODE_ENV,
+  CI: process.env.CI
+});
 
 // Check required environment variables
 for (const name of REQUIRED_ENV_VARS) {
