@@ -23,7 +23,7 @@
     },
     "test:integration": {
       "inputs": ["src/**/*.integration.test.{js,ts}", "tests/**/*.integration.test.{js,ts}"],
-      "env": ["DATABASE_URL", "PGUSER", "PGPASSWORD", "NODE_ENV", "CI"]
+      "env": ["DATABASE_URL", "NODE_ENV", "CI"]
     },
     "check": {
       "dependsOn": ["^check"]
