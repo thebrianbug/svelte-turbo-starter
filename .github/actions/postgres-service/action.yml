@@ -7,6 +7,14 @@ runs:
     - name: Set PostgreSQL environment variables
       shell: bash
       run: |
-        echo "DATABASE_URL=postgres://postgres:postgres@localhost:5432/test" >> $GITHUB_ENV
-        echo "PGUSER=postgres" >> $GITHUB_ENV
-        echo "PGPASSWORD=postgres" >> $GITHUB_ENV
+        # Build DATABASE_URL in parts to avoid secret masking issues
+        DB_PROTOCOL="postgres"
+        DB_USER="postgres"
+        DB_PASS="postgres"
+        DB_HOST="localhost"
+        DB_PORT="5432"
+        DB_NAME="svelte_turbo_test_db"
+
+        echo "DATABASE_URL=${DB_PROTOCOL}://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_NAME}" >> $GITHUB_ENV
+        echo "PGUSER=${DB_USER}" >> $GITHUB_ENV
+        echo "PGPASSWORD=${DB_PASS}" >> $GITHUB_ENV
