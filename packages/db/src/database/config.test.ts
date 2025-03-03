@@ -8,7 +8,7 @@ describe('Database Configuration', () => {
     process.env.NODE_ENV = 'development';
     const config = getDatabaseConfig();
     process.env.NODE_ENV = originalEnv;
-    expect(config.url).toBe('postgres://postgres:postgres@localhost:5432/svelte_turbo_db');
+    expect(config.url).toBe('postgresql://postgres:postgres@localhost:5432/svelte_turbo_db');
     expect(config.pool.max).toBe(10);
   });
 
@@ -16,9 +16,9 @@ describe('Database Configuration', () => {
     const originalEnv = process.env.NODE_ENV;
     const originalUrl = process.env.DATABASE_URL;
     process.env.NODE_ENV = 'development';
-    process.env.DATABASE_URL = 'postgres://test:test@localhost:5432/test_db';
+    process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test_db';
     const config = getDatabaseConfig();
-    expect(config.url).toBe('postgres://test:test@localhost:5432/test_db');
+    expect(config.url).toBe('postgresql://test:test@localhost:5432/test_db');
     // Reset env
     process.env.NODE_ENV = originalEnv;
     process.env.DATABASE_URL = originalUrl;

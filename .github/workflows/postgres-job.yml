@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5 # Prevent hanging jobs
     env:
-      DATABASE_URL: postgres://postgres:postgres@localhost:5432/svelte_turbo_test_db
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/svelte_turbo_test_db
       PGUSER: postgres
       PGPASSWORD: postgres
       NODE_ENV: test
@@ -43,7 +43,7 @@ jobs:
 
       - name: Wait for PostgreSQL and setup database
         env:
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/svelte_turbo_test_db
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/svelte_turbo_test_db
           PGUSER: postgres
           PGPASSWORD: postgres
         run: |
@@ -79,7 +79,7 @@ jobs:
         env:
           NODE_ENV: test
           CI: true
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/svelte_turbo_test_db
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/svelte_turbo_test_db
           PGUSER: postgres
           PGPASSWORD: postgres
         run: |
