@@ -24,7 +24,7 @@ const dbCredentials = process.env.DATABASE_URL
     };
 
 export default {
-  schema: './src/models/schema.ts',
+  schema: './src/domains/users/schema/schema.ts',
   out: './drizzle',
   driver: 'pg',
   dbCredentials
