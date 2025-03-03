@@ -6,6 +6,6 @@
       "@svelte-turbo/db/*": ["../db/*"]
     }
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "*.ts"],
   "exclude": ["dist", "build", "node_modules"]
 }

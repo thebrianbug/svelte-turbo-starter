@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { expect, test } from 'vitest';
+
 import MyCounterButton from './MyCounterButton.svelte';
 
 test('MyCounterButton', async () => {

@@ -1,6 +1,7 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { db, client, checkDatabaseConnection } from './index';
 import { sql } from 'drizzle-orm';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+
+import { db, client, checkDatabaseConnection } from './index';
 
 describe('Database Client', () => {
   beforeAll(async () => {

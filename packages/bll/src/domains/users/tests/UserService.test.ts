@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+
 import { UserService } from '../UserService';
+
 import type { IUserRepository } from '@svelte-turbo/db/src/domains/users/interfaces/IUserRepository';
 import type { User } from '@svelte-turbo/db/src/domains/users/models/User';
 

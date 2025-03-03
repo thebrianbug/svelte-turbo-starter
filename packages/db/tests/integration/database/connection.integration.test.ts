@@ -1,6 +1,7 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { checkDatabaseConnection, getDatabaseConfig } from '../../../src/database';
 import postgres from 'postgres';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+
+import { checkDatabaseConnection, getDatabaseConfig } from '../../../src/database';
 import { setup, teardown } from '../test-utils/database';
 
 const databaseConfig = getDatabaseConfig();
@@ -75,7 +76,7 @@ describe('Database Connection', () => {
     const maxConnections = Math.min(5, databaseConfig.pool.max); // Stay within configured pool limits
     const concurrentChecks = Array(maxConnections)
       .fill(null)
-      .map(() => checkDatabaseConnection());
+      .map(async () => checkDatabaseConnection());
 
     const results = await Promise.all(concurrentChecks);
     expect(results.every((result) => result === true)).toBe(true);

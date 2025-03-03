@@ -1,9 +1,11 @@
-import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest';
-import { userQueries } from '../../../../src/domains/users/repository';
-import type { NewUser } from '../../../../src/domains/users/schema';
-import { setup, teardown, cleanBetweenTests } from '../../test-utils/database';
 import { PostgresError } from 'postgres';
+import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest';
 import { ZodError } from 'zod';
+
+import { userQueries } from '../../../../src/domains/users/repository';
+import { setup, teardown, cleanBetweenTests } from '../../test-utils/database';
+
+import type { NewUser } from '../../../../src/domains/users/schema';
 
 describe('User Integration Tests', () => {
   beforeAll(async () => {

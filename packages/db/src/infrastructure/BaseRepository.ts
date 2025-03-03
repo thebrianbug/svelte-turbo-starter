@@ -1,7 +1,10 @@
-import { PostgresError } from 'postgres';
 import { sql } from 'drizzle-orm';
-import type { PgTable } from 'drizzle-orm/pg-core';
+import { PostgresError } from 'postgres';
+
 import { db } from '../database';
+
+import type { PgTable } from 'drizzle-orm/pg-core';
+
 
 export class DatabaseError extends Error {
   constructor(
