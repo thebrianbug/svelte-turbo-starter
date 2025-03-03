@@ -1,1 +1,1 @@
-export { UserService } from './src/domains/users/UserService';
+export { UserService } from './src/domains/users/user-service';

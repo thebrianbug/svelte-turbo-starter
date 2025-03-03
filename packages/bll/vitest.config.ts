@@ -14,7 +14,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@svelte-turbo/db': '/home/brianbug/source/svelte-turbo-starter/packages/db'
+      '@repo/db': '/home/brianbug/source/svelte-turbo-starter/packages/db'
     }
   }
 });

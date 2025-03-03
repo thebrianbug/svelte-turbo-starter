@@ -3,7 +3,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@svelte-turbo/db/*": ["../db/*"]
+      "@repo/db/*": ["../db/*"]
     }
   },
   "include": ["src/**/*", "*.ts"],

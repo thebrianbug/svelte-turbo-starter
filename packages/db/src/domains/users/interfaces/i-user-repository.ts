@@ -1,4 +1,4 @@
-import type { User, NewUser, UserStatus } from '../models/User';
+import type { User, NewUser, UserStatus } from '../models/user';
 
 export type IUserRepository = {
   findById(id: number): Promise<User | undefined>;

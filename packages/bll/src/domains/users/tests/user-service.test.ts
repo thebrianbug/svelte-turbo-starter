@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { UserService } from '../user-service';
 
-import type { IUserRepository } from '@svelte-turbo/db/src/domains/users/interfaces/i-user-repository';
-import type { User } from '@svelte-turbo/db/src/domains/users/models/user';
+import type { IUserRepository } from '@repo/db/src/domains/users/interfaces/i-user-repository';
+import type { User } from '@repo/db/src/domains/users/models/user';
 
 const TEST_DATA = {
   EMAIL: 'test@example.com',

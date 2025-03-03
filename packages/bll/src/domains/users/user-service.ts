@@ -1,5 +1,5 @@
-import type { IUserRepository } from '@svelte-turbo/db/src/domains/users/interfaces/IUserRepository';
-import type { User } from '@svelte-turbo/db/src/domains/users/models/User';
+import type { IUserRepository } from '@repo/db/src/domains/users/interfaces/i-user-repository';
+import type { User } from '@repo/db/src/domains/users/models/user';
 
 type CreateUserData = {
   email: string;
