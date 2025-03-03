@@ -1,15 +1,22 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { UserService } from '../UserService';
+import { UserService } from '../user-service';
 
-import type { IUserRepository } from '@svelte-turbo/db/src/domains/users/interfaces/IUserRepository';
-import type { User } from '@svelte-turbo/db/src/domains/users/models/User';
+import type { IUserRepository } from '@svelte-turbo/db/src/domains/users/interfaces/i-user-repository';
+import type { User } from '@svelte-turbo/db/src/domains/users/models/user';
+
+const TEST_DATA = {
+  EMAIL: 'test@example.com',
+  NAME: 'Test User',
+  UPDATED_NAME: 'Updated Name',
+  EXISTING_EMAIL: 'existing@example.com'
+} as const;
 
 describe('UserService', () => {
   const createMockUser = (override: Partial<User> = {}): User => ({
     id: 1,
-    email: 'test@example.com',
-    name: 'Test User',
+    email: TEST_DATA.EMAIL,
+    name: TEST_DATA.NAME,
     status: 'active',
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -38,8 +45,8 @@ describe('UserService', () => {
   describe('createUser', () => {
     it('should create a new user', async () => {
       const userData = {
-        email: 'test@example.com',
-        name: 'Test User'
+        email: TEST_DATA.EMAIL,
+        name: TEST_DATA.NAME
       };
 
       const expectedUser = createMockUser({
@@ -61,8 +68,8 @@ describe('UserService', () => {
 
     it('should create a new user with custom status', async () => {
       const userData = {
-        email: 'test@example.com',
-        name: 'Test User',
+        email: TEST_DATA.EMAIL,
+        name: TEST_DATA.NAME,
         status: 'inactive' as const
       };
 
@@ -81,8 +88,8 @@ describe('UserService', () => {
 
     it('should throw error if user with email already exists', async () => {
       const userData = {
-        email: 'existing@example.com',
-        name: 'Test User'
+        email: TEST_DATA.EXISTING_EMAIL,
+        name: TEST_DATA.NAME
       };
 
       vi.mocked(userRepository.findByEmail).mockResolvedValue(
@@ -121,7 +128,7 @@ describe('UserService', () => {
     it('should update user details', async () => {
       const userId = 1;
       const updateData = {
-        name: 'Updated Name'
+        name: TEST_DATA.UPDATED_NAME
       };
 
       const existingUser = createMockUser({
@@ -146,7 +153,7 @@ describe('UserService', () => {
     it('should throw error if user not found', async () => {
       vi.mocked(userRepository.findById).mockResolvedValue(undefined);
 
-      await expect(userService.updateUser(1, { name: 'New Name' })).rejects.toThrow(
+      await expect(userService.updateUser(1, { name: TEST_DATA.UPDATED_NAME })).rejects.toThrow(
         'User not found'
       );
     });

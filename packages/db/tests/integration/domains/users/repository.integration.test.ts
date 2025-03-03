@@ -7,6 +7,19 @@ import { setup, teardown, cleanBetweenTests } from '../../test-utils/database';
 
 import type { NewUser } from '../../../../src/domains/users/schema';
 
+const TEST_EMAILS = {
+  MAIN: 'test@example.com',
+  SECONDARY: 'test2@example.com',
+  THIRD: 'test3@example.com',
+  INACTIVE: 'inactive@example.com'
+} as const;
+
+const TEST_NAMES = {
+  UPDATED: 'Updated Name',
+  SECOND_USER: 'Test User 2',
+  THIRD_USER: 'Test User 3'
+} as const;
+
 describe('User Integration Tests', () => {
   beforeAll(async () => {
     await setup({ timeout: 10, migrationsPath: './drizzle' });
@@ -22,7 +35,7 @@ describe('User Integration Tests', () => {
 
   const testUser: NewUser = {
     name: 'Test User',
-    email: 'test@example.com',
+    email: TEST_EMAILS.MAIN,
     status: 'active'
   };
 
@@ -49,7 +62,7 @@ describe('User Integration Tests', () => {
 
       // Update
       const updatedName = 'Updated Name';
-      const updated = await userQueries.update(created.id, { name: updatedName });
+      const updated = await userQueries.update(created.id, { name: TEST_NAMES.UPDATED });
       expect(updated).toBeDefined();
       expect(updated?.name).toBe(updatedName);
       expect(updated?.updatedAt).not.toBe(created.updatedAt);
@@ -68,7 +81,7 @@ describe('User Integration Tests', () => {
       const activeUser = await userQueries.create(testUser);
       const inactiveUser = await userQueries.create({
         ...testUser,
-        email: 'inactive@example.com'
+        email: TEST_EMAILS.INACTIVE
       });
       await userQueries.softDelete(inactiveUser.id);
 
@@ -107,15 +120,15 @@ describe('User Integration Tests', () => {
     it('should create multiple users', async () => {
       const users = [
         testUser,
-        { ...testUser, email: 'test2@example.com', name: 'Test User 2' },
-        { ...testUser, email: 'test3@example.com', name: 'Test User 3' }
+        { ...testUser, email: TEST_EMAILS.SECONDARY, name: TEST_NAMES.SECOND_USER },
+        { ...testUser, email: TEST_EMAILS.THIRD, name: TEST_NAMES.THIRD_USER }
       ];
 
       const created = await userQueries.createMany(users);
       expect(created).toHaveLength(3);
       expect(created[0].email).toBe(testUser.email);
-      expect(created[1].email).toBe('test2@example.com');
-      expect(created[2].email).toBe('test3@example.com');
+      expect(created[1].email).toBe(TEST_EMAILS.SECONDARY);
+      expect(created[2].email).toBe(TEST_EMAILS.THIRD);
     });
 
     it('should handle empty array in createMany', async () => {
@@ -125,11 +138,11 @@ describe('User Integration Tests', () => {
 
     it('should update multiple users by status', async () => {
       await userQueries.create(testUser);
-      await userQueries.create({ ...testUser, email: 'test2@example.com' });
+      await userQueries.create({ ...testUser, email: TEST_EMAILS.SECONDARY });
 
       const updateCount = await userQueries.updateMany(
         { status: 'active' },
-        { name: 'Updated Name' }
+        { name: TEST_NAMES.UPDATED }
       );
 
       expect(updateCount).toBe(2);
@@ -137,13 +150,13 @@ describe('User Integration Tests', () => {
       const activeUsers = await userQueries.findActive();
       expect(activeUsers).toHaveLength(2);
       activeUsers.forEach((user) => {
-        expect(user.name).toBe('Updated Name');
+        expect(user.name).toBe(TEST_NAMES.UPDATED);
       });
     });
 
     it('should delete multiple users by status', async () => {
       await userQueries.create(testUser);
-      await userQueries.create({ ...testUser, email: 'test2@example.com' });
+      await userQueries.create({ ...testUser, email: TEST_EMAILS.SECONDARY });
 
       const deleteCount = await userQueries.softDeleteMany({ status: 'active' });
       expect(deleteCount).toBe(2);
@@ -164,7 +177,7 @@ describe('User Integration Tests', () => {
 
     it('should count users by status', async () => {
       await userQueries.create(testUser);
-      const inactiveUser = await userQueries.create({ ...testUser, email: 'inactive@example.com' });
+      const inactiveUser = await userQueries.create({ ...testUser, email: TEST_EMAILS.INACTIVE });
       await userQueries.softDelete(inactiveUser.id);
 
       const activeCount = await userQueries.count({ status: 'active' });
