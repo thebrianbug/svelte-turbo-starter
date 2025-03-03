@@ -4,13 +4,28 @@ import 'dotenv/config';
 const REQUIRED_ENV_VARS = ['DATABASE_URL', 'PGUSER', 'PGPASSWORD'] as const;
 
 // Log all environment variables for debugging
-console.log('All environment variables:', {
-  DATABASE_URL: process.env.DATABASE_URL,
-  PGUSER: process.env.PGUSER,
-  PGPASSWORD: process.env.PGPASSWORD,
-  NODE_ENV: process.env.NODE_ENV,
-  CI: process.env.CI
-});
+console.log('Environment variables state:');
+console.log('- DATABASE_URL:', process.env.DATABASE_URL);
+if (process.env.DATABASE_URL) {
+  console.log(
+    '  - Starts with postgresql://?',
+    process.env.DATABASE_URL.startsWith('postgresql://')
+  );
+  try {
+    const url = new URL(process.env.DATABASE_URL);
+    console.log('  - Can be parsed as URL:', true);
+    console.log('  - Host:', url.hostname);
+    console.log('  - Username:', url.username);
+    console.log('  - Database:', url.pathname.slice(1));
+  } catch (e) {
+    console.log('  - Can be parsed as URL:', false);
+    console.log('  - Parse error:', e instanceof Error ? e.message : String(e));
+  }
+}
+console.log('- PGUSER:', process.env.PGUSER);
+console.log('- PGPASSWORD:', process.env.PGPASSWORD ? '[present]' : '[missing]');
+console.log('- NODE_ENV:', process.env.NODE_ENV);
+console.log('- CI:', process.env.CI);
 
 // Check required environment variables
 for (const name of REQUIRED_ENV_VARS) {

@@ -53,7 +53,7 @@ describe('Database Connection', () => {
     let invalidClient: postgres.Sql | null = null;
     try {
       // Create a new client with invalid credentials
-      invalidClient = postgres('postgres://invalid:invalid@localhost:5432/invalid_db', {
+      invalidClient = postgres('postgresql://invalid:invalid@localhost:5432/invalid_db', {
         ...databaseConfig.pool,
         max: 1,
         idle_timeout: 0

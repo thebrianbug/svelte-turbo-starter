@@ -14,9 +14,17 @@ export type DatabaseConfig = {
 
 export function getDatabaseConfig(): DatabaseConfig {
   const isTest = process.env.NODE_ENV === 'test';
+
+  // If we have separate PGUSER and PGPASSWORD, construct the URL
+  let url = process.env.DATABASE_URL;
+  if (!url?.startsWith('postgresql://') && process.env.PGUSER && process.env.PGPASSWORD) {
+    const dbName = isTest ? 'svelte_turbo_test_db' : 'svelte_turbo_db';
+    url = `postgresql://${process.env.PGUSER}:${process.env.PGPASSWORD}@localhost:5432/${dbName}`;
+  }
+
   return {
     url:
-      process.env.DATABASE_URL ??
+      url ??
       `postgresql://postgres:postgres@localhost:5432/${isTest ? 'svelte_turbo_test_db' : 'svelte_turbo_db'}`,
     pool: {
       max: isTest ? 3 : 10,
