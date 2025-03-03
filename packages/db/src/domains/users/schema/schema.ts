@@ -1,5 +1,4 @@
 import { pgTable, serial, text, timestamp, pgEnum } from 'drizzle-orm/pg-core';
-import type { UserStatus } from '../models/User';
 
 // User status enum
 export const userStatusEnum = pgEnum('user_status', ['active', 'inactive']);
