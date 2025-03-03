@@ -36,9 +36,11 @@ async function resetDatabase(timeoutMs: number): Promise<void> {
       client.unsafe(`
         DO $$ 
         BEGIN
-          IF EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'users') THEN
-            TRUNCATE TABLE "users" CASCADE;
-          END IF;
+          -- Drop tables if they exist
+          DROP TABLE IF EXISTS "users" CASCADE;
+          
+          -- Drop enum type if it exists
+          DROP TYPE IF EXISTS "user_status" CASCADE;
         END $$;
       `),
       new Promise((_, reject) =>
