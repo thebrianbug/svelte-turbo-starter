@@ -32,10 +32,8 @@ type DatabaseOptions = {
  */
 async function resetDatabase(timeoutMs: number): Promise<void> {
   try {
-    // Drop migrations table and truncate all tables
     await Promise.race([
       client.unsafe(`
-        DROP TABLE IF EXISTS "__drizzle_migrations" CASCADE;
         DO $$ 
         BEGIN
           IF EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'users') THEN
