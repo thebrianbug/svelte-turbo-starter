@@ -3,7 +3,7 @@ import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest';
 import { ZodError } from 'zod';
 
 import { userQueries } from '../../../../src/domains/users/repository';
-import { setup, teardown, cleanBetweenTests } from '../../test-utils/database';
+import { setup, teardown, cleanTable, TABLES } from '../../test-utils/database';
 
 import type { NewUser } from '../../../../src/domains/users/schema';
 
@@ -22,15 +22,15 @@ const TEST_NAMES = {
 
 describe('User Integration Tests', () => {
   beforeAll(async () => {
-    await setup({ timeout: 10, migrationsPath: './drizzle' });
+    await setup();
   });
 
   beforeEach(async () => {
-    await cleanBetweenTests();
+    await cleanTable(TABLES.USERS);
   });
 
   afterAll(async () => {
-    await teardown({ timeout: 10 });
+    await teardown();
   });
 
   const testUser: NewUser = {

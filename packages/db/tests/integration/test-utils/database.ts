@@ -1,135 +1,77 @@
 import path from 'path';
-
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
-
+import { sql } from 'drizzle-orm';
 import { db, client } from '../../../src/database';
 
-class DatabaseSetupError extends Error {
-  constructor(
-    message: string,
-    public originalError?: unknown
-  ) {
-    super(message);
-    this.name = 'DatabaseSetupError';
-  }
-}
+// Define known tables in the system
+export const TABLES = {
+  USERS: 'users'
+  // Add other tables as they are created
+} as const;
 
-type DatabaseOptions = {
-  /**
-   * Timeout in seconds for database operations
-   * @default 10
-   */
-  timeout?: number;
-  /**
-   * Path to migrations folder
-   * @default './drizzle'
-   */
-  migrationsPath?: string;
-};
+// Allow string values for table names
+export type TableName = string;
 
 /**
- * Resets the database state for testing
+ * Sets up the database for testing by running migrations
  */
-async function resetDatabase(timeoutMs: number): Promise<void> {
+export async function setup(): Promise<void> {
   try {
-    await Promise.race([
-      client.unsafe(`
-        DO $$ 
-        BEGIN
-          -- Drop tables if they exist
-          DROP TABLE IF EXISTS "users" CASCADE;
-          
-          -- Drop enum type if it exists
-          DROP TYPE IF EXISTS "user_status" CASCADE;
-        END $$;
-      `),
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Database reset timeout')), timeoutMs)
-      )
-    ]);
-
-    // Add a delay to ensure reset has completed
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    const migrationsPath = path.resolve(process.cwd(), './drizzle');
+    await migrate(db, { migrationsFolder: migrationsPath });
+    // Small delay to ensure migrations complete
+    await new Promise((resolve) => setTimeout(resolve, 100));
   } catch (error) {
-    if (error instanceof Error && error.message === 'Database reset timeout') {
-      throw new DatabaseSetupError('Database reset timed out');
-    }
-    throw new DatabaseSetupError('Database reset failed', error);
+    console.error('Database setup failed:', error);
+    await teardown();
+    throw error;
   }
 }
 
-export async function setup({
-  timeout = 15, // Match GitHub Actions connection timeout
-  migrationsPath = './drizzle'
-}: DatabaseOptions = {}): Promise<void> {
-  const timeoutMs = timeout * 1000;
-
+/**
+ * Cleans a specific table while handling foreign key constraints
+ */
+export async function cleanTable(tableName: TableName): Promise<void> {
   try {
-    // First reset database state
-    await resetDatabase(timeoutMs);
+    await db.transaction(async (tx) => {
+      // Temporarily disable foreign key constraints
+      await tx.execute(sql`SET CONSTRAINTS ALL DEFERRED`);
+      await tx.execute(sql`TRUNCATE TABLE ${sql.identifier(tableName)} CASCADE`);
+    });
+  } catch (error) {
+    console.error(`Failed to clean table ${tableName}:`, error);
+    throw error;
+  }
+}
 
-    // Then run migrations with absolute path and timeout
-    const absoluteMigrationsPath = path.resolve(process.cwd(), migrationsPath);
-    const migrationPromise = migrate(db, { migrationsFolder: absoluteMigrationsPath });
-
-    try {
-      await Promise.race([
-        migrationPromise,
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Migration timeout')), timeoutMs)
-        )
-      ]);
-
-      // Add a delay to ensure migrations have completed
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    } catch (error) {
-      if (error instanceof Error && error.message === 'Migration timeout') {
-        throw new DatabaseSetupError('Database migration timed out');
+/**
+ * Cleans multiple related tables in a single transaction
+ */
+export async function cleanRelatedTables(
+  primaryTable: TableName,
+  relatedTables: TableName[]
+): Promise<void> {
+  try {
+    await db.transaction(async (tx) => {
+      await tx.execute(sql`SET CONSTRAINTS ALL DEFERRED`);
+      for (const table of [...relatedTables, primaryTable]) {
+        await tx.execute(sql`TRUNCATE TABLE ${sql.identifier(table)} CASCADE`);
       }
-      throw new DatabaseSetupError('Migration failed', error);
-    }
+    });
   } catch (error) {
-    // Ensure teardown happens if setup fails
-    try {
-      await teardown({ timeout: 15 }); // Match GitHub Actions connection timeout
-    } catch (teardownError) {
-      console.error('Teardown failed during setup error handling:', teardownError);
-    }
-    throw error instanceof DatabaseSetupError
-      ? error
-      : new DatabaseSetupError('Setup failed', error);
-  }
-}
-
-export async function teardown({ timeout = 15 }: DatabaseOptions = {}): Promise<void> {
-  // Match GitHub Actions connection timeout
-  const timeoutMs = timeout * 1000;
-
-  try {
-    // Clean up database state before closing connection
-    try {
-      await resetDatabase(timeoutMs);
-    } catch (error) {
-      console.warn('Failed to reset database during teardown:', error);
-    }
-
-    // End the database connection
-    const endPromise = client.end();
-    await Promise.race([
-      endPromise,
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Teardown timeout')), timeoutMs))
-    ]);
-  } catch (error) {
-    if (error instanceof Error && error.message === 'Teardown timeout') {
-      throw new DatabaseSetupError('Database teardown timed out');
-    }
-    throw new DatabaseSetupError('Teardown failed', error);
+    console.error(`Failed to clean related tables for ${primaryTable}:`, error);
+    throw error;
   }
 }
 
 /**
- * Utility function to reset database between tests
+ * Closes database connection during teardown
  */
-export async function cleanBetweenTests(): Promise<void> {
-  await resetDatabase(5000); // Match GitHub Actions health check timeout
+export async function teardown(): Promise<void> {
+  try {
+    await client.end();
+  } catch (error) {
+    console.error('Database teardown failed:', error);
+    throw error;
+  }
 }
