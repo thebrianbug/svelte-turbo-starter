@@ -14,7 +14,7 @@
     "test:integration": "vitest run --config ./vitest.integration.config.ts",
     "clean": "rimraf node_modules",
     "format": "prettier --write .",
-    "check": "prettier --check .",
+    "check": "tsc --noEmit && prettier --check .",
     "lint": "eslint ."
   },
   "dependencies": {

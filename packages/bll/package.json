@@ -9,10 +9,9 @@
     "test": "npm run test:unit -- run",
     "test:unit": "vitest run",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit",
     "clean": "rimraf node_modules",
     "format": "prettier --write .",
-    "check": "prettier --check ."
+    "check": "tsc --noEmit && prettier --check ."
   },
   "dependencies": {
     "@repo/db": "*"
