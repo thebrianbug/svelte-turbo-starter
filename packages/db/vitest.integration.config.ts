@@ -13,6 +13,6 @@ export default defineConfig({
       }
     },
     reporters: ['default'],
-    silent: true
+    silent: false
   }
 });
