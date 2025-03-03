@@ -18,5 +18,5 @@ runs:
 
         # Run database migrations
         cd packages/db
-        NODE_ENV=test DATABASE_URL="postgres://postgres:postgres@localhost:5432/svelte_turbo_test_db" npx drizzle-kit push:pg
+        NODE_ENV=test npx drizzle-kit push:pg
         cd ../..
