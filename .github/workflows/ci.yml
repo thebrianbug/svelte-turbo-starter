@@ -41,7 +41,7 @@ jobs:
       run_command: npm run test:integration
 
   e2e:
-    needs: [static-analysis, unit-test]
+    needs: [unit-test]
     concurrency:
       group: ${{ github.workflow }}-e2e-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: true
