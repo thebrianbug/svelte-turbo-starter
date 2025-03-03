@@ -30,9 +30,9 @@ jobs:
           - 5432:5432
         options: >-
           --health-cmd pg_isready
-          --health-interval 2s
-          --health-timeout 2s
-          --health-retries 3
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-node
@@ -50,8 +50,8 @@ jobs:
           echo "Environment variables before database setup:"
           env | sort
 
-          # Aggressive polling with shorter timeout
-          timeout 5s bash -c 'until pg_isready -h localhost -p 5432 -U postgres; do sleep 0.1; done'
+          # Wait for PostgreSQL to be ready with increased timeout
+          timeout 15s bash -c 'until pg_isready -h localhost -p 5432 -U postgres; do sleep 0.5; done'
 
           # Drop and recreate database to ensure clean state
           psql -h localhost -U postgres -c "DROP DATABASE IF EXISTS svelte_turbo_test_db;"

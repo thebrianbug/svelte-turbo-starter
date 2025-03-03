@@ -12,6 +12,15 @@ export function createDatabase() {
   const client = postgres(databaseUrl, {
     transform: {
       undefined: null
+    },
+    // Add connection settings
+    max: 1, // Limit pool size for tests
+    idle_timeout: 5, // Match GitHub Actions health check timeout
+    connect_timeout: 5, // Match GitHub Actions health check timeout
+    max_lifetime: 15, // Match GitHub Actions connection check timeout
+    connection: {
+      attempts: 5, // Match GitHub Actions health retries
+      backoff: 500 // 500ms between retries
     }
   });
 
