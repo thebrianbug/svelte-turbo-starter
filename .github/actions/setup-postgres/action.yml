@@ -12,11 +12,13 @@ runs:
 
     - name: Wait for PostgreSQL and setup database
       shell: bash
+      env:
+        DATABASE_URL: ${{ env.DATABASE_URL }}
       run: |
         # Aggressive polling with shorter timeout
         timeout 5s bash -c 'until pg_isready -h localhost -p 5432 -U postgres; do sleep 0.1; done'
 
         # Run database migrations
         cd packages/db
-        NODE_ENV=test npx drizzle-kit push:pg
+        NODE_ENV=test DATABASE_URL="${DATABASE_URL}" npx drizzle-kit push:pg
         cd ../..

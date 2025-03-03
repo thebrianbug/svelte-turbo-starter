@@ -2,7 +2,7 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
-    setupFiles: ['dotenv/config', './tests/integration/test-setup.ts'],
+    setupFiles: ['./tests/integration/test-setup.ts'],
     testTimeout: 5000,
     include: ['tests/integration/**/*.integration.test.ts'],
     exclude: [],

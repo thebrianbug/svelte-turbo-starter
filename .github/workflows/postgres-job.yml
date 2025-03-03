@@ -31,8 +31,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-node
-      - uses: ./.github/actions/postgres-service
-      - uses: ./.github/actions/setup-postgres
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Wait for PostgreSQL and setup database
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/svelte_turbo_test_db
+          PGUSER: postgres
+          PGPASSWORD: postgres
+        run: |
+          echo "Environment variables before database setup:"
+          env | sort
+
+          # Aggressive polling with shorter timeout
+          timeout 5s bash -c 'until pg_isready -h localhost -p 5432 -U postgres; do sleep 0.1; done'
+
+          # Run database migrations
+          cd packages/db
+          NODE_ENV=test npx drizzle-kit push:pg
+          cd ../..
 
       # Conditional Playwright setup
       - if: inputs.needs_playwright
@@ -55,4 +74,11 @@ jobs:
         env:
           NODE_ENV: test
           CI: true
-        run: ${{ inputs.run_command }}
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/svelte_turbo_test_db
+          PGUSER: postgres
+          PGPASSWORD: postgres
+        run: |
+          echo "Environment variables before tests:"
+          env | sort
+
+          ${{ inputs.run_command }}
