@@ -1,4 +1,3 @@
-import createConfig from './packages/eslint-config/index.js';
-import svelteConfig from './svelte.config.js';
+import { config } from './packages/eslint-config/index.js';
 
-export default createConfig(svelteConfig);
+export default config;
