@@ -39,6 +39,9 @@ async function cleanTestData(timeoutMs: number): Promise<void> {
       cleanupPromise,
       new Promise((_, reject) => setTimeout(() => reject(new Error('Cleanup timeout')), timeoutMs))
     ]);
+
+    // Add a small delay to ensure the deletion has completed
+    await new Promise((resolve) => setTimeout(resolve, 100));
   } catch (error) {
     if (error instanceof Error && error.message === 'Cleanup timeout') {
       throw new DatabaseSetupError('Database cleanup timed out');
@@ -65,6 +68,9 @@ export async function setup({
           setTimeout(() => reject(new Error('Migration timeout')), timeoutMs)
         )
       ]);
+
+      // Add a small delay to ensure migrations have completed
+      await new Promise((resolve) => setTimeout(resolve, 100));
     } catch (error) {
       if (error instanceof Error && error.message === 'Migration timeout') {
         throw new DatabaseSetupError('Database migration timed out');

@@ -32,14 +32,25 @@ export class UserService {
   }
 
   async getUserById(id: number): Promise<User> {
-    return this.userRepository.findById(id);
+    const user = await this.userRepository.findById(id);
+    if (!user) {
+      throw new Error('User not found');
+    }
+    return user;
   }
 
   async updateUser(id: number, updateData: UpdateUserData): Promise<User> {
+    const user = await this.userRepository.findById(id);
+    if (!user) {
+      throw new Error('User not found');
+    }
     return this.userRepository.update(id, updateData);
   }
 
   async deactivateUser(id: number): Promise<void> {
-    await this.userRepository.softDelete(id);
+    const success = await this.userRepository.softDelete(id);
+    if (!success) {
+      throw new Error('Failed to deactivate user');
+    }
   }
 }

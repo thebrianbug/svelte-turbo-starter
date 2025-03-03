@@ -17,7 +17,7 @@ export function getDatabaseConfig(): DatabaseConfig {
   return {
     url:
       process.env.DATABASE_URL ??
-      `postgres://postgres:postgres@localhost:5432/svelte_turbo_${isTest ? 'test' : 'main'}_db`,
+      `postgres://postgres:postgres@localhost:5432/${isTest ? 'svelte_turbo_test_db' : 'svelte_turbo_db'}`,
     pool: {
       max: isTest ? 3 : 10,
       timeout: isTest ? 5000 : 30000

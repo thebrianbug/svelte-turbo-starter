@@ -1,8 +1,8 @@
 import type { User, NewUser, UserStatus } from '../models/User';
 
 export type IUserRepository = {
-  findById(id: number): Promise<User>;
-  findByEmail(email: string): Promise<User>;
+  findById(id: number): Promise<User | undefined>;
+  findByEmail(email: string): Promise<User | undefined>;
   findActive(): Promise<User[]>;
   create(newUser: NewUser): Promise<User>;
   createMany(newUsers: NewUser[]): Promise<User[]>;

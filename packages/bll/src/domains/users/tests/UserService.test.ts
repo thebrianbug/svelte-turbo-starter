@@ -47,6 +47,7 @@ describe('UserService', () => {
         name: userData.name
       });
 
+      vi.mocked(userRepository.findByEmail).mockRejectedValue(new Error('NOT_FOUND'));
       vi.mocked(userRepository.create).mockResolvedValue(expectedUser);
 
       const result = await userService.createUser(userData);
@@ -69,6 +70,7 @@ describe('UserService', () => {
         ...userData
       });
 
+      vi.mocked(userRepository.findByEmail).mockRejectedValue(new Error('NOT_FOUND'));
       vi.mocked(userRepository.create).mockResolvedValue(expectedUser);
 
       const result = await userService.createUser(userData);
