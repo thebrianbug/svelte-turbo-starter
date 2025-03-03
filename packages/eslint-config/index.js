@@ -3,16 +3,26 @@ import importPlugin from 'eslint-plugin-import';
 import svelte from 'eslint-plugin-svelte';
 import globals from 'globals';
 import ts from 'typescript-eslint';
+import prettier from 'eslint-config-prettier';
+import turbo from 'eslint-config-turbo';
 
 export const config = [
+  // Base configs
   js.configs.recommended,
   ...ts.configs.recommended,
+  ...ts.configs.strictTypeChecked,
   ...svelte.configs['flat/recommended'],
+  turbo, // Adds Turborepo-specific rules
+  prettier, // Disables ESLint rules that conflict with Prettier
+
+  // Plugin configurations
   {
     plugins: {
       import: importPlugin
     }
   },
+
+  // Global settings
   {
     languageOptions: {
       globals: {
@@ -21,14 +31,16 @@ export const config = [
         process: true
       },
       parserOptions: {
-        // Optimize performance by being explicit about tsconfig paths
         project: true,
         extraFileExtensions: ['.svelte']
       }
     }
   },
+
+  // Ignore patterns
   {
     ignores: [
+      '**/node_modules/**',
       '**/postcss.config.cjs',
       '**/tailwind.config.js',
       '**/eslint.config.js',
@@ -44,64 +56,27 @@ export const config = [
       '**/output/**'
     ]
   },
+
+  // Svelte files configuration
   {
     files: ['**/*.svelte'],
     languageOptions: {
       parserOptions: {
         parser: ts.parser
       }
-    },
-    rules: {
-      // Svelte-specific TypeScript rules
-      '@typescript-eslint/no-floating-promises': 'off',
-      '@typescript-eslint/await-thenable': 'off',
-      '@typescript-eslint/explicit-function-return-type': 'off',
-      '@typescript-eslint/no-misused-promises': 'off',
-      '@typescript-eslint/promise-function-async': 'off'
     }
   },
+
+  // TypeScript files configuration
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.svelte'],
     rules: {
-      // TypeScript rules
-      '@typescript-eslint/strict-boolean-expressions': [
-        'error',
-        {
-          allowString: true,
-          allowNumber: true,
-          allowNullableObject: true,
-          allowNullableBoolean: false,
-          allowNullableString: false,
-          allowNullableNumber: false,
-          allowAny: false
-        }
-      ],
-      '@typescript-eslint/no-floating-promises': 'error',
-      '@typescript-eslint/await-thenable': 'error',
       '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
       '@typescript-eslint/explicit-function-return-type': 'error',
-      '@typescript-eslint/no-misused-promises': [
-        'error',
-        {
-          checksVoidReturn: false
-        }
-      ],
-      '@typescript-eslint/promise-function-async': 'error',
-      '@typescript-eslint/no-unused-vars': [
-        'error',
-        {
-          argsIgnorePattern: '^_',
-          varsIgnorePattern: '^_'
-        }
-      ],
-      '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
       '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/ban-ts-comment': 'error',
       '@typescript-eslint/prefer-nullish-coalescing': 'error',
-      '@typescript-eslint/no-unnecessary-condition': 'error',
 
-      // Import rules
-      'import/no-unresolved': 'off', // Disable in favor of TypeScript's module resolution
+      // Import rules - simplified but keeping essential ones
       'import/order': [
         'error',
         {
@@ -116,60 +91,25 @@ export const config = [
             'type'
           ],
           'newlines-between': 'always',
-          alphabetize: { order: 'asc' },
-          pathGroups: [
-            {
-              pattern: '@testing-library/**',
-              group: 'external',
-              position: 'before'
-            },
-            {
-              pattern: 'vitest/**',
-              group: 'external',
-              position: 'after'
-            }
-          ]
+          alphabetize: { order: 'asc' }
         }
       ],
       'import/no-cycle': 'error',
-      'import/no-self-import': 'error',
-      'import/no-useless-path-segments': 'error',
-      'import/first': 'error',
-      'import/no-duplicates': 'error',
-      'import/newline-after-import': 'error',
-      'import/no-mutable-exports': 'error'
+      'import/no-duplicates': 'error'
     }
   },
+
+  // Test files configuration
   {
     files: ['**/*.test.ts', '**/*.spec.ts', '**/tests/**/*.ts'],
     rules: {
-      // Relaxed rules for test files
       '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-non-null-assertion': 'off',
-      '@typescript-eslint/no-unused-vars': 'off'
+      '@typescript-eslint/no-non-null-assertion': 'off'
     },
     languageOptions: {
       globals: {
         ...globals.jest
       }
-    }
-  },
-  {
-    // Enforce import boundaries between packages
-    files: ['apps/**/*.ts', 'apps/**/*.svelte'],
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: [
-            {
-              group: ['../../*'],
-              message:
-                'Please use package imports instead of relative paths across package boundaries'
-            }
-          ]
-        }
-      ]
     }
   }
 ];
