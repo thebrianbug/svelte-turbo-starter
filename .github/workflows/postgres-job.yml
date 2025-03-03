@@ -60,7 +60,7 @@ jobs:
           # Generate and apply migrations
           cd packages/db
           NODE_ENV=test npx drizzle-kit generate:pg
-          NODE_ENV=test npx drizzle-kit drop --force
+          NODE_ENV=test npx drizzle-kit drop
           NODE_ENV=test npx drizzle-kit push:pg
           cd ../..
 
