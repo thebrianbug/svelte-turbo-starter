@@ -1,23 +1,15 @@
 import postgres from 'postgres';
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, afterAll } from 'vitest';
 
 import { checkDatabaseConnection, getDatabaseConfig } from '../../../src/database';
-import { setup, teardown } from '../test-utils/database';
+import { teardown } from '../test-utils/database';
 
 const databaseUrl = getDatabaseConfig();
 
 describe('Database Connection', () => {
-  // Setup database before all tests
-  beforeAll(async () => {
-    await setup({
-      timeout: 10,
-      migrationsPath: './drizzle'
-    });
-  });
-
   // Clean up and close all connections after tests
   afterAll(async () => {
-    await teardown({ timeout: 10 });
+    await teardown();
   });
 
   it('should successfully connect to database', async () => {
