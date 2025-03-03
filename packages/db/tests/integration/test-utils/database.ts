@@ -3,7 +3,6 @@ import path from 'path';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 
 import { db, client } from '../../../src/database';
-import { users } from '../../../src/domains/users/schema';
 
 class DatabaseSetupError extends Error {
   constructor(
@@ -29,24 +28,33 @@ type DatabaseOptions = {
 };
 
 /**
- * Cleans all test data from the database
+ * Resets the database state for testing
  */
-async function cleanTestData(timeoutMs: number): Promise<void> {
-  const cleanupPromise = db.delete(users).execute();
-
+async function resetDatabase(timeoutMs: number): Promise<void> {
   try {
+    // Drop migrations table and truncate all tables
     await Promise.race([
-      cleanupPromise,
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Cleanup timeout')), timeoutMs))
+      client.unsafe(`
+        DROP TABLE IF EXISTS "__drizzle_migrations" CASCADE;
+        DO $$ 
+        BEGIN
+          IF EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'users') THEN
+            TRUNCATE TABLE "users" CASCADE;
+          END IF;
+        END $$;
+      `),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Database reset timeout')), timeoutMs)
+      )
     ]);
 
-    // Add a small delay to ensure the deletion has completed
+    // Add a small delay to ensure reset has completed
     await new Promise((resolve) => setTimeout(resolve, 100));
   } catch (error) {
-    if (error instanceof Error && error.message === 'Cleanup timeout') {
-      throw new DatabaseSetupError('Database cleanup timed out');
+    if (error instanceof Error && error.message === 'Database reset timeout') {
+      throw new DatabaseSetupError('Database reset timed out');
     }
-    throw error;
+    throw new DatabaseSetupError('Database reset failed', error);
   }
 }
 
@@ -57,7 +65,10 @@ export async function setup({
   const timeoutMs = timeout * 1000;
 
   try {
-    // Run migrations with absolute path and timeout
+    // First reset database state
+    await resetDatabase(timeoutMs);
+
+    // Then run migrations with absolute path and timeout
     const absoluteMigrationsPath = path.resolve(process.cwd(), migrationsPath);
     const migrationPromise = migrate(db, { migrationsFolder: absoluteMigrationsPath });
 
@@ -77,9 +88,6 @@ export async function setup({
       }
       throw new DatabaseSetupError('Migration failed', error);
     }
-
-    // Initial data cleanup
-    await cleanTestData(timeoutMs);
   } catch (error) {
     // Ensure teardown happens if setup fails
     try {
@@ -97,11 +105,11 @@ export async function teardown({ timeout = 10 }: DatabaseOptions = {}): Promise<
   const timeoutMs = timeout * 1000;
 
   try {
-    // First try to clean up any remaining test data
+    // Clean up database state before closing connection
     try {
-      await cleanTestData(timeoutMs);
+      await resetDatabase(timeoutMs);
     } catch (error) {
-      console.warn('Failed to clean test data during teardown:', error);
+      console.warn('Failed to reset database during teardown:', error);
     }
 
     // End the database connection
@@ -119,8 +127,8 @@ export async function teardown({ timeout = 10 }: DatabaseOptions = {}): Promise<
 }
 
 /**
- * Utility function to clean test data between tests
+ * Utility function to reset database between tests
  */
 export async function cleanBetweenTests(): Promise<void> {
-  await cleanTestData(3000);
+  await resetDatabase(3000);
 }
