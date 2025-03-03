@@ -4,7 +4,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { checkDatabaseConnection, getDatabaseConfig } from '../../../src/database';
 import { setup, teardown } from '../test-utils/database';
 
-const databaseConfig = getDatabaseConfig();
+const databaseUrl = getDatabaseConfig();
 
 describe('Database Connection', () => {
   // Setup database before all tests
@@ -29,8 +29,7 @@ describe('Database Connection', () => {
     let timeoutClient: postgres.Sql | null = null;
     try {
       // Create a new client with a very short timeout
-      timeoutClient = postgres(databaseConfig.url, {
-        ...databaseConfig.pool,
+      timeoutClient = postgres(databaseUrl, {
         connect_timeout: 0.001, // 1ms timeout for testing
         max: 1,
         idle_timeout: 0
@@ -54,7 +53,6 @@ describe('Database Connection', () => {
     try {
       // Create a new client with invalid credentials
       invalidClient = postgres('postgresql://invalid:invalid@localhost:5432/invalid_db', {
-        ...databaseConfig.pool,
         max: 1,
         idle_timeout: 0
       });
@@ -73,8 +71,7 @@ describe('Database Connection', () => {
   });
 
   it('should handle multiple concurrent connections', async () => {
-    const maxConnections = Math.min(5, databaseConfig.pool.max); // Stay within configured pool limits
-    const concurrentChecks = Array(maxConnections)
+    const concurrentChecks = Array(5) // Use a reasonable default number of connections
       .fill(null)
       .map(async () => checkDatabaseConnection());
 
