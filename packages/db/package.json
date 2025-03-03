@@ -11,22 +11,20 @@
     "db:studio": "drizzle-kit studio",
     "test": "npm run test:unit && npm run test:integration",
     "test:unit": "vitest run --config ./vitest.unit.config.ts",
-    "test:integration": "dotenv -e .env -- cross-env NODE_ENV=test vitest run --config ./vitest.integration.config.ts",
+    "test:integration": "cross-env NODE_ENV=test vitest run --config ./vitest.integration.config.ts",
     "clean": "rimraf node_modules",
     "format": "prettier --write .",
     "check": "tsc --noEmit && prettier --check .",
     "lint": "eslint ."
   },
   "dependencies": {
-    "@repo/typescript-config": "*",
-    "dotenv": "^16.3.1",
     "drizzle-orm": "^0.29.1",
     "postgres": "^3.4.3",
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@repo/typescript-config": "*",
     "cross-env": "^7.0.3",
-    "dotenv-cli": "^8.0.0",
     "drizzle-kit": "^0.20.6"
   }
 }
