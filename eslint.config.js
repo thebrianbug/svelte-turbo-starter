@@ -1,8 +1,4 @@
-import { config } from '@repo/eslint-config/index.js';
+import createConfig from './packages/eslint-config/index.js';
+import svelteConfig from './svelte.config.js';
 
-export default [
-  ...config,
-  {
-    ignores: ['**/node_modules/**']
-  }
-];
+export default createConfig(svelteConfig);
