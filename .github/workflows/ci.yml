@@ -15,10 +15,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-node
-      - name: Run format check
-        run: npm run check
       - name: Run lint
         run: npm run lint
+      - name: Run format check
+        run: npm run check
 
   unit-test:
     runs-on: ubuntu-latest
