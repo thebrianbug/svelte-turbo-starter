@@ -48,8 +48,8 @@ async function resetDatabase(timeoutMs: number): Promise<void> {
       )
     ]);
 
-    // Add a small delay to ensure reset has completed
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    // Add a delay to ensure reset has completed
+    await new Promise((resolve) => setTimeout(resolve, 500));
   } catch (error) {
     if (error instanceof Error && error.message === 'Database reset timeout') {
       throw new DatabaseSetupError('Database reset timed out');
@@ -59,7 +59,7 @@ async function resetDatabase(timeoutMs: number): Promise<void> {
 }
 
 export async function setup({
-  timeout = 10,
+  timeout = 15, // Match GitHub Actions connection timeout
   migrationsPath = './drizzle'
 }: DatabaseOptions = {}): Promise<void> {
   const timeoutMs = timeout * 1000;
@@ -80,8 +80,8 @@ export async function setup({
         )
       ]);
 
-      // Add a small delay to ensure migrations have completed
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      // Add a delay to ensure migrations have completed
+      await new Promise((resolve) => setTimeout(resolve, 500));
     } catch (error) {
       if (error instanceof Error && error.message === 'Migration timeout') {
         throw new DatabaseSetupError('Database migration timed out');
@@ -91,7 +91,7 @@ export async function setup({
   } catch (error) {
     // Ensure teardown happens if setup fails
     try {
-      await teardown({ timeout: 5 });
+      await teardown({ timeout: 15 }); // Match GitHub Actions connection timeout
     } catch (teardownError) {
       console.error('Teardown failed during setup error handling:', teardownError);
     }
@@ -101,7 +101,8 @@ export async function setup({
   }
 }
 
-export async function teardown({ timeout = 10 }: DatabaseOptions = {}): Promise<void> {
+export async function teardown({ timeout = 15 }: DatabaseOptions = {}): Promise<void> {
+  // Match GitHub Actions connection timeout
   const timeoutMs = timeout * 1000;
 
   try {
@@ -130,5 +131,5 @@ export async function teardown({ timeout = 10 }: DatabaseOptions = {}): Promise<
  * Utility function to reset database between tests
  */
 export async function cleanBetweenTests(): Promise<void> {
-  await resetDatabase(3000);
+  await resetDatabase(5000); // Match GitHub Actions health check timeout
 }
