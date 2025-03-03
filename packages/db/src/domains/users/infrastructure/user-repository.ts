@@ -1,12 +1,12 @@
 import { eq, sql } from 'drizzle-orm';
 
 import { db } from '../../../database';
-import { BaseRepository, DatabaseError } from '../../../infrastructure/BaseRepository';
-import { validateUser } from '../models/User';
+import { BaseRepository, DatabaseError } from '../../../infrastructure/base-repository';
+import { validateUser } from '../models/user';
 import { users } from '../schema';
 
-import type { IUserRepository } from '../interfaces/IUserRepository';
-import type { User, NewUser, UserStatus } from '../models/User';
+import type { IUserRepository } from '../interfaces/i-user-repository';
+import type { User, NewUser, UserStatus } from '../models/user';
 
 class UserRepository extends BaseRepository<User> implements IUserRepository {
   protected readonly table = users;
@@ -21,7 +21,7 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
     };
   }
 
-  protected override mapToEntity(record: Record<string, unknown>): User {
+  protected mapToEntity(record: Record<string, unknown>): User {
     return {
       id: record.id as number,
       name: record.name as string,
@@ -53,7 +53,7 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
     }
   }
 
-  override async create(data: NewUser): Promise<User> {
+  async create(data: NewUser): Promise<User> {
     try {
       const normalizedData = UserRepository.prepareUserData(data);
       const validatedData = validateUser(normalizedData, { requireAll: true }) as Required<NewUser>;
@@ -86,7 +86,7 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
     }
   }
 
-  override async update(id: number, data: Partial<NewUser>): Promise<User> {
+  async update(id: number, data: Partial<NewUser>): Promise<User> {
     try {
       const normalizedData = UserRepository.prepareUserData(data);
       const validatedData = validateUser(normalizedData, { requireAll: false });
