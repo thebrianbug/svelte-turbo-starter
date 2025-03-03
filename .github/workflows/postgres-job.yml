@@ -55,4 +55,5 @@ jobs:
         env:
           NODE_ENV: test
           CI: true
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/svelte_turbo_test_db
         run: ${{ inputs.run_command }}
