@@ -53,8 +53,14 @@ jobs:
           # Aggressive polling with shorter timeout
           timeout 5s bash -c 'until pg_isready -h localhost -p 5432 -U postgres; do sleep 0.1; done'
 
-          # Run database migrations
+          # Drop and recreate database to ensure clean state
+          psql -h localhost -U postgres -c "DROP DATABASE IF EXISTS svelte_turbo_test_db;"
+          psql -h localhost -U postgres -c "CREATE DATABASE svelte_turbo_test_db;"
+
+          # Generate and apply migrations
           cd packages/db
+          NODE_ENV=test npx drizzle-kit generate:pg
+          NODE_ENV=test npx drizzle-kit drop --force
           NODE_ENV=test npx drizzle-kit push:pg
           cd ../..
 
