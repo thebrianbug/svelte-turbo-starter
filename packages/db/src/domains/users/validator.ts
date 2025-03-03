@@ -9,15 +9,15 @@ export const userSchema = z.object({
 export type UserSchema = typeof userSchema;
 export type ValidatedUser = z.infer<typeof userSchema>;
 
-interface ValidationOptions {
+export type ValidationOptions = {
   requireAll?: boolean;
-}
+};
 
 export function validateUser(
   data: unknown,
   options: ValidationOptions = {}
 ): Partial<ValidatedUser> {
-  const schema = options.requireAll ? userSchema : userSchema.partial();
+  const schema = (options.requireAll ?? false) ? userSchema : userSchema.partial();
   return schema.parse(data);
 }
 

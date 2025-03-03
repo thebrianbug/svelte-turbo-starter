@@ -4,20 +4,20 @@ import postgres from 'postgres';
 
 import * as schema from '../domains/users/schema';
 
-export interface DatabaseConfig {
+export type DatabaseConfig = {
   url: string;
   pool: {
     max: number;
     timeout: number;
   };
-}
+};
 
 export function getDatabaseConfig(): DatabaseConfig {
   const isTest = process.env.NODE_ENV === 'test';
   return {
     url:
-      process.env.DATABASE_URL ||
-      `postgres://postgres:postgres@localhost:5432/svelte_turbo_${isTest ? 'test_' : ''}db`,
+      process.env.DATABASE_URL ??
+      `postgres://postgres:postgres@localhost:5432/svelte_turbo_${isTest ? 'test' : 'main'}_db`,
     pool: {
       max: isTest ? 3 : 10,
       timeout: isTest ? 5000 : 30000

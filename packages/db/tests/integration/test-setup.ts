@@ -5,7 +5,7 @@ config();
 
 // Ensure required environment variables are set
 const requiredEnvVars = ['DATABASE_URL'];
-const missingEnvVars = requiredEnvVars.filter((envVar) => !process.env[envVar]);
+const missingEnvVars = requiredEnvVars.filter((envVar) => process.env[envVar] === undefined);
 
 if (missingEnvVars.length > 0) {
   throw new Error(

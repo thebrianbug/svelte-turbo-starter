@@ -12,7 +12,7 @@ class UserRepository {
 
   private prepareForUpdate(data: Partial<NewUser>): Partial<NewUser> {
     const prepared = { ...data };
-    if (prepared.email) {
+    if (prepared.email !== undefined) {
       prepared.email = this.normalizeEmail(prepared.email);
     }
     prepared.updatedAt = new Date();
@@ -79,7 +79,7 @@ class UserRepository {
   }
 
   async createMany(newUsers: NewUser[]): Promise<User[]> {
-    if (!newUsers.length) return [];
+    if (newUsers.length === 0) return [];
 
     const validatedUsers = validateManyUsers(newUsers, { requireAll: true }) as Required<NewUser>[];
     const normalizedUsers = validatedUsers.map((user) => ({

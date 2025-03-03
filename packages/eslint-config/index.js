@@ -17,10 +17,12 @@ export const config = [
     languageOptions: {
       globals: {
         ...globals.browser,
-        ...globals.node
+        ...globals.node,
+        process: true
       },
       parserOptions: {
-        project: ['./tsconfig.json', './packages/*/tsconfig.json', './apps/*/tsconfig.json'],
+        // Optimize performance by being explicit about tsconfig paths
+        project: true,
         extraFileExtensions: ['.svelte']
       }
     }
@@ -34,41 +36,72 @@ export const config = [
       '**/svelte.config.js',
       '**/playwright.config.ts',
       '**/vitest.config.ts',
-      '**/drizzle.config.ts'
+      '**/drizzle.config.ts',
+      '**/dist/**',
+      '**/build/**',
+      '**/.svelte-kit/**',
+      '**/.vercel/**',
+      '**/output/**'
     ]
   },
   {
     files: ['**/*.svelte'],
-    ignores: ['.svelte-kit/*'],
     languageOptions: {
       parserOptions: {
         parser: ts.parser
       }
     },
     rules: {
-      // Disable TypeScript-specific rules for Svelte files
+      // Svelte-specific TypeScript rules
       '@typescript-eslint/no-floating-promises': 'off',
       '@typescript-eslint/await-thenable': 'off',
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/no-misused-promises': 'off',
-      '@typescript-eslint/promise-function-async': 'off',
-      '@typescript-eslint/strict-boolean-expressions': 'off'
+      '@typescript-eslint/promise-function-async': 'off'
     }
   },
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.svelte'],
     rules: {
-      // Strict TypeScript rules
-      // Temporarily disable strict rules until TS version is fixed
-      '@typescript-eslint/strict-boolean-expressions': 'off',
+      // TypeScript rules
+      '@typescript-eslint/strict-boolean-expressions': [
+        'error',
+        {
+          allowString: true,
+          allowNumber: true,
+          allowNullableObject: true,
+          allowNullableBoolean: false,
+          allowNullableString: false,
+          allowNullableNumber: false,
+          allowAny: false
+        }
+      ],
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/await-thenable': 'error',
       '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
       '@typescript-eslint/explicit-function-return-type': 'error',
-      '@typescript-eslint/no-misused-promises': 'error',
+      '@typescript-eslint/no-misused-promises': [
+        'error',
+        {
+          checksVoidReturn: false
+        }
+      ],
       '@typescript-eslint/promise-function-async': 'error',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_'
+        }
+      ],
+      '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
+      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/ban-ts-comment': 'error',
+      '@typescript-eslint/prefer-nullish-coalescing': 'error',
+      '@typescript-eslint/no-unnecessary-condition': 'error',
 
       // Import rules
+      'import/no-unresolved': 'off', // Disable in favor of TypeScript's module resolution
       'import/order': [
         'error',
         {
@@ -98,10 +131,13 @@ export const config = [
           ]
         }
       ],
-      'import/no-unresolved': 'off', // Turn off until module resolution is fixed
       'import/no-cycle': 'error',
       'import/no-self-import': 'error',
-      'import/no-useless-path-segments': 'error'
+      'import/no-useless-path-segments': 'error',
+      'import/first': 'error',
+      'import/no-duplicates': 'error',
+      'import/newline-after-import': 'error',
+      'import/no-mutable-exports': 'error'
     }
   },
   {
@@ -109,7 +145,8 @@ export const config = [
     rules: {
       // Relaxed rules for test files
       '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-non-null-assertion': 'off'
+      '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/no-unused-vars': 'off'
     },
     languageOptions: {
       globals: {

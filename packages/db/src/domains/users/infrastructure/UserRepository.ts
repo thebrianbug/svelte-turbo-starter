@@ -14,7 +14,7 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
   private static normalizeEmail = (email: string): string => email.trim().toLowerCase();
 
   private static prepareUserData<T extends { email?: string }>(data: T): T {
-    if (!data.email) return data;
+    if (data.email === undefined) return data;
     return {
       ...data,
       email: UserRepository.normalizeEmail(data.email)
@@ -32,13 +32,13 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
     };
   }
 
-  async findByEmail(email: string): Promise<User | undefined> {
+  async findByEmail(email: string): Promise<User> {
     try {
       const [result] = await db
         .select()
         .from(users)
         .where(eq(users.email, UserRepository.normalizeEmail(email)));
-      return result ? this.mapToEntity(result) : undefined;
+      return this.mapToEntity(result);
     } catch (error) {
       throw DatabaseError.from(error, 'findByEmail');
     }
@@ -64,7 +64,7 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
   }
 
   async createMany(newUsers: NewUser[]): Promise<User[]> {
-    if (!newUsers.length) return [];
+    if (newUsers.length === 0) return [];
 
     try {
       const preparedUsers = newUsers.map(UserRepository.prepareUserData);
@@ -121,7 +121,7 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
         .where(eq(users.id, id))
         .returning();
 
-      return result.length > 0;
+      return result.length === 1;
     } catch (error) {
       throw DatabaseError.from(error, 'softDelete');
     }

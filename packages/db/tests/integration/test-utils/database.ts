@@ -15,7 +15,7 @@ class DatabaseSetupError extends Error {
   }
 }
 
-interface DatabaseOptions {
+type DatabaseOptions = {
   /**
    * Timeout in seconds for database operations
    * @default 10
@@ -26,7 +26,7 @@ interface DatabaseOptions {
    * @default './drizzle'
    */
   migrationsPath?: string;
-}
+};
 
 /**
  * Cleans all test data from the database

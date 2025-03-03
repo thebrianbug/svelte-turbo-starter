@@ -11,14 +11,14 @@ export const userSchema = z.object({
 });
 
 // Database user type with all fields
-export interface User {
+export type User = {
   id: number;
   name: string;
   email: string;
   status: UserStatus;
   createdAt: Date;
   updatedAt: Date;
-}
+};
 
 // Type for creating a new user
 export type NewUser = Omit<User, 'id' | 'createdAt' | 'updatedAt'>;
@@ -27,16 +27,16 @@ export type NewUser = Omit<User, 'id' | 'createdAt' | 'updatedAt'>;
 export type ValidatedUser = z.infer<typeof userSchema>;
 
 // Validation options
-export interface ValidationOptions {
+export type ValidationOptions = {
   requireAll?: boolean;
-}
+};
 
 // Validation functions
 export function validateUser(
   data: unknown,
   options: ValidationOptions = {}
 ): Partial<ValidatedUser> {
-  const schema = options.requireAll ? userSchema : userSchema.partial();
+  const schema = (options.requireAll ?? false) ? userSchema : userSchema.partial();
   return schema.parse(data);
 }
 

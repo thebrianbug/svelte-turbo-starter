@@ -5,7 +5,6 @@ import { db } from '../database';
 
 import type { PgTable } from 'drizzle-orm/pg-core';
 
-
 export class DatabaseError extends Error {
   constructor(
     public code: string,
@@ -29,11 +28,11 @@ export class DatabaseError extends Error {
   }
 }
 
-export interface BaseEntity {
+export type BaseEntity = {
   id: number;
   createdAt: Date;
   updatedAt: Date;
-}
+};
 
 export abstract class BaseRepository<T extends BaseEntity> {
   protected abstract readonly table: PgTable;
@@ -42,13 +41,13 @@ export abstract class BaseRepository<T extends BaseEntity> {
     return record as T;
   }
 
-  async findById(id: number): Promise<T | undefined> {
+  async findById(id: number): Promise<T> {
     try {
       const [result] = await db
         .select()
         .from(this.table)
         .where(sql`${this.table}.id = ${id}`);
-      return result ? this.mapToEntity(result) : undefined;
+      return this.mapToEntity(result);
     } catch (error) {
       throw DatabaseError.from(error, 'findById');
     }
@@ -91,23 +90,18 @@ export abstract class BaseRepository<T extends BaseEntity> {
         .where(sql`${this.table}.id = ${id}`)
         .returning();
 
-      if (!result) {
-        throw new DatabaseError('NOT_FOUND', `Entity with id ${id} not found`);
-      }
-
       return this.mapToEntity(result);
     } catch (error) {
       throw DatabaseError.from(error, 'update');
     }
   }
 
-  async delete(id: number): Promise<boolean> {
+  async delete(id: number): Promise<void> {
     try {
-      const [result] = await db
+      await db
         .delete(this.table)
         .where(sql`${this.table}.id = ${id}`)
         .returning();
-      return !!result;
     } catch (error) {
       throw DatabaseError.from(error, 'delete');
     }
