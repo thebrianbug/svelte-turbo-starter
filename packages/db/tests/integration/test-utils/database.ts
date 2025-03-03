@@ -1,5 +1,3 @@
-import path from 'path';
-import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import { sql } from 'drizzle-orm';
 import { db, client } from '../../../src/database';
 
@@ -11,22 +9,6 @@ export const TABLES = {
 
 // Allow string values for table names
 export type TableName = string;
-
-/**
- * Sets up the database for testing by running migrations
- */
-export async function setup(): Promise<void> {
-  try {
-    const migrationsPath = path.resolve(process.cwd(), './drizzle');
-    await migrate(db, { migrationsFolder: migrationsPath });
-    // Small delay to ensure migrations complete
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  } catch (error) {
-    console.error('Database setup failed:', error);
-    await teardown();
-    throw error;
-  }
-}
 
 /**
  * Cleans a specific table while handling foreign key constraints

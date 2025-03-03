@@ -1,9 +1,9 @@
 import { PostgresError } from 'postgres';
-import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest';
+import { describe, it, expect, beforeEach, afterAll } from 'vitest';
 import { ZodError } from 'zod';
 
 import { userQueries } from '../../../../src/domains/users/repository';
-import { setup, teardown, cleanTable, TABLES } from '../../test-utils/database';
+import { teardown, cleanTable, TABLES } from '../../test-utils/database';
 
 import type { NewUser } from '../../../../src/domains/users/schema';
 
@@ -21,10 +21,6 @@ const TEST_NAMES = {
 } as const;
 
 describe('User Integration Tests', () => {
-  beforeAll(async () => {
-    await setup();
-  });
-
   beforeEach(async () => {
     await cleanTable(TABLES.USERS);
   });
