@@ -4,8 +4,18 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".svelte-kit/**", ".vercel/**", "dist/**"]
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".env*",
+        "src/**/*.{js,ts,svelte}",
+        "static/**/*",
+        "svelte.config.js",
+        "vite.config.ts",
+        "postcss.config.cjs",
+        "tailwind.config.js"
+      ],
+      "outputs": [".svelte-kit/**", ".vercel/**", "dist/**", "build/**"],
+      "env": ["NODE_ENV"]
     },
     "dev": {
       "cache": false,
@@ -13,6 +23,8 @@
     },
     "preview": {
       "dependsOn": ["build"],
+      "inputs": ["src/**/*.{js,ts,svelte}", "static/**/*", "svelte.config.js", "vite.config.ts"],
+      "env": ["NODE_ENV", "PORT", "HOST"],
       "cache": false
     },
     "lint": {
@@ -26,18 +38,21 @@
         "package.json",
         "tsconfig.json"
       ],
-      "env": ["NODE_ENV"]
+      "outputs": [".eslintcache", "eslint-results.json"],
+      "env": ["NODE_ENV", "CI"]
     },
     "test:unit": {
       "dependsOn": ["^build"],
       "inputs": [
         "src/**/*.{js,ts,svelte}",
         "tests/**/*.{js,ts}",
+        "components/**/*.{js,ts,svelte}",
+        "components/**/*.test.{js,ts}",
         "vitest.config.ts",
         "vite.test.config.ts"
       ],
       "outputs": ["coverage/**"],
-      "env": ["NODE_ENV", "CI"]
+      "env": ["NODE_ENV", "CI", "VITEST_MAX_THREADS"]
     },
     "test:integration": {
       "dependsOn": ["^build"],
@@ -53,14 +68,36 @@
       "dependsOn": ["^build"],
       "inputs": ["tests/**/*.test.ts", "playwright.config.ts"],
       "outputs": ["test-results/**", "playwright-report/**"],
-      "env": ["NODE_ENV", "CI"],
+      "env": [
+        "NODE_ENV",
+        "CI",
+        "BROWSER",
+        "PLAYWRIGHT_HTML_REPORT",
+        "PLAYWRIGHT_JUNIT_OUTPUT_NAME"
+      ],
       "cache": false
     },
     "check": {
-      "dependsOn": ["^check"]
+      "dependsOn": ["^check"],
+      "inputs": [
+        "src/**/*.{js,ts,svelte}",
+        "tests/**/*.{js,ts}",
+        "components/**/*.{js,ts,svelte}",
+        "tsconfig.json",
+        "svelte.config.js"
+      ],
+      "env": ["NODE_ENV"]
     },
     "format": {
-      "outputs": ["*/**"]
+      "inputs": [
+        "src/**/*.{js,ts,svelte}",
+        "tests/**/*.{js,ts}",
+        "components/**/*.{js,ts,svelte}",
+        ".prettierrc",
+        ".prettierignore"
+      ],
+      "outputs": ["*/**"],
+      "env": ["NODE_ENV"]
     },
     "clean": {
       "cache": false
