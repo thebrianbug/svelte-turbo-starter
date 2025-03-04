@@ -7,11 +7,13 @@ A full-featured monorepo starter template using [Turborepo](https://turbo.build/
 - 📦 Monorepo management with [Turborepo](https://turbo.build/)
 - ⚡ [SvelteKit 2](https://kit.svelte.dev/) with [Svelte 5](https://svelte.dev/) for both main app and documentation
 - 🚀 [Vercel](https://vercel.com/) adapter pre-configured
-- 🎨 [Tailwind CSS](https://tailwindcss.com/) for styling
+- 🎨 [Tailwind CSS](https://tailwindcss.com/) v3.4.1 for styling
 - 📚 Shared UI component library
-- 🔍 [TypeScript](https://www.typescriptlang.org/) for type safety
+- 🔍 [TypeScript](https://www.typescriptlang.org/) v5.5.3 for type safety
 - 🧪 Testing setup with [Vitest](https://vitest.dev/) and [Playwright](https://playwright.dev/)
 - 📝 Consistent code style with [ESLint](https://eslint.org/) and [Prettier](https://prettier.io/)
+- 🗄️ PostgreSQL with [Drizzle ORM](https://orm.drizzle.team/) for type-safe database operations
+- 🏗️ Domain-driven design architecture with clear separation of concerns
 - 🔄 Fast CI pipeline with:
   - Static analysis (format and lint checks)
   - Unit testing with [Vitest](https://vitest.dev/)
@@ -60,9 +62,17 @@ A full-featured monorepo starter template using [Turborepo](https://turbo.build/
 ```
 .
 ├── apps/
-│   ├── docs/          # Documentation site built with SvelteKit
-│   └── web/          # Main web application
+│   ├── docs/              # Documentation site built with SvelteKit
+│   └── web/              # Main web application
 ├── packages/
+│   ├── bll/              # Business Logic Layer (DDD patterns)
+│   │   └── src/
+│   │       └── domains/  # Domain-specific business logic
+│   ├── db/               # Database Layer with Drizzle ORM
+│   │   ├── drizzle/     # Database migrations
+│   │   └── src/
+│   │       ├── database/ # Database configuration
+│   │       └── domains/  # Domain-specific repositories
 │   ├── eslint-config/    # Shared ESLint configuration
 │   ├── tailwind-config/  # Shared Tailwind CSS configuration
 │   ├── typescript-config/ # Shared TypeScript configuration
@@ -76,18 +86,20 @@ A full-featured monorepo starter template using [Turborepo](https://turbo.build/
 
 ### Packages
 
+- `bll`: Business Logic Layer implementing domain-driven design patterns
+- `db`: Database layer using Drizzle ORM for PostgreSQL operations
 - `ui`: A shared [Svelte](https://svelte.dev/) component library used by both applications
-- `eslint-config`: Common ESLint configuration with Svelte and Prettier support
+- `eslint-config`: Common ESLint configuration with security, promise, sonar, and unicorn plugins
 - `tailwind-config`: Shared Tailwind CSS configuration
 - `typescript-config`: Shared TypeScript configuration for consistent type checking
 
 ## Available Scripts
 
-- `npm run dev` - Start all applications in development mode using [Vite](https://vitejs.dev/)
+- `npm run dev` - Start all applications in development mode using [Vite](https://vitejs.dev/) v6.1.0
 - `npm run build` - Build all applications and packages
 - `npm run preview` - Preview the built applications
 - `npm run clean` - Clean build outputs and node_modules directories
-- `npm run format` - Format all files using [Prettier](https://prettier.io/)
+- `npm run format` - Format all files using [Prettier](https://prettier.io/) with Svelte plugin
 - `npm run check` - Run [SvelteKit](https://kit.svelte.dev/) sync, type checking, and format verification
 - `npm run lint` - Run [ESLint](https://eslint.org/) across all projects
 
@@ -97,7 +109,7 @@ A full-featured monorepo starter template using [Turborepo](https://turbo.build/
 - `npm run test:unit` - Run [Vitest](https://vitest.dev/) unit tests across all applications
 - `npm run test:e2e` - Run [Playwright](https://playwright.dev/) end-to-end tests for both apps
 - `npm run kill:e2e` - Kill any hanging Playwright browser processes
-- `npm run db:up` - Start PostgreSQL database in Docker
+- `npm run db:up` - Start PostgreSQL database in Docker/Podman
 - `npm run db:down` - Stop and remove PostgreSQL container
 
 ## Development Workflow
@@ -113,6 +125,8 @@ A full-featured monorepo starter template using [Turborepo](https://turbo.build/
 2. **Making Changes**
 
    - Components in the `ui` package can be used by both applications
+   - Business logic should be implemented in the `bll` package following DDD principles
+   - Database operations should use the `db` package with Drizzle ORM
    - Changes to shared packages will automatically trigger rebuilds in dependent apps
    - Use `npm run format` before committing to ensure consistent code style
 
@@ -155,6 +169,7 @@ The project uses TypeScript for static type checking:
 - Run `npm run check` to verify types across all projects
 - TypeScript configuration is shared through the `typescript-config` package
 - Each app and package has its own `tsconfig.json` that extends the shared config
+- Database schema types are automatically generated by Drizzle ORM
 
 ## License
 
