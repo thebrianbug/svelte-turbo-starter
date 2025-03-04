@@ -1,4 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { mock, instance, when, verify, deepEqual } from 'ts-mockito';
 import { UserService } from './user-service';
 import type { IUserRepository, User } from '@repo/db';
 import { validateNewUser, validateUpdateUser } from '@repo/db/src/domains/users/models/user';
@@ -22,21 +23,12 @@ describe('UserService', () => {
   });
 
   let userRepository: IUserRepository;
+  let userRepositoryMock: IUserRepository;
   let userService: UserService;
 
   beforeEach(() => {
-    userRepository = {
-      create: vi.fn(),
-      findById: vi.fn(),
-      findByEmail: vi.fn(),
-      findActive: vi.fn(),
-      createMany: vi.fn(),
-      update: vi.fn(),
-      updateMany: vi.fn(),
-      softDelete: vi.fn(),
-      softDeleteMany: vi.fn(),
-      count: vi.fn()
-    };
+    userRepositoryMock = mock<IUserRepository>();
+    userRepository = instance(userRepositoryMock);
     userService = new UserService(userRepository);
   });
 
@@ -54,12 +46,12 @@ describe('UserService', () => {
         status: validatedData.status
       });
 
-      vi.mocked(userRepository.findByEmail).mockRejectedValue(new Error('NOT_FOUND'));
-      vi.mocked(userRepository.create).mockResolvedValue(expectedUser);
+      when(userRepositoryMock.findByEmail(userData.email)).thenReject(new Error('NOT_FOUND'));
+      when(userRepositoryMock.create(deepEqual(validatedData))).thenResolve(expectedUser);
 
       const result = await userService.createUser(userData);
 
-      expect(userRepository.create).toHaveBeenCalledWith(validatedData);
+      verify(userRepositoryMock.create(deepEqual(validatedData))).once();
       expect(result).toEqual(expectedUser);
     });
 
@@ -75,12 +67,12 @@ describe('UserService', () => {
         ...validatedData
       });
 
-      vi.mocked(userRepository.findByEmail).mockRejectedValue(new Error('NOT_FOUND'));
-      vi.mocked(userRepository.create).mockResolvedValue(expectedUser);
+      when(userRepositoryMock.findByEmail(userData.email)).thenReject(new Error('NOT_FOUND'));
+      when(userRepositoryMock.create(deepEqual(validatedData))).thenResolve(expectedUser);
 
       const result = await userService.createUser(userData);
 
-      expect(userRepository.create).toHaveBeenCalledWith(validatedData);
+      verify(userRepositoryMock.create(deepEqual(validatedData))).once();
       expect(result).toEqual(expectedUser);
     });
 
@@ -90,7 +82,7 @@ describe('UserService', () => {
         name: TEST_DATA.NAME
       };
 
-      vi.mocked(userRepository.findByEmail).mockResolvedValue(
+      when(userRepositoryMock.findByEmail(userData.email)).thenResolve(
         createMockUser({
           email: userData.email,
           name: 'Existing User'
@@ -116,16 +108,16 @@ describe('UserService', () => {
     it('should return user by id', async () => {
       const expectedUser = createMockUser();
 
-      vi.mocked(userRepository.findById).mockResolvedValue(expectedUser);
+      when(userRepositoryMock.findById(1)).thenResolve(expectedUser);
 
       const result = await userService.getUserById(1);
 
-      expect(userRepository.findById).toHaveBeenCalledWith(1);
+      verify(userRepositoryMock.findById(1)).once();
       expect(result).toEqual(expectedUser);
     });
 
     it('should throw error if user not found', async () => {
-      vi.mocked(userRepository.findById).mockResolvedValue(undefined);
+      when(userRepositoryMock.findById(1)).thenResolve(undefined);
 
       await expect(userService.getUserById(1)).rejects.toThrow('User not found');
     });
@@ -149,17 +141,17 @@ describe('UserService', () => {
         ...validatedData
       });
 
-      vi.mocked(userRepository.findById).mockResolvedValue(existingUser);
-      vi.mocked(userRepository.update).mockResolvedValue(updatedUser);
+      when(userRepositoryMock.findById(userId)).thenResolve(existingUser);
+      when(userRepositoryMock.update(userId, deepEqual(validatedData))).thenResolve(updatedUser);
 
       const result = await userService.updateUser(userId, updateData);
 
-      expect(userRepository.update).toHaveBeenCalledWith(userId, validatedData);
+      verify(userRepositoryMock.update(userId, deepEqual(validatedData))).once();
       expect(result).toEqual(updatedUser);
     });
 
     it('should throw error if user not found', async () => {
-      vi.mocked(userRepository.findById).mockResolvedValue(undefined);
+      when(userRepositoryMock.findById(1)).thenResolve(undefined);
 
       await expect(userService.updateUser(1, { name: TEST_DATA.UPDATED_NAME })).rejects.toThrow(
         'User not found'
@@ -172,7 +164,7 @@ describe('UserService', () => {
         email: 'invalid-email'
       };
 
-      vi.mocked(userRepository.findById).mockResolvedValue(createMockUser());
+      when(userRepositoryMock.findById(userId)).thenResolve(createMockUser());
 
       await expect(userService.updateUser(userId, invalidData)).rejects.toThrow();
     });
@@ -180,14 +172,14 @@ describe('UserService', () => {
 
   describe('deactivateUser', () => {
     it('should deactivate user successfully', async () => {
-      vi.mocked(userRepository.softDelete).mockResolvedValue(true);
+      when(userRepositoryMock.softDelete(1)).thenResolve(true);
 
       await expect(userService.deactivateUser(1)).resolves.not.toThrow();
-      expect(userRepository.softDelete).toHaveBeenCalledWith(1);
+      verify(userRepositoryMock.softDelete(1)).once();
     });
 
     it('should throw error if deactivation fails', async () => {
-      vi.mocked(userRepository.softDelete).mockResolvedValue(false);
+      when(userRepositoryMock.softDelete(1)).thenResolve(false);
 
       await expect(userService.deactivateUser(1)).rejects.toThrow('Failed to deactivate user');
     });
