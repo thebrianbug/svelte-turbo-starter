@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { UserService } from '../user-service';
+import { UserService } from './user-service';
 import type { IUserRepository, User } from '@repo/db';
 import { validateNewUser, validateUpdateUser } from '@repo/db/src/domains/users/models/user';
 
