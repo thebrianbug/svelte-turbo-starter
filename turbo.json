@@ -19,11 +19,32 @@
       "dependsOn": ["^lint"]
     },
     "test:unit": {
-      "inputs": ["src/**/*.{js,ts,svelte}", "tests/**/*.{js,ts}"]
+      "dependsOn": ["^build"],
+      "inputs": [
+        "src/**/*.{js,ts,svelte}",
+        "tests/**/*.{js,ts}",
+        "vitest.config.ts",
+        "vite.test.config.ts"
+      ],
+      "outputs": ["coverage/**"],
+      "env": ["NODE_ENV", "CI"]
     },
     "test:integration": {
-      "inputs": ["src/**/*.integration.test.{js,ts}", "tests/**/*.integration.test.{js,ts}"],
+      "dependsOn": ["^build"],
+      "inputs": [
+        "src/**/*.integration.test.{js,ts}",
+        "tests/**/*.integration.test.{js,ts}",
+        "vitest.integration.config.ts"
+      ],
+      "outputs": ["coverage/**"],
       "env": ["DATABASE_URL", "NODE_ENV", "CI"]
+    },
+    "test:e2e": {
+      "dependsOn": ["^build"],
+      "inputs": ["tests/**/*.test.ts", "playwright.config.ts"],
+      "outputs": ["test-results/**", "playwright-report/**"],
+      "env": ["NODE_ENV", "CI"],
+      "cache": false
     },
     "check": {
       "dependsOn": ["^check"]
