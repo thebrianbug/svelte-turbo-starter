@@ -1,12 +1,10 @@
 import { describe, it, expect, beforeEach, afterAll } from 'vitest';
 
-import { UserRepository } from '../../../../src/domains/users/infrastructure/user-repository';
+import { userRepository } from '../../../..';
 import { DatabaseError } from '../../../../src/infrastructure/base-repository';
 import { teardown, cleanTable, TABLES } from '../../test-utils/database';
 
 import type { NewUser } from '../../../../src/domains/users/models/user';
-
-let userRepository: UserRepository;
 
 const TEST_EMAILS = {
   MAIN: 'test@example.com',
@@ -24,7 +22,6 @@ const TEST_NAMES = {
 describe('User Integration Tests', () => {
   beforeEach(async () => {
     await cleanTable(TABLES.USERS);
-    userRepository = new UserRepository();
   });
 
   afterAll(async () => {
