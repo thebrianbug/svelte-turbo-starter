@@ -6,7 +6,7 @@
   "main": "./index.ts",
   "types": "./index.ts",
   "scripts": {
-    "test": "npm run test:unit -- run",
+    "test": "npm run test:unit",
     "test:unit": "vitest run",
     "lint": "eslint .",
     "clean": "rimraf node_modules",
