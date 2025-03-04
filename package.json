@@ -3,8 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "db:up": "./scripts/docker-podman.sh up -d",
-    "db:down": "./scripts/docker-podman.sh down",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
     "build": "turbo run build",
     "clean": "turbo run clean && rimraf node_modules",
     "dev": "turbo run dev",
