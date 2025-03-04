@@ -1,27 +1,11 @@
 import { z } from 'zod';
 
-// User status type
-export type UserStatus = 'active' | 'inactive';
-
-// Base user schema
+// Base user schema for validation
 export const userSchema = z.object({
   name: z.string().min(1).max(100),
   email: z.string().email(),
   status: z.enum(['active', 'inactive']).default('active')
 });
-
-// Database user type with all fields
-export type User = {
-  id: number;
-  name: string;
-  email: string;
-  status: UserStatus;
-  createdAt: Date;
-  updatedAt: Date;
-};
-
-// Type for creating a new user
-export type NewUser = Omit<User, 'id' | 'createdAt' | 'updatedAt'>;
 
 // Type for validated user data
 export type ValidatedUser = z.infer<typeof userSchema>;
@@ -37,7 +21,14 @@ export function validateUser(
   options: ValidationOptions = {}
 ): Partial<ValidatedUser> {
   const schema = (options.requireAll ?? false) ? userSchema : userSchema.partial();
-  return schema.parse(data);
+  const result = schema.parse(data);
+
+  // Ensure status is always set to a valid value
+  if (!result.status) {
+    result.status = 'active';
+  }
+
+  return result;
 }
 
 export function validateManyUsers(
