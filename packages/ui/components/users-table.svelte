@@ -6,9 +6,10 @@
     email: string;
   };
 
-  let { users = [], onDelete = (id: number) => {} } = $props<{
+  type OnDeleteFn = (id: number) => void;
+  let { users = [], onDelete = (() => {}) as OnDeleteFn } = $props<{
     users: User[];
-    onDelete?: (id: number) => void;
+    onDelete?: OnDeleteFn;
   }>();
 </script>
 
