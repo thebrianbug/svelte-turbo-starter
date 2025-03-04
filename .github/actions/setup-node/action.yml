@@ -27,3 +27,9 @@ runs:
       shell: bash
       run: |
         npm ci --prefer-offline --no-audit --no-progress
+
+    - name: Sync SvelteKit apps
+      shell: bash
+      run: |
+        cd apps/web && npx svelte-kit sync
+        cd ../docs && npx svelte-kit sync
