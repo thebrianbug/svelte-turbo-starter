@@ -13,12 +13,12 @@ test.describe('Web App Home Page', () => {
 
     // Get initial count
     const initialText = await button.textContent();
-    expect(initialText).toContain('0');
+    expect(initialText).toBe('clicks: 0');
 
-    // Click and verify increment
+    // Click and wait for state update
     await button.click();
-    const updatedText = await button.textContent();
-    expect(updatedText).toContain('1');
+    // Wait for the button text to update
+    await expect(button).toHaveText('clicks: 1', { timeout: 2000 });
   });
 
   test('documentation link should work', async ({ page }) => {
