@@ -1,5 +1,5 @@
 import type { IUserRepository, User } from '@repo/db';
-import { validateNewUser, validateUpdateUser } from '@repo/db';
+import { validateNewUser, validateUpdateUser } from '@repo/db/src/domains/users/models/user';
 export class UserService {
   constructor(private readonly userRepository: IUserRepository) {}
 
