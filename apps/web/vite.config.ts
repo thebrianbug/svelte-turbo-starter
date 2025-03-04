@@ -1,15 +1,3 @@
-import { sveltekit } from '@sveltejs/kit/vite';
-import { defineConfig } from 'vite';
+import { createViteConfig } from '@repo/svelte-config/vite.config';
 
-export default defineConfig({
-  plugins: [sveltekit()],
-  server: {
-    port: 3000
-  },
-  preview: {
-    port: 3000
-  },
-  test: {
-    exclude: ['**/node_modules/**', '**/tests/**', '**/tests-examples/**']
-  }
-});
+export default createViteConfig({ port: 3000 });

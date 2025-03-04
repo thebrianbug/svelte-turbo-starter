@@ -7,6 +7,13 @@
     ".": {
       "types": "./index.ts",
       "import": "./index.ts"
+    },
+    "./svelte.config": {
+      "import": "./svelte.config.js"
+    },
+    "./vite.config": {
+      "types": "./vite.config.js",
+      "import": "./vite.config.js"
     }
   },
   "scripts": {
