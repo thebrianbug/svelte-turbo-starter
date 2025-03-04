@@ -23,6 +23,9 @@ A full-featured monorepo starter template using [Turborepo](https://turbo.build/
 
 ## TODO
 
+- [ ] Update Tailwind setup to use simpler @tailwindcss/vite, simplify tailwind-config or combine with svelte-config
+- [ ] Finish example users list CRUD UI
+- [ ] Integrate with Clerk for Auth
 - [ ] 📚 Add Storybook support in UI package with [Svelte 5](https://storybook.js.org/blog/storybook-8-4/)
 
 ## Prerequisites
