@@ -1,5 +1,5 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+module.exports = (async () => ({
   content: [
     // App source files
     '../../apps/*/src/**/*.{html,js,svelte,ts}',
@@ -28,5 +28,8 @@ module.exports = {
       }
     }
   },
-  plugins: [require('@tailwindcss/typography'), require('@tailwindcss/forms')]
-};
+  plugins: [
+    (await import('@tailwindcss/typography')).default,
+    (await import('@tailwindcss/forms')).default
+  ]
+}))();
