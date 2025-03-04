@@ -16,7 +16,17 @@
       "cache": false
     },
     "lint": {
-      "dependsOn": ["^lint"]
+      "dependsOn": ["^lint"],
+      "inputs": [
+        "src/**/*.{js,ts,svelte}",
+        "tests/**/*.{js,ts}",
+        "components/**/*.{js,ts,svelte}",
+        ".eslintrc*",
+        "eslint.config.js",
+        "package.json",
+        "tsconfig.json"
+      ],
+      "env": ["NODE_ENV"]
     },
     "test:unit": {
       "dependsOn": ["^build"],
