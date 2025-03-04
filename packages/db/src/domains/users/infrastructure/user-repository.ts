@@ -3,10 +3,8 @@ import { eq, sql } from 'drizzle-orm';
 import { db } from '../../../database';
 import { BaseRepository, DatabaseError } from '../../../infrastructure/base-repository';
 import { validateUser } from '../models/user';
-import { users } from '../schema';
-
+import { users, type User, type NewUser, type UserStatus } from '../schema';
 import type { IUserRepository } from '../interfaces/i-user-repository';
-import type { User, NewUser, UserStatus } from '../models/user';
 
 class UserRepository extends BaseRepository<User> implements IUserRepository {
   protected readonly table = users;

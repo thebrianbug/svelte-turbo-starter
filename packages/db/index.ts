@@ -1,16 +1,18 @@
-// Export domain types
-export type { User, NewUser, UserStatus } from './src/domains/users/models/user';
+// Database types and schema
+export type { User, NewUser, UserStatus } from './src/domains/users/schema';
+export { users, userStatusEnum } from './src/domains/users/schema';
 
-// Export repository interface and implementation
+// Repository exports
 export type { IUserRepository } from './src/domains/users/interfaces/i-user-repository';
-export { userQueries } from './src/domains/users/repository';
+export { userQueries as userRepository } from './src/domains/users/repository';
 
-// Export validation utilities
+// Validation utilities
 export {
   validateUser,
   validateManyUsers,
-  type ValidationOptions
+  type ValidationOptions,
+  userSchema
 } from './src/domains/users/models/user';
 
-// Export database health check utility
+// Database utilities
 export { checkDatabaseConnection } from './src/database';
