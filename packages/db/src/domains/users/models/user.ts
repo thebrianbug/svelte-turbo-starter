@@ -1,5 +1,15 @@
 import { z } from 'zod';
 
+// Database User type
+export type User = {
+  id: number;
+  email: string;
+  name: string;
+  status: 'active' | 'inactive';
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 // Base user schema for validation
 export const userSchema = z.object({
   name: z.string().min(1).max(100),
