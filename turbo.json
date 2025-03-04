@@ -38,7 +38,6 @@
         "package.json",
         "tsconfig.json"
       ],
-      "outputs": [".eslintcache", "eslint-results.json"],
       "env": ["NODE_ENV", "CI"]
     },
     "test:unit": {
