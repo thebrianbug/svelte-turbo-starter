@@ -31,11 +31,20 @@
     const baseClasses =
       'font-sans font-bold rounded-full cursor-pointer inline-block leading-none transition-all duration-200';
 
-    const sizeClass = {
-      small: 'px-4 py-2.5 text-xs',
-      medium: 'px-5 py-3 text-sm',
-      large: 'px-6 py-3 text-base'
-    }[size];
+    let sizeClass: string;
+    switch (size) {
+      case 'small':
+        sizeClass = 'px-4 py-2.5 text-xs';
+        break;
+      case 'medium':
+        sizeClass = 'px-5 py-3 text-sm';
+        break;
+      case 'large':
+        sizeClass = 'px-6 py-3 text-base';
+        break;
+      default:
+        sizeClass = 'px-5 py-3 text-sm'; // default to medium
+    }
 
     const variantClass = primary
       ? 'bg-blue-500 hover:bg-blue-600 text-white'
