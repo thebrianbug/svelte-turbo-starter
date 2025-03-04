@@ -27,37 +27,31 @@
     onClick?.();
   }
 
-  const sizeClasses = $derived(() => {
-    switch (size) {
-      case 'small':
-        return 'px-4 py-2.5 text-xs';
-      case 'large':
-        return 'px-6 py-3 text-base';
-      default:
-        return 'px-5 py-3 text-sm';
-    }
+  const classes = $derived(() => {
+    const baseClasses =
+      'font-sans font-bold rounded-full cursor-pointer inline-block leading-none transition-all duration-200';
+
+    const sizeClass = {
+      small: 'px-4 py-2.5 text-xs',
+      medium: 'px-5 py-3 text-sm',
+      large: 'px-6 py-3 text-base'
+    }[size];
+
+    const variantClass = primary
+      ? 'bg-blue-500 hover:bg-blue-600 text-white'
+      : backgroundColor
+        ? ''
+        : 'bg-transparent text-gray-700 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.15)] hover:shadow-[inset_0_0_0_1px_rgba(0,0,0,0.3)]';
+
+    return [baseClasses, sizeClass, variantClass].join(' ');
   });
-
-  const variantClasses = $derived(() =>
-    primary
-      ? 'bg-blue-500 text-white hover:bg-blue-600'
-      : 'bg-transparent text-gray-700 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.15)] hover:shadow-[inset_0_0_0_1px_rgba(0,0,0,0.3)]'
-  );
-
-  const buttonClasses = $derived(
-    [
-      'font-sans font-bold rounded-full cursor-pointer inline-block leading-none transition-all duration-200',
-      sizeClasses,
-      variantClasses
-    ].join(' ')
-  );
 
   const displayLabel = $derived(label.replace('{count}', count.toString()));
 </script>
 
 <button
   type="button"
-  class={buttonClasses}
+  class={classes}
   style:background-color={backgroundColor}
   onclick={handleClick}
 >
