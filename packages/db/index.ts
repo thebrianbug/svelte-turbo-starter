@@ -4,7 +4,7 @@ export { users, userStatusEnum } from './src/domains/users/schema';
 
 // Repository exports
 export type { IUserRepository } from './src/domains/users/interfaces/i-user-repository';
-export { userQueries as userRepository } from './src/domains/users/repository';
+export { UserRepository } from './src/domains/users/infrastructure/user-repository';
 
 // Validation utilities
 export {
