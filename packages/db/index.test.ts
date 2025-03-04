@@ -16,8 +16,10 @@ describe('db package exports', () => {
     expect(dbExports.userRepository).toBeDefined();
 
     // Validation
-    expect(dbExports.userSchema).toBeDefined();
-    expect(dbExports.validateUser).toBeDefined();
-    expect(dbExports.validateManyUsers).toBeDefined();
+    expect(dbExports.newUserSchema).toBeDefined();
+    expect(dbExports.updateUserSchema).toBeDefined();
+    expect(dbExports.validateNewUser).toBeDefined();
+    expect(dbExports.validateUpdateUser).toBeDefined();
+    expect(dbExports.validateManyNewUsers).toBeDefined();
   });
 });

@@ -1,5 +1,8 @@
 import { pgTable, serial, text, timestamp, pgEnum } from 'drizzle-orm/pg-core';
 
+// User status type
+export type UserStatus = 'active' | 'inactive';
+
 // User status enum
 export const userStatusEnum = pgEnum('user_status', ['active', 'inactive']);
 
@@ -13,9 +16,11 @@ export const users = pgTable('users', {
   updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
-// Export types derived from the schema
-export type DbUser = typeof users.$inferSelect;
-export type DbNewUser = typeof users.$inferInsert;
+// Base user type from database schema
+export type User = typeof users.$inferSelect;
+
+// Type for creating new users
+export type NewUser = Omit<typeof users.$inferInsert, 'id' | 'createdAt' | 'updatedAt'>;
 
 // Re-export the table for use in other modules
 export default users;

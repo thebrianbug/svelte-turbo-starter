@@ -2,7 +2,7 @@ import { eq, sql } from 'drizzle-orm';
 
 import { db } from '../../../database';
 import { BaseRepository, DatabaseError } from '../../../infrastructure/base-repository';
-import { validateUser } from '../models/user';
+import { validateNewUser, validateUpdateUser, validateManyNewUsers } from '../models/user';
 import { users, type User, type NewUser, type UserStatus } from '../schema';
 import type { IUserRepository } from '../interfaces/i-user-repository';
 
@@ -54,7 +54,7 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
   async create(data: NewUser): Promise<User> {
     try {
       const normalizedData = UserRepository.prepareUserData(data);
-      const validatedData = validateUser(normalizedData, { requireAll: true }) as Required<NewUser>;
+      const validatedData = validateNewUser(normalizedData);
       return await super.create(validatedData);
     } catch (error) {
       throw DatabaseError.from(error, 'create');
@@ -66,9 +66,7 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
 
     try {
       const preparedUsers = newUsers.map(UserRepository.prepareUserData);
-      const validatedUsers = preparedUsers.map((user) =>
-        validateUser(user, { requireAll: true })
-      ) as Required<NewUser>[];
+      const validatedUsers = validateManyNewUsers(preparedUsers);
 
       const now = new Date();
       const usersToCreate = validatedUsers.map((user) => ({
@@ -87,7 +85,7 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
   async update(id: number, data: Partial<NewUser>): Promise<User> {
     try {
       const normalizedData = UserRepository.prepareUserData(data);
-      const validatedData = validateUser(normalizedData, { requireAll: false });
+      const validatedData = validateUpdateUser(normalizedData);
       return await super.update(id, validatedData);
     } catch (error) {
       throw DatabaseError.from(error, 'update');
@@ -97,7 +95,7 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
   async updateMany(filter: { status: UserStatus }, data: Partial<NewUser>): Promise<number> {
     try {
       const normalizedData = UserRepository.prepareUserData(data);
-      const validatedData = validateUser(normalizedData, { requireAll: false });
+      const validatedData = validateUpdateUser(normalizedData);
 
       const result = await db
         .update(this.table)

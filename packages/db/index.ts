@@ -8,10 +8,13 @@ export { userQueries as userRepository } from './src/domains/users/repository';
 
 // Validation utilities
 export {
-  validateUser,
-  validateManyUsers,
-  type ValidationOptions,
-  userSchema
+  validateNewUser,
+  validateUpdateUser,
+  validateManyNewUsers,
+  newUserSchema,
+  updateUserSchema,
+  type ValidatedNewUser,
+  type ValidatedUpdateUser
 } from './src/domains/users/models/user';
 
 // Database utilities

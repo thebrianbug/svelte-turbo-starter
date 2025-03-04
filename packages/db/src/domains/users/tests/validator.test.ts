@@ -1,74 +1,103 @@
 import { describe, it, expect } from 'vitest';
+import {
+  newUserSchema,
+  updateUserSchema,
+  validateNewUser,
+  validateUpdateUser,
+  type UserStatus
+} from '../models/user';
 
-import { userSchema } from '../validator';
-
-describe('User Schema Validation', () => {
-  const validUser = {
+describe('User Validation', () => {
+  const validNewUser = {
     name: 'Test User',
     email: 'test@example.com',
     status: 'active' as const
   };
 
-  it('should validate a correct user object', () => {
-    const result = userSchema.safeParse(validUser);
-    expect(result.success).toBe(true);
-  });
+  describe('New User Validation', () => {
+    it('should validate a correct new user object', () => {
+      const result = newUserSchema.safeParse(validNewUser);
+      expect(result.success).toBe(true);
+    });
 
-  it('should validate user with default status', () => {
-    const userWithoutStatus = {
-      name: 'Test User',
-      email: 'test@example.com'
-    };
-    const result = userSchema.safeParse(userWithoutStatus);
-    expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.data.status).toBe('active');
-    }
-  });
+    it('should validate new user with default status', () => {
+      const userWithoutStatus = {
+        name: 'Test User',
+        email: 'test@example.com'
+      };
+      const result = validateNewUser(userWithoutStatus);
+      expect(result.status).toBe('active');
+    });
 
-  describe('Name Validation', () => {
     it('should reject empty name', () => {
-      const result = userSchema.safeParse({
-        ...validUser,
-        name: ''
-      });
-      expect(result.success).toBe(false);
+      expect(() =>
+        validateNewUser({
+          ...validNewUser,
+          name: ''
+        })
+      ).toThrow();
     });
 
     it('should reject too long name', () => {
-      const result = userSchema.safeParse({
-        ...validUser,
-        name: 'a'.repeat(101)
-      });
-      expect(result.success).toBe(false);
+      expect(() =>
+        validateNewUser({
+          ...validNewUser,
+          name: 'a'.repeat(101)
+        })
+      ).toThrow();
     });
-  });
 
-  describe('Email Validation', () => {
     it('should reject invalid email', () => {
-      const result = userSchema.safeParse({
-        ...validUser,
-        email: 'invalid-email'
-      });
-      expect(result.success).toBe(false);
+      expect(() =>
+        validateNewUser({
+          ...validNewUser,
+          email: 'invalid-email'
+        })
+      ).toThrow();
+    });
+
+    it('should reject invalid status', () => {
+      expect(() =>
+        validateNewUser({
+          ...validNewUser,
+          status: 'invalid' as UserStatus
+        })
+      ).toThrow();
     });
   });
 
-  describe('Status Validation', () => {
-    it('should reject invalid status', () => {
-      const result = userSchema.safeParse({
-        ...validUser,
-        status: 'invalid' as 'active' | 'inactive'
-      });
-      expect(result.success).toBe(false);
-    });
-
-    it('should accept inactive status', () => {
-      const result = userSchema.safeParse({
-        ...validUser,
-        status: 'inactive'
+  describe('Update User Validation', () => {
+    it('should validate partial updates', () => {
+      const result = updateUserSchema.safeParse({
+        name: 'Updated Name'
       });
       expect(result.success).toBe(true);
+    });
+
+    it('should validate complete updates', () => {
+      const result = validateUpdateUser(validNewUser);
+      expect(result).toEqual(validNewUser);
+    });
+
+    it('should allow empty update', () => {
+      const result = validateUpdateUser({});
+      expect(result).toEqual({});
+    });
+
+    it('should reject invalid email in update', () => {
+      expect(() =>
+        validateUpdateUser({
+          email: 'invalid-email'
+        })
+      ).toThrow();
+    });
+
+    it('should reject invalid status in update', () => {
+      expect(() =>
+        validateUpdateUser({
+          status: 'invalid' as UserStatus
+        })
+      ).toThrow();
     });
   });
 });

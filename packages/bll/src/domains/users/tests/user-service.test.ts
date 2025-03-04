@@ -1,9 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-
 import { UserService } from '../user-service';
-
 import type { IUserRepository } from '@repo/db/src/domains/users/interfaces/i-user-repository';
 import type { User } from '@repo/db/src/domains/users/models/user';
+import { validateNewUser, validateUpdateUser } from '@repo/db/src/domains/users/models/user';
 
 const TEST_DATA = {
   EMAIL: 'test@example.com',
@@ -43,15 +42,17 @@ describe('UserService', () => {
   });
 
   describe('createUser', () => {
-    it('should create a new user', async () => {
+    it('should create a new user with validation', async () => {
       const userData = {
         email: TEST_DATA.EMAIL,
         name: TEST_DATA.NAME
       };
 
+      const validatedData = validateNewUser(userData);
       const expectedUser = createMockUser({
         email: userData.email,
-        name: userData.name
+        name: userData.name,
+        status: validatedData.status
       });
 
       vi.mocked(userRepository.findByEmail).mockRejectedValue(new Error('NOT_FOUND'));
@@ -59,22 +60,20 @@ describe('UserService', () => {
 
       const result = await userService.createUser(userData);
 
-      expect(userRepository.create).toHaveBeenCalledWith({
-        ...userData,
-        status: 'active'
-      });
+      expect(userRepository.create).toHaveBeenCalledWith(validatedData);
       expect(result).toEqual(expectedUser);
     });
 
-    it('should create a new user with custom status', async () => {
+    it('should create a new user with custom status after validation', async () => {
       const userData = {
         email: TEST_DATA.EMAIL,
         name: TEST_DATA.NAME,
         status: 'inactive' as const
       };
 
+      const validatedData = validateNewUser(userData);
       const expectedUser = createMockUser({
-        ...userData
+        ...validatedData
       });
 
       vi.mocked(userRepository.findByEmail).mockRejectedValue(new Error('NOT_FOUND'));
@@ -82,7 +81,7 @@ describe('UserService', () => {
 
       const result = await userService.createUser(userData);
 
-      expect(userRepository.create).toHaveBeenCalledWith(userData);
+      expect(userRepository.create).toHaveBeenCalledWith(validatedData);
       expect(result).toEqual(expectedUser);
     });
 
@@ -102,6 +101,15 @@ describe('UserService', () => {
       await expect(userService.createUser(userData)).rejects.toThrow(
         'User with this email already exists'
       );
+    });
+
+    it('should throw validation error for invalid data', async () => {
+      const invalidData = {
+        email: 'invalid-email',
+        name: ''
+      };
+
+      await expect(userService.createUser(invalidData)).rejects.toThrow();
     });
   });
 
@@ -125,12 +133,13 @@ describe('UserService', () => {
   });
 
   describe('updateUser', () => {
-    it('should update user details', async () => {
+    it('should update user details with validation', async () => {
       const userId = 1;
       const updateData = {
         name: TEST_DATA.UPDATED_NAME
       };
 
+      const validatedData = validateUpdateUser(updateData);
       const existingUser = createMockUser({
         id: userId,
         name: 'Original Name'
@@ -138,7 +147,7 @@ describe('UserService', () => {
 
       const updatedUser = createMockUser({
         ...existingUser,
-        name: updateData.name
+        ...validatedData
       });
 
       vi.mocked(userRepository.findById).mockResolvedValue(existingUser);
@@ -146,7 +155,7 @@ describe('UserService', () => {
 
       const result = await userService.updateUser(userId, updateData);
 
-      expect(userRepository.update).toHaveBeenCalledWith(userId, updateData);
+      expect(userRepository.update).toHaveBeenCalledWith(userId, validatedData);
       expect(result).toEqual(updatedUser);
     });
 
@@ -156,6 +165,17 @@ describe('UserService', () => {
       await expect(userService.updateUser(1, { name: TEST_DATA.UPDATED_NAME })).rejects.toThrow(
         'User not found'
       );
+    });
+
+    it('should throw validation error for invalid update data', async () => {
+      const userId = 1;
+      const invalidData = {
+        email: 'invalid-email'
+      };
+
+      vi.mocked(userRepository.findById).mockResolvedValue(createMockUser());
+
+      await expect(userService.updateUser(userId, invalidData)).rejects.toThrow();
     });
   });
 

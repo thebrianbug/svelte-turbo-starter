@@ -1,31 +1,18 @@
 import type { IUserRepository } from '@repo/db/src/domains/users/interfaces/i-user-repository';
 import type { User } from '@repo/db/src/domains/users/models/user';
-
-type CreateUserData = {
-  email: string;
-  name: string;
-  status?: 'active' | 'inactive';
-};
-
-type UpdateUserData = {
-  name?: string;
-  email?: string;
-  status?: 'active' | 'inactive';
-};
-
+import { validateNewUser, validateUpdateUser } from '@repo/db/src/domains/users/models/user';
 export class UserService {
   constructor(private readonly userRepository: IUserRepository) {}
 
-  async createUser(userData: CreateUserData): Promise<User> {
+  async createUser(userData: unknown): Promise<User> {
+    const validatedData = validateNewUser(userData);
+
     try {
-      await this.userRepository.findByEmail(userData.email);
+      await this.userRepository.findByEmail(validatedData.email);
       throw new Error('User with this email already exists');
     } catch (error) {
       if (error instanceof Error && error.message.includes('NOT_FOUND')) {
-        return this.userRepository.create({
-          ...userData,
-          status: userData.status ?? 'active'
-        });
+        return this.userRepository.create(validatedData);
       }
       throw error;
     }
@@ -39,12 +26,14 @@ export class UserService {
     return user;
   }
 
-  async updateUser(id: number, updateData: UpdateUserData): Promise<User> {
+  async updateUser(id: number, updateData: unknown): Promise<User> {
+    const validatedData = validateUpdateUser(updateData);
+
     const user = await this.userRepository.findById(id);
     if (!user) {
       throw new Error('User not found');
     }
-    return this.userRepository.update(id, updateData);
+    return this.userRepository.update(id, validatedData);
   }
 
   async deactivateUser(id: number): Promise<void> {
