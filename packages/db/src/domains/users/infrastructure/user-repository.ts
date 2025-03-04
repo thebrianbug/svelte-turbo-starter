@@ -3,7 +3,8 @@ import { eq, sql } from 'drizzle-orm';
 import { db } from '../../../database';
 import { BaseRepository, DatabaseError } from '../../../infrastructure/base-repository';
 import { validateNewUser, validateUpdateUser, validateManyNewUsers } from '../models/user';
-import { users, type User, type NewUser, type UserStatus } from '../schema';
+import { users } from '../schema';
+import type { User, NewUser, UserStatus } from '../models/user';
 import type { IUserRepository } from '../interfaces/i-user-repository';
 
 class UserRepository extends BaseRepository<User> implements IUserRepository {

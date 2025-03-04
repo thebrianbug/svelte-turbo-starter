@@ -1,7 +1,10 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 
-import * as schema from '../domains/users/schema';
+import { users } from '../domains/users/schema';
+
+// Schema object for drizzle configuration
+const schema = { users };
 import { getDatabaseConfig } from './config';
 
 // Create and export database connection

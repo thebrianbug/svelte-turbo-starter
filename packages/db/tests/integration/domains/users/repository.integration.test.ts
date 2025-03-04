@@ -5,7 +5,7 @@ import { ZodError } from 'zod';
 import { userQueries } from '../../../../src/domains/users/repository';
 import { teardown, cleanTable, TABLES } from '../../test-utils/database';
 
-import type { NewUser } from '../../../../src/domains/users/schema';
+import type { NewUser } from '../../../../src/domains/users/models/user';
 
 const TEST_EMAILS = {
   MAIN: 'test@example.com',
@@ -77,7 +77,8 @@ describe('User Integration Tests', () => {
       const activeUser = await userQueries.create(testUser);
       const inactiveUser = await userQueries.create({
         ...testUser,
-        email: TEST_EMAILS.INACTIVE
+        email: TEST_EMAILS.INACTIVE,
+        status: 'active' as const
       });
       await userQueries.softDelete(inactiveUser.id);
 
@@ -114,10 +115,20 @@ describe('User Integration Tests', () => {
 
   describe('Bulk Operations', () => {
     it('should create multiple users', async () => {
-      const users = [
+      const users: NewUser[] = [
         testUser,
-        { ...testUser, email: TEST_EMAILS.SECONDARY, name: TEST_NAMES.SECOND_USER },
-        { ...testUser, email: TEST_EMAILS.THIRD, name: TEST_NAMES.THIRD_USER }
+        {
+          ...testUser,
+          email: TEST_EMAILS.SECONDARY,
+          name: TEST_NAMES.SECOND_USER,
+          status: 'active' as const
+        },
+        {
+          ...testUser,
+          email: TEST_EMAILS.THIRD,
+          name: TEST_NAMES.THIRD_USER,
+          status: 'active' as const
+        }
       ];
 
       const created = await userQueries.createMany(users);
@@ -134,7 +145,11 @@ describe('User Integration Tests', () => {
 
     it('should update multiple users by status', async () => {
       await userQueries.create(testUser);
-      await userQueries.create({ ...testUser, email: TEST_EMAILS.SECONDARY });
+      await userQueries.create({
+        ...testUser,
+        email: TEST_EMAILS.SECONDARY,
+        status: 'active' as const
+      });
 
       const updateCount = await userQueries.updateMany(
         { status: 'active' },
@@ -152,7 +167,11 @@ describe('User Integration Tests', () => {
 
     it('should delete multiple users by status', async () => {
       await userQueries.create(testUser);
-      await userQueries.create({ ...testUser, email: TEST_EMAILS.SECONDARY });
+      await userQueries.create({
+        ...testUser,
+        email: TEST_EMAILS.SECONDARY,
+        status: 'active' as const
+      });
 
       const deleteCount = await userQueries.softDeleteMany({ status: 'active' });
       expect(deleteCount).toBe(2);
@@ -165,7 +184,11 @@ describe('User Integration Tests', () => {
   describe('Count Operations', () => {
     it('should count all users', async () => {
       await userQueries.create(testUser);
-      await userQueries.create({ ...testUser, email: 'test2@example.com' });
+      await userQueries.create({
+        ...testUser,
+        email: 'test2@example.com',
+        status: 'active' as const
+      });
 
       const totalCount = await userQueries.count();
       expect(totalCount).toBe(2);
@@ -173,7 +196,11 @@ describe('User Integration Tests', () => {
 
     it('should count users by status', async () => {
       await userQueries.create(testUser);
-      const inactiveUser = await userQueries.create({ ...testUser, email: TEST_EMAILS.INACTIVE });
+      const inactiveUser = await userQueries.create({
+        ...testUser,
+        email: TEST_EMAILS.INACTIVE,
+        status: 'active' as const
+      });
       await userQueries.softDelete(inactiveUser.id);
 
       const activeCount = await userQueries.count({ status: 'active' });
