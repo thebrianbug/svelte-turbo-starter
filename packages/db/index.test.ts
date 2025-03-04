@@ -12,9 +12,11 @@ describe('db package exports', () => {
     expect(dbExports.users).toBeDefined();
     expect(dbExports.userStatusEnum).toBeDefined();
 
-    // Repository
-    expect(dbExports.UserRepository).toBeDefined();
-    expect(typeof dbExports.UserRepository).toBe('function'); // Should be a class
+    // Repository instance
+    expect(dbExports.userRepository).toBeDefined();
+    expect(typeof dbExports.userRepository).toBe('object'); // Should be an instance
+    expect(dbExports.userRepository.create).toBeDefined();
+    expect(dbExports.userRepository.findById).toBeDefined();
 
     // Validation
     expect(dbExports.newUserSchema).toBeDefined();
