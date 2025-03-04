@@ -25,13 +25,9 @@
   },
   "devDependencies": {
     "@repo/eslint-config": "*",
-    "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "@repo/svelte-config": "*",
     "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/svelte": "^5.2.7",
-    "@testing-library/user-event": "^14.6.1",
     "concurrently": "^9.1.2",
-    "jsdom": "^26.0.0",
-    "svelte": "^5.20.1",
-    "svelte-check": "^4.1.4"
+    "jsdom": "^26.0.0"
   }
 }

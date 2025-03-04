@@ -1,0 +1,30 @@
+{
+  "name": "@repo/svelte-config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.ts",
+      "import": "./index.ts"
+    }
+  },
+  "scripts": {
+    "clean": "rimraf node_modules",
+    "lint": "eslint .",
+    "format": "prettier --write ."
+  },
+  "peerDependencies": {
+    "svelte": "^5.20.1"
+  },
+  "dependencies": {
+    "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "@testing-library/svelte": "^5.2.7",
+    "@testing-library/user-event": "^14.6.1",
+    "svelte": "^5.20.1",
+    "svelte-check": "^4.1.4"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "*"
+  }
+}
