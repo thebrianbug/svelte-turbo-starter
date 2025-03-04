@@ -175,8 +175,9 @@ The project uses TypeScript for static type checking:
 
 When using AI coding assistants like GitHub Copilot or Claude, provide this system context for optimal code generation:
 
-```
+```md
 Tech Stack:
+
 - Frontend: Svelte 5 (Svelte 5 syntax only) + TypeScript, Vite 6.1.0, TailwindCSS 3.4.1
 - Backend: PostgreSQL with Docker/Podman, Drizzle ORM
 - Architecture: Domain-driven design, Modular structure (UI, BLL, DB layers)
@@ -185,6 +186,7 @@ Tech Stack:
 - Node.js >=18, NPM 10.8.2
 
 Testing Notes:
+
 - ts-mockito is used for mocking in unit tests
 - Follow TDD principles: write tests first, then implementation
 - Place unit tests next to source files with .test.ts extension
