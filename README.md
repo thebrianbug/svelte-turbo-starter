@@ -25,6 +25,7 @@ A full-featured monorepo starter template using [Turborepo](https://turbo.build/
 
 - [ ] Finish example users list CRUD UI
 - [ ] Integrate with Clerk for Auth
+- [ ] Upgrade Tailwind v3 to v4
 - [ ] 📚 Add Storybook support in UI package with [Svelte 5](https://storybook.js.org/blog/storybook-8-4/)
 
 ## Prerequisites
