@@ -40,6 +40,6 @@ const dbCredentials = getDbCredentials();
 export default {
   schema: './src/domains/users/schema/schema.ts',
   out: './drizzle',
-  driver: 'pg',
+  dialect: 'postgresql',
   dbCredentials
 } satisfies Config;

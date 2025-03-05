@@ -20,5 +20,5 @@ runs:
 
         # Run database migrations
         cd packages/db
-        NODE_ENV=test DATABASE_URL="${DATABASE_URL}" npx drizzle-kit push:pg
+        NODE_ENV=test DATABASE_URL="${DATABASE_URL}" npm run db:push
         cd ../..

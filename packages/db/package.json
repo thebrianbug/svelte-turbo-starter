@@ -6,9 +6,10 @@
   "main": "./index.ts",
   "types": "./index.ts",
   "scripts": {
-    "db:generate": "drizzle-kit generate:pg",
-    "db:push": "drizzle-kit push:pg",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
+    "db:up": "drizzle-kit up",
     "test": "npm run test:unit && npm run test:integration",
     "test:unit": "vitest run --config ./vitest.unit.config.ts",
     "test:integration": "cross-env NODE_ENV=test vitest run --config ./vitest.integration.config.ts",
@@ -18,13 +19,13 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "drizzle-orm": "^0.29.1",
+    "drizzle-orm": "^0.32.2",
     "postgres": "^3.4.3",
     "zod": "^3.24.2"
   },
   "devDependencies": {
     "@repo/typescript-config": "*",
     "cross-env": "^7.0.3",
-    "drizzle-kit": "^0.20.6"
+    "drizzle-kit": "^0.23.2"
   }
 }

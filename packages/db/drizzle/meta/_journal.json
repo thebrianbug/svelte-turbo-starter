@@ -1,10 +1,10 @@
 {
   "version": "5",
-  "dialect": "pg",
+  "dialect": "postgresql",
   "entries": [
     {
       "idx": 0,
-      "version": "5",
+      "version": "7",
       "when": 1740781327164,
       "tag": "0000_harsh_tomorrow_man",
       "breakpoints": true

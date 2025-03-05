@@ -3,8 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "db:up": "docker compose up -d",
-    "db:down": "docker compose down",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
     "build": "turbo run build",
     "clean": "turbo run clean && rimraf node_modules",
     "dev": "turbo run dev",
