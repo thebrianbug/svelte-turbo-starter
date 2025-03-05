@@ -4,10 +4,10 @@ Database package using Drizzle ORM with PostgreSQL.
 
 ## Setup
 
-1. Start the database:
+1. Start the database (from the root directory):
 
 ```bash
-npm run db:up
+npm run docker:up
 ```
 
 2. Generate migrations:
@@ -20,6 +20,18 @@ npm run db:generate
 
 ```bash
 npm run db:push
+```
+
+4. Update migration snapshots (if needed):
+
+```bash
+npm run db:up
+```
+
+5. Launch Drizzle Studio (optional):
+
+```bash
+npm run db:studio
 ```
 
 ## Usage

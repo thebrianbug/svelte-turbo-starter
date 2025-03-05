@@ -111,8 +111,8 @@ A full-featured monorepo starter template using [Turborepo](https://turbo.build/
 - `npm run test:unit` - Run [Vitest](https://vitest.dev/) unit tests across all applications
 - `npm run test:e2e` - Run [Playwright](https://playwright.dev/) end-to-end tests for both apps
 - `npm run kill:e2e` - Kill any hanging Playwright browser processes
-- `npm run db:up` - Start PostgreSQL database in Docker/Podman
-- `npm run db:down` - Stop and remove PostgreSQL container
+- `npm run docker:up` - Start PostgreSQL database in Docker/Podman
+- `npm run docker:down` - Stop and remove PostgreSQL container
 
 ## Development Workflow
 
@@ -146,8 +146,8 @@ A full-featured monorepo starter template using [Turborepo](https://turbo.build/
    The project includes a PostgreSQL database configuration using Docker Compose or Podman Compose:
 
    ```sh
-   npm run db:up    # Start PostgreSQL (uses Docker or falls back to Podman)
-   npm run db:down  # Stop PostgreSQL (uses Docker or falls back to Podman)
+   npm run docker:up    # Start PostgreSQL (uses Docker or falls back to Podman)
+   npm run docker:down  # Stop PostgreSQL (uses Docker or falls back to Podman)
    ```
 
    Connection details:
