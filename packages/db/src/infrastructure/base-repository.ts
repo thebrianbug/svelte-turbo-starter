@@ -106,8 +106,4 @@ export abstract class BaseRepository<T extends BaseEntity> {
       throw DatabaseError.from(error, 'delete');
     }
   }
-
-  async transaction<R>(callback: (tx: typeof db) => Promise<R>): Promise<R> {
-    return db.transaction(callback);
-  }
 }
