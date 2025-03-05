@@ -60,8 +60,8 @@ jobs:
           # Clean up schema and apply migrations
           cd packages/db
           NODE_ENV=test psql -h localhost -U postgres -d svelte_turbo_test_db -c "DROP TABLE IF EXISTS __drizzle_migrations CASCADE; DROP TYPE IF EXISTS user_status CASCADE;"
-          NODE_ENV=test npx drizzle-kit generate
-          NODE_ENV=test npx drizzle-kit push
+          NODE_ENV=test npm run db:generate
+          NODE_ENV=test npm run db:push
           cd ../..
 
       # Conditional Playwright setup
