@@ -1,17 +1,18 @@
+import typography from '@tailwindcss/typography';
+import forms from '@tailwindcss/forms';
+
 /** @type {import('tailwindcss').Config} */
-module.exports = (async () => ({
+export default {
   content: [
     // App source files
-    '../../apps/*/src/**/*.{html,js,svelte,ts}',
+    './../../apps/*/src/**/*.{html,js,svelte,ts}',
     // Include shared UI components
-    '../../packages/ui/components/**/*.{js,ts,jsx,tsx,svelte}',
-    '../../packages/ui/index.ts'
+    './../../packages/ui/components/**/*.{js,ts,jsx,tsx,svelte}',
+    './../../packages/ui/index.ts'
   ],
   theme: {
     extend: {
-      // Add any custom theme extensions here
       colors: {
-        // Example custom color palette
         primary: {
           50: '#f0f9ff',
           100: '#e0f2fe',
@@ -28,8 +29,5 @@ module.exports = (async () => ({
       }
     }
   },
-  plugins: [
-    (await import('@tailwindcss/typography')).default,
-    (await import('@tailwindcss/forms')).default
-  ]
-}))();
+  plugins: [typography, forms]
+};
