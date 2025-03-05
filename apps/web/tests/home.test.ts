@@ -10,20 +10,14 @@ test.describe('Web App Home Page', () => {
   test('counter button should increment', async ({ page }) => {
     await page.goto('/');
     const button = page.getByRole('button');
-
-    // Get initial count
-    const initialText = await button.textContent();
-    expect(initialText).toBe('clicks: 0');
-
-    // Click and wait for state update
+    await expect(button).toHaveText('clicks: 0');
     await button.click();
-    // Wait for the button text to update
-    await expect(button).toHaveText('clicks: 1', { timeout: 2000 });
+    await expect(button).toHaveText('clicks: 1');
   });
 
   test('documentation link should work', async ({ page }) => {
     await page.goto('/');
-    const link = page.getByRole('link', { name: 'kit.svelte.dev' });
+    const link = page.getByRole('link', { name: 'kit.svelte.dev', exact: true });
     await expect(link).toBeVisible();
     await expect(link).toHaveAttribute('href', 'https://kit.svelte.dev');
   });
