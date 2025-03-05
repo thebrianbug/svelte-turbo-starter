@@ -46,9 +46,13 @@ export abstract class BaseRepository<T extends BaseEntity> {
   async withTransaction<TResult>(
     callback: (tx: TransactionType) => Promise<TResult>
   ): Promise<TResult> {
-    return await db.transaction(async (tx) => {
-      return await callback(tx);
-    });
+    try {
+      return await db.transaction(async (tx) => {
+        return await callback(tx);
+      });
+    } catch (error) {
+      throw DatabaseError.from(error, 'transaction');
+    }
   }
 
   async findById(id: number, tx?: TransactionType): Promise<T> {
