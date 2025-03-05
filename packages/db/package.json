@@ -18,13 +18,13 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "drizzle-orm": "^0.40.0",
+    "drizzle-orm": "^0.29.1",
     "postgres": "^3.4.3",
     "zod": "^3.24.2"
   },
   "devDependencies": {
     "@repo/typescript-config": "*",
     "cross-env": "^7.0.3",
-    "drizzle-kit": "^0.30.5"
+    "drizzle-kit": "^0.20.6"
   }
 }
