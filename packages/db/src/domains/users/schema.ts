@@ -15,11 +15,7 @@ export const users = pgTable(
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull()
   },
-  (table) => {
-    return {
-      usersEmailIdx: index('users_email_idx').on(table.email)
-    };
-  }
+  (table) => [index('users_email_idx').on(table.email)]
 );
 
 // Export types derived from the schema
