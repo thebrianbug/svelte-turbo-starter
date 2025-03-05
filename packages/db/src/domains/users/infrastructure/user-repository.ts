@@ -1,7 +1,11 @@
 import { eq, sql } from 'drizzle-orm';
 
 import { db } from '../../../database';
-import { BaseRepository, DatabaseError } from '../../../infrastructure/base-repository';
+import {
+  BaseRepository,
+  DatabaseError,
+  type TransactionType
+} from '../../../infrastructure/base-repository';
 import { validateNewUser, validateUpdateUser, validateManyNewUsers } from '../models/user';
 import { users } from '../schema';
 import type { User, NewUser, UserStatus } from '../models/user';
@@ -31,9 +35,10 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
     };
   }
 
-  async findByEmail(email: string): Promise<User> {
+  async findByEmail(email: string, tx?: TransactionType): Promise<User> {
+    const executor = tx || db;
     try {
-      const [result] = await db
+      const [result] = await executor
         .select()
         .from(users)
         .where(eq(users.email, UserRepository.normalizeEmail(email)));
@@ -43,28 +48,29 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
     }
   }
 
-  async findActive(): Promise<User[]> {
+  async findActive(tx?: TransactionType): Promise<User[]> {
+    const executor = tx || db;
     try {
-      const results = await db.select().from(users).where(eq(users.status, 'active'));
+      const results = await executor.select().from(users).where(eq(users.status, 'active'));
       return results.map(this.mapToEntity);
     } catch (error) {
       throw DatabaseError.from(error, 'findActive');
     }
   }
 
-  async create(data: NewUser): Promise<User> {
+  async create(data: NewUser, tx?: TransactionType): Promise<User> {
     try {
       const normalizedData = UserRepository.prepareUserData(data);
       const validatedData = validateNewUser(normalizedData);
-      return await super.create(validatedData);
+      return await super.create(validatedData, tx);
     } catch (error) {
       throw DatabaseError.from(error, 'create');
     }
   }
 
-  async createMany(newUsers: NewUser[]): Promise<User[]> {
+  async createMany(newUsers: NewUser[], tx?: TransactionType): Promise<User[]> {
     if (newUsers.length === 0) return [];
-
+    const executor = tx || db;
     try {
       const preparedUsers = newUsers.map(UserRepository.prepareUserData);
       const validatedUsers = validateManyNewUsers(preparedUsers);
@@ -76,29 +82,34 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
         updatedAt: now
       }));
 
-      const results = await db.insert(this.table).values(usersToCreate).returning();
+      const results = await executor.insert(this.table).values(usersToCreate).returning();
       return results.map(this.mapToEntity);
     } catch (error) {
       throw DatabaseError.from(error, 'createMany');
     }
   }
 
-  async update(id: number, data: Partial<NewUser>): Promise<User> {
+  async update(id: number, data: Partial<NewUser>, tx?: TransactionType): Promise<User> {
     try {
       const normalizedData = UserRepository.prepareUserData(data);
       const validatedData = validateUpdateUser(normalizedData);
-      return await super.update(id, validatedData);
+      return await super.update(id, validatedData, tx);
     } catch (error) {
       throw DatabaseError.from(error, 'update');
     }
   }
 
-  async updateMany(filter: { status: UserStatus }, data: Partial<NewUser>): Promise<number> {
+  async updateMany(
+    filter: { status: UserStatus },
+    data: Partial<NewUser>,
+    tx?: TransactionType
+  ): Promise<number> {
+    const executor = tx || db;
     try {
       const normalizedData = UserRepository.prepareUserData(data);
       const validatedData = validateUpdateUser(normalizedData);
 
-      const result = await db
+      const result = await executor
         .update(this.table)
         .set({ ...validatedData, updatedAt: new Date() })
         .where(eq(users.status, filter.status))
@@ -110,9 +121,10 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
     }
   }
 
-  async softDelete(id: number): Promise<boolean> {
+  async softDelete(id: number, tx?: TransactionType): Promise<boolean> {
+    const executor = tx || db;
     try {
-      const result = await db
+      const result = await executor
         .update(this.table)
         .set({ status: 'inactive', updatedAt: new Date() })
         .where(eq(users.id, id))
@@ -124,9 +136,10 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
     }
   }
 
-  async softDeleteMany(filter: { status: 'active' }): Promise<number> {
+  async softDeleteMany(filter: { status: 'active' }, tx?: TransactionType): Promise<number> {
+    const executor = tx || db;
     try {
-      const result = await db
+      const result = await executor
         .update(this.table)
         .set({ status: 'inactive', updatedAt: new Date() })
         .where(eq(users.status, filter.status))
@@ -138,9 +151,10 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
     }
   }
 
-  async count(filter?: { status?: UserStatus }): Promise<number> {
+  async count(filter?: { status?: UserStatus }, tx?: TransactionType): Promise<number> {
+    const executor = tx || db;
     try {
-      const query = db.select({ count: sql<number>`count(*)` }).from(this.table);
+      const query = executor.select({ count: sql<number>`count(*)` }).from(this.table);
 
       if (filter?.status) {
         query.where(eq(users.status, filter.status));

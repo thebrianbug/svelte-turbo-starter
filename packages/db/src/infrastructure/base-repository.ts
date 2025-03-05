@@ -1,9 +1,11 @@
 import { sql } from 'drizzle-orm';
 import { PostgresError } from 'postgres';
+import type { PgTable } from 'drizzle-orm/pg-core';
 
 import { db } from '../database';
 
-import type { PgTable } from 'drizzle-orm/pg-core';
+export type DatabaseType = typeof db;
+export type TransactionType = Parameters<Parameters<DatabaseType['transaction']>[0]>[0];
 
 export class DatabaseError extends Error {
   constructor(
@@ -41,9 +43,18 @@ export abstract class BaseRepository<T extends BaseEntity> {
     return record as T;
   }
 
-  async findById(id: number): Promise<T> {
+  async withTransaction<TResult>(
+    callback: (tx: TransactionType) => Promise<TResult>
+  ): Promise<TResult> {
+    return await db.transaction(async (tx) => {
+      return await callback(tx);
+    });
+  }
+
+  async findById(id: number, tx?: TransactionType): Promise<T> {
+    const executor = tx || db;
     try {
-      const [result] = await db
+      const [result] = await executor
         .select()
         .from(this.table)
         .where(sql`${this.table}.id = ${id}`);
@@ -53,19 +64,21 @@ export abstract class BaseRepository<T extends BaseEntity> {
     }
   }
 
-  async findAll(): Promise<T[]> {
+  async findAll(tx?: TransactionType): Promise<T[]> {
+    const executor = tx || db;
     try {
-      const results = await db.select().from(this.table);
+      const results = await executor.select().from(this.table);
       return results.map(this.mapToEntity);
     } catch (error) {
       throw DatabaseError.from(error, 'findAll');
     }
   }
 
-  async create(data: Omit<T, keyof BaseEntity>): Promise<T> {
+  async create(data: Omit<T, keyof BaseEntity>, tx?: TransactionType): Promise<T> {
+    const executor = tx || db;
     try {
       const now = new Date();
-      const [result] = await db
+      const [result] = await executor
         .insert(this.table)
         .values({
           ...data,
@@ -79,9 +92,14 @@ export abstract class BaseRepository<T extends BaseEntity> {
     }
   }
 
-  async update(id: number, data: Partial<Omit<T, keyof BaseEntity>>): Promise<T> {
+  async update(
+    id: number,
+    data: Partial<Omit<T, keyof BaseEntity>>,
+    tx?: TransactionType
+  ): Promise<T> {
+    const executor = tx || db;
     try {
-      const [result] = await db
+      const [result] = await executor
         .update(this.table)
         .set({
           ...data,
@@ -89,16 +107,16 @@ export abstract class BaseRepository<T extends BaseEntity> {
         })
         .where(sql`${this.table}.id = ${id}`)
         .returning();
-
       return this.mapToEntity(result);
     } catch (error) {
       throw DatabaseError.from(error, 'update');
     }
   }
 
-  async delete(id: number): Promise<void> {
+  async delete(id: number, tx?: TransactionType): Promise<void> {
+    const executor = tx || db;
     try {
-      await db
+      await executor
         .delete(this.table)
         .where(sql`${this.table}.id = ${id}`)
         .returning();

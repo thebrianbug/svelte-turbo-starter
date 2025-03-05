@@ -209,4 +209,70 @@ describe('User Integration Tests', () => {
       expect(inactiveCount).toBe(1);
     });
   });
+
+  describe('Transaction Operations', () => {
+    it('should successfully execute multiple operations in a transaction', async () => {
+      const result = await userRepository.withTransaction(async (tx) => {
+        const user1 = await userRepository.create(
+          {
+            ...testUser,
+            email: TEST_EMAILS.MAIN
+          },
+          tx
+        );
+
+        const user2 = await userRepository.create(
+          {
+            ...testUser,
+            email: TEST_EMAILS.SECONDARY
+          },
+          tx
+        );
+
+        await userRepository.update(user1.id, { name: TEST_NAMES.UPDATED }, tx);
+
+        return { user1Id: user1.id, user2Id: user2.id };
+      });
+
+      // Verify operations were successful
+      const updatedUser1 = await userRepository.findById(result.user1Id);
+      const user2 = await userRepository.findById(result.user2Id);
+
+      expect(updatedUser1.name).toBe(TEST_NAMES.UPDATED);
+      expect(user2.email).toBe(TEST_EMAILS.SECONDARY);
+    });
+
+    it('should rollback transaction on error', async () => {
+      const initialCount = await userRepository.count();
+
+      // Attempt operations that will fail
+      const error = await userRepository
+        .withTransaction(async (tx) => {
+          // First operation succeeds
+          await userRepository.create(
+            {
+              ...testUser,
+              email: TEST_EMAILS.MAIN
+            },
+            tx
+          );
+
+          // Second operation fails (duplicate email)
+          await userRepository.create(
+            {
+              ...testUser,
+              email: TEST_EMAILS.MAIN // Same email to trigger unique constraint
+            },
+            tx
+          );
+        })
+        .catch((e) => e);
+
+      // Verify transaction was rolled back
+      const finalCount = await userRepository.count();
+      expect(finalCount).toBe(initialCount);
+      expect(error).toBeInstanceOf(DatabaseError);
+      expect(error.message).toContain('Unique constraint violation');
+    });
+  });
 });
