@@ -7,9 +7,9 @@ A full-featured monorepo starter template using [Turborepo](https://turbo.build/
 - 📦 Monorepo management with [Turborepo](https://turbo.build/)
 - ⚡ [SvelteKit 2](https://kit.svelte.dev/) with [Svelte 5](https://svelte.dev/) for both main app and documentation
 - 🚀 [Vercel](https://vercel.com/) adapter pre-configured
-- 🎨 [Tailwind CSS](https://tailwindcss.com/) v3.4.1 for styling
+- 🎨 [Tailwind CSS](https://tailwindcss.com/) v3 for styling
 - 📚 Shared UI component library
-- 🔍 [TypeScript](https://www.typescriptlang.org/) v5.5.3 for type safety
+- 🔍 [TypeScript](https://www.typescriptlang.org/) v5 for type safety
 - 🧪 Testing setup with [Vitest](https://vitest.dev/) and [Playwright](https://playwright.dev/)
 - 📝 Consistent code style with [ESLint](https://eslint.org/) and [Prettier](https://prettier.io/)
 - 🗄️ PostgreSQL with [Drizzle ORM](https://orm.drizzle.team/) for type-safe database operations
@@ -34,7 +34,7 @@ A full-featured monorepo starter template using [Turborepo](https://turbo.build/
 - [Node.js](https://nodejs.org/) >= 18
   - Download from: https://nodejs.org/
   - Verify installation: `node --version`
-- npm >= 10.8.2 (comes with Node.js)
+- npm >= 10 (comes with Node.js)
   - Upgrade to latest version: `npm install -g npm@latest`
   - Verify installation: `npm --version`
 - Either [Docker](https://www.docker.com/) or [Podman](https://podman.io/) with compose plugin
@@ -99,7 +99,7 @@ A full-featured monorepo starter template using [Turborepo](https://turbo.build/
 
 ## Available Scripts
 
-- `npm run dev` - Start all applications in development mode using [Vite](https://vitejs.dev/) v6.1.0
+- `npm run dev` - Start all applications in development mode using [Vite](https://vitejs.dev/) v6
 - `npm run build` - Build all applications and packages
 - `npm run preview` - Preview the built applications
 - `npm run clean` - Clean build outputs and node_modules directories
@@ -182,12 +182,12 @@ When using AI coding assistants like GitHub Copilot or Claude, provide this syst
 ```md
 Tech Stack:
 
-- Frontend: Svelte 5 (Svelte 5 syntax only) + TypeScript, Vite 6.1.0, TailwindCSS 3.4.1
+- Frontend: Svelte 5 (Svelte 5 syntax only) + TypeScript, Vite v6, TailwindCSS v3
 - Backend: PostgreSQL with Docker/Podman, Drizzle ORM
 - Architecture: Domain-driven design, Modular structure (UI, BLL, DB layers)
 - Testing: Vitest for unit/integration, Playwright for E2E
-- Quality: TypeScript 5.5.3, ESLint (security, promise, sonar, unicorn plugins), Prettier with Svelte plugin
-- Node.js >=18, NPM 10.8.2
+- Quality: TypeScript v5, ESLint (security, promise, sonar, unicorn plugins), Prettier with Svelte plugin
+- Node.js >=18, NPM 10
 
 Testing Notes:
 
