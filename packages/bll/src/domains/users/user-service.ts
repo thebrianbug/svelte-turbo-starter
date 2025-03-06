@@ -41,4 +41,8 @@ export class UserService {
       throw new Error('Failed to deactivate user');
     }
   }
+
+  async getActiveUsers(): Promise<User[]> {
+    return this.userRepository.findActive();
+  }
 }

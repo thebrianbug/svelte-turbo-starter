@@ -184,4 +184,29 @@ describe('UserService', () => {
       await expect(userService.deactivateUser(1)).rejects.toThrow('Failed to deactivate user');
     });
   });
+
+  describe('getActiveUsers', () => {
+    it('should return all active users', async () => {
+      const expectedUsers = [
+        createMockUser({ id: 1, email: 'user1@example.com' }),
+        createMockUser({ id: 2, email: 'user2@example.com' })
+      ];
+
+      when(userRepositoryMock.findActive()).thenResolve(expectedUsers);
+
+      const result = await userService.getActiveUsers();
+
+      verify(userRepositoryMock.findActive()).once();
+      expect(result).toEqual(expectedUsers);
+    });
+
+    it('should return empty array when no active users exist', async () => {
+      when(userRepositoryMock.findActive()).thenResolve([]);
+
+      const result = await userService.getActiveUsers();
+
+      verify(userRepositoryMock.findActive()).once();
+      expect(result).toEqual([]);
+    });
+  });
 });
