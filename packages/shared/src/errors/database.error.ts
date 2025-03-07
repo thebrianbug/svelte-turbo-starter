@@ -43,6 +43,12 @@ export class DatabaseError extends BaseError {
             entityType
           });
       }
+    } else if (error instanceof DatabaseError) {
+      return new DatabaseError(error.code, error.message, {
+        entityType,
+        operation,
+        ...error.metadata
+      });
     }
 
     // Default to generic database error for unhandled cases

@@ -92,7 +92,9 @@ describe('User Integration Tests', () => {
       await userRepository.create(testUser);
       const error = await userRepository.create(testUser).catch((e) => e);
       expect(error).toBeInstanceOf(DatabaseError);
-      expect(error.message).toContain("Database operation 'create' failed");
+      expect(error.code).toBe('UNIQUE_VIOLATION');
+      expect(error.metadata?.operation).toBe('create');
+      expect(error.metadata?.entityType).toBe('user');
     });
 
     it('should validate user input', async () => {
@@ -100,15 +102,28 @@ describe('User Integration Tests', () => {
         ...testUser,
         email: 'invalid-email'
       };
-      await expect(userRepository.create(invalidUser)).rejects.toThrow(DatabaseError);
+      const error = await userRepository.create(invalidUser).catch((e) => e);
+      expect(error).toBeInstanceOf(DatabaseError);
+      expect(error.code).toBe('VALIDATION_FAILED');
+      expect(error.metadata?.field).toBe('email');
+      expect(error.metadata?.entityType).toBe('user');
     });
 
     it('should validate name length', async () => {
       const emptyNameUser = { ...testUser, name: '' };
       const longNameUser = { ...testUser, name: 'a'.repeat(101) };
 
-      await expect(userRepository.create(emptyNameUser)).rejects.toThrow(DatabaseError);
-      await expect(userRepository.create(longNameUser)).rejects.toThrow(DatabaseError);
+      const emptyError = await userRepository.create(emptyNameUser).catch((e) => e);
+      expect(emptyError).toBeInstanceOf(DatabaseError);
+      expect(emptyError.code).toBe('VALIDATION_FAILED');
+      expect(emptyError.metadata?.field).toBe('name');
+      expect(emptyError.metadata?.entityType).toBe('user');
+
+      const longError = await userRepository.create(longNameUser).catch((e) => e);
+      expect(longError).toBeInstanceOf(DatabaseError);
+      expect(longError.code).toBe('VALIDATION_FAILED');
+      expect(longError.metadata?.field).toBe('name');
+      expect(longError.metadata?.entityType).toBe('user');
     });
   });
 
@@ -305,7 +320,9 @@ describe('User Integration Tests', () => {
       const finalCount = await userRepository.count();
       expect(finalCount).toBe(initialCount);
       expect(error).toBeInstanceOf(DatabaseError);
-      expect(error.message).toContain("Database operation 'transaction' failed");
+      expect(error.code).toBe('UNIQUE_VIOLATION');
+      expect(error.metadata?.operation).toBe('create');
+      expect(error.metadata?.entityType).toBe('user');
     });
   });
 });

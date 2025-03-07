@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ValidationError } from '@repo/shared';
+import { DatabaseError } from '@repo/shared';
 
 export type UserStatus = 'active' | 'inactive';
 
@@ -53,7 +53,11 @@ export function validateNewUser(data: unknown): ValidatedNewUser {
     return newUserSchema.parse(data);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      throw new ValidationError('user', error.errors[0].message);
+      throw new DatabaseError('VALIDATION_FAILED', `Database validation failed for user`, {
+        entityType: 'user',
+        field: error.errors[0].path.join('.'),
+        message: error.errors[0].message
+      });
     }
     throw error;
   }
@@ -71,7 +75,11 @@ export function validateUpdateUser(data: unknown): ValidatedUpdateUser {
     return result;
   } catch (error) {
     if (error instanceof z.ZodError) {
-      throw new ValidationError('user', error.errors[0].message);
+      throw new DatabaseError('VALIDATION_FAILED', `Database validation failed for user`, {
+        entityType: 'user',
+        field: error.errors[0].path.join('.'),
+        message: error.errors[0].message
+      });
     }
     throw error;
   }
@@ -82,7 +90,11 @@ export function validateManyNewUsers(data: unknown[]): ValidatedNewUser[] {
     return data.map(validateNewUser);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      throw new ValidationError('user', error.errors[0].message);
+      throw new DatabaseError('VALIDATION_FAILED', `Database validation failed for user`, {
+        entityType: 'user',
+        field: error.errors[0].path.join('.'),
+        message: error.errors[0].message
+      });
     }
     throw error;
   }
