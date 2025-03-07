@@ -13,6 +13,10 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
   protected readonly table = users;
   protected readonly entityType = 'user';
 
+  constructor(dbConnection?: ReturnType<typeof getConnection>, tx?: TransactionType) {
+    super(dbConnection, tx);
+  }
+
   private static normalizeEmail = (email: string): string => email.trim().toLowerCase();
 
   private static prepareUserData<T extends { email?: string }>(data: T): T {
@@ -35,8 +39,7 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
   }
 
   async findByEmail(email: string, tx?: TransactionType): Promise<User> {
-    const { db } = getConnection();
-    const executor = tx || db;
+    const executor = tx || this.getExecutor();
     try {
       const [result] = await executor
         .select()
@@ -49,8 +52,7 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
   }
 
   async findActive(tx?: TransactionType): Promise<User[]> {
-    const { db } = getConnection();
-    const executor = tx || db;
+    const executor = tx || this.getExecutor();
     try {
       const results = await executor.select().from(users).where(eq(users.status, 'active'));
       return results.map(this.mapToEntity);
@@ -71,8 +73,8 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
 
   async createMany(newUsers: NewUser[], tx?: TransactionType): Promise<User[]> {
     if (newUsers.length === 0) return [];
-    const { db } = getConnection();
-    const executor = tx || db;
+
+    const executor = tx || this.getExecutor();
     try {
       const preparedUsers = newUsers.map(UserRepository.prepareUserData);
       const validatedUsers = validateManyNewUsers(preparedUsers);
@@ -106,8 +108,7 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
     data: Partial<NewUser>,
     tx?: TransactionType
   ): Promise<number> {
-    const { db } = getConnection();
-    const executor = tx || db;
+    const executor = tx || this.getExecutor();
     try {
       const normalizedData = UserRepository.prepareUserData(data);
       const validatedData = validateUpdateUser(normalizedData);
@@ -125,8 +126,7 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
   }
 
   async softDelete(id: number, tx?: TransactionType): Promise<boolean> {
-    const { db } = getConnection();
-    const executor = tx || db;
+    const executor = tx || this.getExecutor();
     try {
       const result = await executor
         .update(this.table)
@@ -141,8 +141,7 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
   }
 
   async softDeleteMany(filter: { status: 'active' }, tx?: TransactionType): Promise<number> {
-    const { db } = getConnection();
-    const executor = tx || db;
+    const executor = tx || this.getExecutor();
     try {
       const result = await executor
         .update(this.table)
@@ -157,8 +156,7 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
   }
 
   async count(filter?: { status?: UserStatus }, tx?: TransactionType): Promise<number> {
-    const { db } = getConnection();
-    const executor = tx || db;
+    const executor = tx || this.getExecutor();
     try {
       const query = executor.select({ count: sql<number>`count(*)` }).from(this.table);
 

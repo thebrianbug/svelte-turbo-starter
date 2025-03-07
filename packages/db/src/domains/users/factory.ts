@@ -1,6 +1,10 @@
 import { UserRepository } from './infrastructure/user-repository';
 import type { IUserRepository } from './interfaces/i-user-repository';
 
-export const createUserRepository = (): IUserRepository => {
-  return new UserRepository();
+import { getConnection } from '../../database';
+
+export const createUserRepository = (
+  dbConnection?: ReturnType<typeof getConnection>
+): IUserRepository => {
+  return new UserRepository(dbConnection);
 };

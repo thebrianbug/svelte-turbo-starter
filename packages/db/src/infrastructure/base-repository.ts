@@ -17,16 +17,25 @@ export abstract class BaseRepository<T extends BaseEntity> {
   protected abstract readonly table: PgTable;
   protected abstract readonly entityType: string;
 
+  constructor(
+    protected readonly dbConnection?: ReturnType<typeof getConnection>,
+    protected readonly tx?: TransactionType
+  ) {}
+
   protected mapToEntity(record: Record<string, unknown>): T {
     return record as T;
+  }
+
+  protected getExecutor() {
+    return this.tx || (this.dbConnection || getConnection()).db;
   }
 
   async withTransaction<TResult>(
     callback: (tx: TransactionType) => Promise<TResult>
   ): Promise<TResult> {
     try {
-      const { db } = getConnection();
-      return await db.transaction(async (tx) => {
+      const executor = this.getExecutor();
+      return await executor.transaction(async (tx) => {
         return await callback(tx);
       });
     } catch (error) {
@@ -35,8 +44,7 @@ export abstract class BaseRepository<T extends BaseEntity> {
   }
 
   async findById(id: number, tx?: TransactionType): Promise<T> {
-    const { db } = getConnection();
-    const executor = tx || db;
+    const executor = tx || this.getExecutor();
     try {
       const [result] = await executor
         .select()
@@ -52,8 +60,7 @@ export abstract class BaseRepository<T extends BaseEntity> {
   }
 
   async findAll(tx?: TransactionType): Promise<T[]> {
-    const { db } = getConnection();
-    const executor = tx || db;
+    const executor = tx || this.getExecutor();
     try {
       const results = await executor.select().from(this.table);
       return results.map(this.mapToEntity);
@@ -63,8 +70,7 @@ export abstract class BaseRepository<T extends BaseEntity> {
   }
 
   async create(data: Omit<T, keyof BaseEntity>, tx?: TransactionType): Promise<T> {
-    const { db } = getConnection();
-    const executor = tx || db;
+    const executor = tx || this.getExecutor();
     try {
       const now = new Date();
       const [result] = await executor
@@ -86,8 +92,7 @@ export abstract class BaseRepository<T extends BaseEntity> {
     data: Partial<Omit<T, keyof BaseEntity>>,
     tx?: TransactionType
   ): Promise<T> {
-    const { db } = getConnection();
-    const executor = tx || db;
+    const executor = tx || this.getExecutor();
     try {
       const [result] = await executor
         .update(this.table)
@@ -107,8 +112,7 @@ export abstract class BaseRepository<T extends BaseEntity> {
   }
 
   async delete(id: number, tx?: TransactionType): Promise<void> {
-    const { db } = getConnection();
-    const executor = tx || db;
+    const executor = tx || this.getExecutor();
     try {
       const [result] = await executor
         .delete(this.table)
