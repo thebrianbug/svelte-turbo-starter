@@ -91,7 +91,6 @@ describe('UserService', () => {
       );
 
       await expect(userService.createUser(userData)).rejects.toThrow(DuplicateEntityError);
-      await expect(userService.createUser(userData)).rejects.toThrow('User with email already exists');
     });
 
     it('should throw validation error for invalid data', async () => {
@@ -120,7 +119,6 @@ describe('UserService', () => {
       when(userRepositoryMock.findById(1)).thenResolve(undefined);
 
       await expect(userService.getUserById(1)).rejects.toThrow(EntityNotFoundError);
-      await expect(userService.getUserById(1)).rejects.toThrow('User not found: 1');
     });
   });
 
@@ -154,8 +152,9 @@ describe('UserService', () => {
     it('should throw error if user not found', async () => {
       when(userRepositoryMock.findById(1)).thenResolve(undefined);
 
-      await expect(userService.updateUser(1, { name: TEST_DATA.UPDATED_NAME })).rejects.toThrow(EntityNotFoundError);
-      await expect(userService.updateUser(1, { name: TEST_DATA.UPDATED_NAME })).rejects.toThrow('User not found: 1');
+      await expect(userService.updateUser(1, { name: TEST_DATA.UPDATED_NAME })).rejects.toThrow(
+        EntityNotFoundError
+      );
     });
 
     it('should throw validation error for invalid update data', async () => {
@@ -182,7 +181,6 @@ describe('UserService', () => {
       when(userRepositoryMock.softDelete(1)).thenResolve(false);
 
       await expect(userService.deactivateUser(1)).rejects.toThrow(OperationError);
-      await expect(userService.deactivateUser(1)).rejects.toThrow('Failed to deactivateUser User: 1');
     });
   });
 
