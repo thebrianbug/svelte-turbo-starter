@@ -1,5 +1,6 @@
 import type { IUserRepository, User } from '@repo/db';
 import { validateNewUser, validateUpdateUser } from '@repo/db';
+import { EntityNotFoundError, DuplicateEntityError, OperationError } from '@repo/shared';
 
 export class UserService {
   constructor(private readonly userRepository: IUserRepository) {}
@@ -9,7 +10,7 @@ export class UserService {
 
     try {
       await this.userRepository.findByEmail(validatedData.email);
-      throw new Error('User with this email already exists');
+      throw new DuplicateEntityError('User', 'email', validatedData.email);
     } catch (error) {
       if (error instanceof Error && error.message.includes('NOT_FOUND')) {
         return this.userRepository.create(validatedData);
@@ -21,7 +22,7 @@ export class UserService {
   async getUserById(id: number): Promise<User> {
     const user = await this.userRepository.findById(id);
     if (!user) {
-      throw new Error('User not found');
+      throw new EntityNotFoundError('User', id);
     }
     return user;
   }
@@ -31,7 +32,7 @@ export class UserService {
 
     const user = await this.userRepository.findById(id);
     if (!user) {
-      throw new Error('User not found');
+      throw new EntityNotFoundError('User', id);
     }
     return this.userRepository.update(id, validatedData);
   }
@@ -39,7 +40,7 @@ export class UserService {
   async deactivateUser(id: number): Promise<void> {
     const success = await this.userRepository.softDelete(id);
     if (!success) {
-      throw new Error('Failed to deactivate user');
+      throw new OperationError('User', 'deactivateUser', id.toString());
     }
   }
 
