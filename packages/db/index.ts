@@ -1,5 +1,5 @@
 // Database types and schema
-export type { User, NewUser, UserStatus } from './src/domains/users/schema';
+export type { User, NewUser, UserStatus } from './src/domains/users/models/user';
 export { users, userStatusEnum } from './src/domains/users/schema';
 
 // Repository exports
