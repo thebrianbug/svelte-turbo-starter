@@ -1,7 +1,7 @@
 import { config } from 'dotenv';
 import { join } from 'path';
 
-// Load environment variables from .env
+// Load environment variables from packages/db/.env
 config({ path: join(__dirname, '../../.env') });
 
 // Get database URL, using test database in test environment
