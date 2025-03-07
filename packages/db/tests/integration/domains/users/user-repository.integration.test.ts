@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterAll } from 'vitest';
 
 import { userRepository } from '../../../..';
-import { DatabaseError } from '../../../../src/infrastructure/base-repository';
+import { DatabaseError } from '@repo/shared';
 import { teardown, cleanTable, TABLES } from '../../test-utils/database';
 
 import type { NewUser } from '../../../../src/domains/users/models/user';

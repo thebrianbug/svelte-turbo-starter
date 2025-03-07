@@ -1,34 +1,11 @@
 import { sql } from 'drizzle-orm';
-import { PostgresError } from 'postgres';
 import type { PgTable } from 'drizzle-orm/pg-core';
 
+import { DatabaseError } from '@repo/shared';
 import { db } from '../database';
 
 export type DatabaseType = typeof db;
 export type TransactionType = Parameters<Parameters<DatabaseType['transaction']>[0]>[0];
-
-export class DatabaseError extends Error {
-  constructor(
-    public code: string,
-    message: string,
-    public field?: string
-  ) {
-    super(message);
-    this.name = 'DatabaseError';
-  }
-
-  static from(error: unknown, operation: string): DatabaseError {
-    if (error instanceof PostgresError) {
-      if (error.code === '23505') {
-        return new DatabaseError('UNIQUE_VIOLATION', 'Unique constraint violation');
-      }
-    }
-    return new DatabaseError(
-      'OPERATION_FAILED',
-      `Failed to ${operation}: ${error instanceof Error ? error.message : String(error)}`
-    );
-  }
-}
 
 export type BaseEntity = {
   id: number;
