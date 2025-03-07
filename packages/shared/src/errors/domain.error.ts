@@ -4,15 +4,7 @@ import { BaseError } from './base.error';
  * Base class for all domain errors in the system.
  * Provides common error properties and type safety.
  */
-export abstract class DomainError extends BaseError {
-  constructor(
-    readonly code: string,
-    message: string,
-    metadata?: Record<string, unknown>
-  ) {
-    super(code, message, metadata);
-  }
-}
+export abstract class DomainError extends BaseError {}
 
 export class EntityNotFoundError extends DomainError {
   constructor(entityType: string, identifier: string | number) {
