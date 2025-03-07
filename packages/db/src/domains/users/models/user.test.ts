@@ -5,7 +5,7 @@ import {
   validateNewUser,
   validateUpdateUser,
   type UserStatus
-} from '../models/user';
+} from './user';
 
 describe('User Validation', () => {
   const validNewUser = {
