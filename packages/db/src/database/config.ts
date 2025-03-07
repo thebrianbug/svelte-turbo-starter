@@ -1,10 +1,8 @@
 import { config } from 'dotenv';
 import { join } from 'path';
 
-// Load environment variables from packages/db/.env
 config({ path: join(__dirname, '../../.env') });
 
-// Get database URL, using test database in test environment
 export const getDatabaseConfig = () => {
   if (!process.env.DATABASE_URL) {
     throw new Error('DATABASE_URL environment variable is required for database connection');

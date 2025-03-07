@@ -1,9 +1,7 @@
 import { z } from 'zod';
 
-// User status type
 export type UserStatus = 'active' | 'inactive';
 
-// Base user type
 export interface User {
   id: number;
   name: string;
@@ -13,17 +11,14 @@ export interface User {
   updatedAt: Date;
 }
 
-// Type for creating new users
 export type NewUser = Omit<User, 'id' | 'createdAt' | 'updatedAt'>;
 
-// Input type for new user schema
 type NewUserInput = {
   name: string;
   email: string;
   status?: UserStatus;
 };
 
-// Validation schema for new users
 export const newUserSchema = z.preprocess(
   (data): NewUserInput => {
     if (typeof data === 'object' && data !== null) {
@@ -42,20 +37,16 @@ export const newUserSchema = z.preprocess(
   })
 ) as z.ZodType<NewUser>;
 
-// Validation schema for updating users
 export const updateUserSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   email: z.string().email().optional(),
   status: z.enum(['active', 'inactive']).optional()
 });
 
-// Type for validated new user data
 export type ValidatedNewUser = z.infer<typeof newUserSchema>;
 
-// Type for validated update user data
 export type ValidatedUpdateUser = z.infer<typeof updateUserSchema>;
 
-// Validation functions
 export function validateNewUser(data: unknown): ValidatedNewUser {
   return newUserSchema.parse(data);
 }

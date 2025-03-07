@@ -3,9 +3,6 @@ import { sql } from 'drizzle-orm';
 export * from './config';
 export * from './connection';
 
-/**
- * Health check utility for database connection
- */
 export async function checkDatabaseConnection(): Promise<boolean> {
   try {
     const { db } = await import('./connection');
