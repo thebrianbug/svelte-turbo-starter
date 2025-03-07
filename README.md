@@ -197,6 +197,8 @@ Testing Notes:
 - E2E tests go in the tests/ directory of each app
 ```
 
+> **Note**: See the [scripts](./scripts/README.md) for additional utility scripts to help with LLM.
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
