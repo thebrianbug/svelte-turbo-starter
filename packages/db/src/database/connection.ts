@@ -2,6 +2,7 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { users } from '../domains/users/schema';
 import { getDatabaseConfig } from './config';
+import { sql } from 'drizzle-orm';
 
 const client = postgres(getDatabaseConfig(), {
   transform: { undefined: null },
@@ -17,3 +18,13 @@ export const db = drizzle(client, {
 });
 
 export { client };
+
+export async function checkDatabaseConnection(): Promise<boolean> {
+  try {
+    await db.execute(sql`SELECT 1`);
+    return true;
+  } catch (error) {
+    console.error('Database connection check failed:', error);
+    return false;
+  }
+}
