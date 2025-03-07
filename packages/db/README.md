@@ -1,6 +1,16 @@
 # @repo/db
 
-Database package using Drizzle ORM with PostgreSQL.
+Database package using Drizzle ORM with PostgreSQL, following Domain-Driven Design principles.
+
+## Domain-Driven Design
+
+This package implements DDD principles to maintain a clean separation of concerns and reflect business domains:
+
+1. Models represent core business concepts and encapsulate both data and behavior
+2. Bounded contexts are maintained through package separation
+3. We use ubiquitous language across the codebase
+4. Value objects are implemented as immutable TypeScript types
+5. Aggregates maintain data consistency through clear root entities
 
 ## Setup
 
