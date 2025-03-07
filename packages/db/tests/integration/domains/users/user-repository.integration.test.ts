@@ -113,6 +113,39 @@ describe('User Integration Tests', () => {
   });
 
   describe('Bulk Operations', () => {
+    it('should find all users', async () => {
+      // Create multiple users
+      const users: NewUser[] = [
+        testUser,
+        {
+          ...testUser,
+          email: TEST_EMAILS.SECONDARY,
+          name: TEST_NAMES.SECOND_USER,
+          status: 'active' as const
+        },
+        {
+          ...testUser,
+          email: TEST_EMAILS.THIRD,
+          name: TEST_NAMES.THIRD_USER,
+          status: 'active' as const
+        }
+      ];
+      await userRepository.createMany(users);
+
+      // Find all users
+      const allUsers = await userRepository.findAll();
+      expect(allUsers).toHaveLength(3);
+      expect(allUsers.map(u => u.email).sort()).toEqual(
+        [TEST_EMAILS.MAIN, TEST_EMAILS.SECONDARY, TEST_EMAILS.THIRD].sort()
+      );
+      allUsers.forEach(user => {
+        expect(user.id).toBeDefined();
+        expect(user.createdAt).toBeDefined();
+        expect(user.updatedAt).toBeDefined();
+        expect(user.status).toBe('active');
+      });
+    });
+
     it('should create multiple users', async () => {
       const users: NewUser[] = [
         testUser,
