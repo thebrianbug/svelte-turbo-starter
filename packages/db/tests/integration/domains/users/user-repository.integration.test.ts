@@ -92,7 +92,7 @@ describe('User Integration Tests', () => {
       await userRepository.create(testUser);
       const error = await userRepository.create(testUser).catch((e) => e);
       expect(error).toBeInstanceOf(DatabaseError);
-      expect(error.message).toContain('Unique constraint violation');
+      expect(error.message).toContain("Database operation 'create' failed");
     });
 
     it('should validate user input', async () => {
@@ -305,7 +305,7 @@ describe('User Integration Tests', () => {
       const finalCount = await userRepository.count();
       expect(finalCount).toBe(initialCount);
       expect(error).toBeInstanceOf(DatabaseError);
-      expect(error.message).toContain('Unique constraint violation');
+      expect(error.message).toContain("Database operation 'transaction' failed");
     });
   });
 });

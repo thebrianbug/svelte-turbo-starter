@@ -15,6 +15,7 @@ export type BaseEntity = {
 
 export abstract class BaseRepository<T extends BaseEntity> {
   protected abstract readonly table: PgTable;
+  protected abstract readonly entityType: string;
 
   protected mapToEntity(record: Record<string, unknown>): T {
     return record as T;
@@ -28,7 +29,7 @@ export abstract class BaseRepository<T extends BaseEntity> {
         return await callback(tx);
       });
     } catch (error) {
-      throw DatabaseError.from(error, 'transaction');
+      throw DatabaseError.from(this.entityType, error, 'transaction');
     }
   }
 
@@ -39,9 +40,12 @@ export abstract class BaseRepository<T extends BaseEntity> {
         .select()
         .from(this.table)
         .where(sql`${this.table}.id = ${id}`);
+      if (!result) {
+        throw new DatabaseError('NOT_FOUND', `Record not found in ${this.entityType}`, { id });
+      }
       return this.mapToEntity(result);
     } catch (error) {
-      throw DatabaseError.from(error, 'findById');
+      throw DatabaseError.from(this.entityType, error, 'findById');
     }
   }
 
@@ -51,7 +55,7 @@ export abstract class BaseRepository<T extends BaseEntity> {
       const results = await executor.select().from(this.table);
       return results.map(this.mapToEntity);
     } catch (error) {
-      throw DatabaseError.from(error, 'findAll');
+      throw DatabaseError.from(this.entityType, error, 'findAll');
     }
   }
 
@@ -69,7 +73,7 @@ export abstract class BaseRepository<T extends BaseEntity> {
         .returning();
       return this.mapToEntity(result);
     } catch (error) {
-      throw DatabaseError.from(error, 'create');
+      throw DatabaseError.from(this.entityType, error, 'create');
     }
   }
 
@@ -88,21 +92,27 @@ export abstract class BaseRepository<T extends BaseEntity> {
         })
         .where(sql`${this.table}.id = ${id}`)
         .returning();
+      if (!result) {
+        throw new DatabaseError('NOT_FOUND', `Record not found in ${this.entityType}`, { id });
+      }
       return this.mapToEntity(result);
     } catch (error) {
-      throw DatabaseError.from(error, 'update');
+      throw DatabaseError.from(this.entityType, error, 'update');
     }
   }
 
   async delete(id: number, tx?: TransactionType): Promise<void> {
     const executor = tx || db;
     try {
-      await executor
+      const [result] = await executor
         .delete(this.table)
         .where(sql`${this.table}.id = ${id}`)
         .returning();
+      if (!result) {
+        throw new DatabaseError('NOT_FOUND', `Record not found in ${this.entityType}`, { id });
+      }
     } catch (error) {
-      throw DatabaseError.from(error, 'delete');
+      throw DatabaseError.from(this.entityType, error, 'delete');
     }
   }
 }

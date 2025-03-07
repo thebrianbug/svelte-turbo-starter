@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ValidationError } from '@repo/shared';
 
 export type UserStatus = 'active' | 'inactive';
 
@@ -48,20 +49,41 @@ export type ValidatedNewUser = z.infer<typeof newUserSchema>;
 export type ValidatedUpdateUser = z.infer<typeof updateUserSchema>;
 
 export function validateNewUser(data: unknown): ValidatedNewUser {
-  return newUserSchema.parse(data);
+  try {
+    return newUserSchema.parse(data);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      throw new ValidationError('user', error.errors[0].message);
+    }
+    throw error;
+  }
 }
 
 export function validateUpdateUser(data: unknown): ValidatedUpdateUser {
-  const result = updateUserSchema.parse(data);
+  try {
+    const result = updateUserSchema.parse(data);
 
-  // Ensure status is always set to a valid value if provided
-  if (result.status === undefined) {
-    delete result.status;
+    // Ensure status is always set to a valid value if provided
+    if (result.status === undefined) {
+      delete result.status;
+    }
+
+    return result;
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      throw new ValidationError('user', error.errors[0].message);
+    }
+    throw error;
   }
-
-  return result;
 }
 
 export function validateManyNewUsers(data: unknown[]): ValidatedNewUser[] {
-  return data.map(validateNewUser);
+  try {
+    return data.map(validateNewUser);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      throw new ValidationError('user', error.errors[0].message);
+    }
+    throw error;
+  }
 }

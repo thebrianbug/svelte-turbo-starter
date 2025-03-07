@@ -4,12 +4,14 @@ import { db } from '../../../database';
 import { BaseRepository, type TransactionType } from '../../../infrastructure/base-repository';
 import { validateNewUser, validateUpdateUser, validateManyNewUsers } from '../models/user';
 import { DatabaseError } from '@repo/shared';
+
 import { users } from '../schema/schema';
 import type { User, NewUser, UserStatus } from '../models/user';
 import type { IUserRepository } from '../interfaces/i-user-repository';
 
 class UserRepository extends BaseRepository<User> implements IUserRepository {
   protected readonly table = users;
+  protected readonly entityType = 'user';
 
   private static normalizeEmail = (email: string): string => email.trim().toLowerCase();
 
@@ -41,7 +43,7 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
         .where(eq(users.email, UserRepository.normalizeEmail(email)));
       return this.mapToEntity(result);
     } catch (error) {
-      throw DatabaseError.from(error, 'findByEmail');
+      throw DatabaseError.from(this.entityType, error, 'findByEmail');
     }
   }
 
@@ -51,7 +53,7 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
       const results = await executor.select().from(users).where(eq(users.status, 'active'));
       return results.map(this.mapToEntity);
     } catch (error) {
-      throw DatabaseError.from(error, 'findActive');
+      throw DatabaseError.from(this.entityType, error, 'findActive');
     }
   }
 
@@ -61,7 +63,7 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
       const validatedData = validateNewUser(normalizedData);
       return await super.create(validatedData, tx);
     } catch (error) {
-      throw DatabaseError.from(error, 'create');
+      throw DatabaseError.from(this.entityType, error, 'create');
     }
   }
 
@@ -82,7 +84,7 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
       const results = await executor.insert(this.table).values(usersToCreate).returning();
       return results.map(this.mapToEntity);
     } catch (error) {
-      throw DatabaseError.from(error, 'createMany');
+      throw DatabaseError.from(this.entityType, error, 'createMany');
     }
   }
 
@@ -92,7 +94,7 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
       const validatedData = validateUpdateUser(normalizedData);
       return await super.update(id, validatedData, tx);
     } catch (error) {
-      throw DatabaseError.from(error, 'update');
+      throw DatabaseError.from(this.entityType, error, 'update');
     }
   }
 
@@ -114,7 +116,7 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
 
       return result.length;
     } catch (error) {
-      throw DatabaseError.from(error, 'updateMany');
+      throw DatabaseError.from(this.entityType, error, 'updateMany');
     }
   }
 
@@ -129,7 +131,7 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
 
       return result.length === 1;
     } catch (error) {
-      throw DatabaseError.from(error, 'softDelete');
+      throw DatabaseError.from(this.entityType, error, 'softDelete');
     }
   }
 
@@ -144,7 +146,7 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
 
       return result.length;
     } catch (error) {
-      throw DatabaseError.from(error, 'softDeleteMany');
+      throw DatabaseError.from(this.entityType, error, 'softDeleteMany');
     }
   }
 
@@ -160,7 +162,7 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
       const [result] = await query;
       return Number(result.count);
     } catch (error) {
-      throw DatabaseError.from(error, 'count');
+      throw DatabaseError.from(this.entityType, error, 'count');
     }
   }
 }
