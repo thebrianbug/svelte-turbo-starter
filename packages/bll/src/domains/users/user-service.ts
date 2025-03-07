@@ -1,5 +1,5 @@
 import type { IUserRepository, User } from '@repo/db';
-import { validateNewUser, validateUpdateUser } from '@repo/db';
+import { validateNewUser, validateUpdateUser } from '@repo/db/src/domains/users/models/user';
 import { EntityNotFoundError, DuplicateEntityError, OperationError } from '@repo/shared';
 
 export class UserService {

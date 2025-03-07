@@ -20,3 +20,6 @@ export { users, userStatusEnum } from './schema/schema';
 // Repository
 export type { IUserRepository } from './interfaces/i-user-repository';
 export { UserRepository } from './infrastructure/user-repository';
+
+// Factory
+export { createUserRepository } from './factory';

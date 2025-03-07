@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { mock, instance, when, verify, deepEqual } from 'ts-mockito';
 import { UserService } from './user-service';
 import type { IUserRepository, User } from '@repo/db';
-import { validateNewUser, validateUpdateUser } from '@repo/db';
+import { validateNewUser, validateUpdateUser } from '@repo/db/src/domains/users/models/user';
 import { DuplicateEntityError, EntityNotFoundError, OperationError } from '@repo/shared';
 
 const TEST_DATA = {

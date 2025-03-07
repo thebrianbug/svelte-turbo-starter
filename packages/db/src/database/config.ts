@@ -1,9 +1,16 @@
 import { config } from 'dotenv';
-import { join } from 'path';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
-config({ path: join(__dirname, '../../.env') });
+// Move environment loading to an explicit function instead of loading at module level
+export const loadEnvConfig = (): void => {
+  // Get the directory name in ESM context
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = dirname(__filename);
+  config({ path: join(__dirname, '../../.env') });
+};
 
-export const getDatabaseConfig = () => {
+export const getDatabaseConfig = (): string => {
   if (!process.env.DATABASE_URL) {
     throw new Error('DATABASE_URL environment variable is required for database connection');
   }

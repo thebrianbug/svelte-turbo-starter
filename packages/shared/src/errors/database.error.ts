@@ -1,5 +1,17 @@
-import { PostgresError } from 'postgres';
 import { BaseError } from './base.error';
+
+// Define a type for Postgres errors based on their structure
+type PostgresError = {
+  code: string;
+  detail?: string;
+  message: string;
+  // Additional properties that might be present in Postgres errors
+  constraint?: string;
+  schema?: string;
+  table?: string;
+  column?: string;
+};
+
 /**
  * Common Postgres error codes we handle
  * @see https://www.postgresql.org/docs/current/errcodes-appendix.html
@@ -27,10 +39,19 @@ export class DatabaseError extends BaseError {
   }
 
   static from(entityType: string, error: unknown, operation: string): DatabaseError {
-    if (error instanceof PostgresError) {
-      switch (error.code) {
+    if (error instanceof DatabaseError) {
+      return new DatabaseError(error.code, error.message, {
+        entityType,
+        operation,
+        ...error.metadata
+      });
+    }
+
+    if (error && typeof error === 'object' && 'code' in error) {
+      const pgError = error as PostgresError;
+      switch (pgError.code) {
         case PostgresErrorCode.UNIQUE_VIOLATION: {
-          const { field, value } = this.parseUniqueViolation(error);
+          const { field, value } = this.parseUniqueViolation(pgError);
           return new DatabaseError(
             'UNIQUE_VIOLATION',
             `Unique constraint violation in ${entityType}`,
@@ -43,12 +64,6 @@ export class DatabaseError extends BaseError {
             entityType
           });
       }
-    } else if (error instanceof DatabaseError) {
-      return new DatabaseError(error.code, error.message, {
-        entityType,
-        operation,
-        ...error.metadata
-      });
     }
 
     // Default to generic database error for unhandled cases
