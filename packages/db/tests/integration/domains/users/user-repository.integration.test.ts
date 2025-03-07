@@ -135,10 +135,10 @@ describe('User Integration Tests', () => {
       // Find all users
       const allUsers = await userRepository.findAll();
       expect(allUsers).toHaveLength(3);
-      expect(allUsers.map(u => u.email).sort()).toEqual(
+      expect(allUsers.map((u) => u.email).sort()).toEqual(
         [TEST_EMAILS.MAIN, TEST_EMAILS.SECONDARY, TEST_EMAILS.THIRD].sort()
       );
-      allUsers.forEach(user => {
+      allUsers.forEach((user) => {
         expect(user.id).toBeDefined();
         expect(user.createdAt).toBeDefined();
         expect(user.updatedAt).toBeDefined();
