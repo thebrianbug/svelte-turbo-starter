@@ -1,20 +1,18 @@
 import { config } from 'dotenv';
 import { join } from 'path';
 
+// Load environment variables from .env
 config({ path: join(__dirname, '../../.env') });
 
-export function getDatabaseConfig(): string {
-  const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) {
-    throw new Error('DATABASE_URL environment variable is required');
+// Get database URL, using test database in test environment
+export const getDatabaseConfig = () => {
+  if (!process.env.DATABASE_URL) {
+    throw new Error('DATABASE_URL environment variable is required for database connection');
   }
 
-  // For test environment, always use the test database
+  const url = new URL(process.env.DATABASE_URL);
   if (process.env.NODE_ENV === 'test') {
-    const url = new URL(databaseUrl);
     url.pathname = '/svelte_turbo_test_db';
-    return url.toString();
   }
-
-  return databaseUrl;
-}
+  return url.toString();
+};
