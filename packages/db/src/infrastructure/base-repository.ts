@@ -2,9 +2,9 @@ import { sql } from 'drizzle-orm';
 import type { PgTable } from 'drizzle-orm/pg-core';
 
 import { DatabaseError } from '@repo/shared';
-import { db } from '../database';
+import { getConnection } from '../database';
 
-export type DatabaseType = typeof db;
+export type DatabaseType = ReturnType<typeof getConnection>['db'];
 export type TransactionType = Parameters<Parameters<DatabaseType['transaction']>[0]>[0];
 
 export type BaseEntity = {
@@ -25,6 +25,7 @@ export abstract class BaseRepository<T extends BaseEntity> {
     callback: (tx: TransactionType) => Promise<TResult>
   ): Promise<TResult> {
     try {
+      const { db } = getConnection();
       return await db.transaction(async (tx) => {
         return await callback(tx);
       });
@@ -34,6 +35,7 @@ export abstract class BaseRepository<T extends BaseEntity> {
   }
 
   async findById(id: number, tx?: TransactionType): Promise<T> {
+    const { db } = getConnection();
     const executor = tx || db;
     try {
       const [result] = await executor
@@ -50,6 +52,7 @@ export abstract class BaseRepository<T extends BaseEntity> {
   }
 
   async findAll(tx?: TransactionType): Promise<T[]> {
+    const { db } = getConnection();
     const executor = tx || db;
     try {
       const results = await executor.select().from(this.table);
@@ -60,6 +63,7 @@ export abstract class BaseRepository<T extends BaseEntity> {
   }
 
   async create(data: Omit<T, keyof BaseEntity>, tx?: TransactionType): Promise<T> {
+    const { db } = getConnection();
     const executor = tx || db;
     try {
       const now = new Date();
@@ -82,6 +86,7 @@ export abstract class BaseRepository<T extends BaseEntity> {
     data: Partial<Omit<T, keyof BaseEntity>>,
     tx?: TransactionType
   ): Promise<T> {
+    const { db } = getConnection();
     const executor = tx || db;
     try {
       const [result] = await executor
@@ -102,6 +107,7 @@ export abstract class BaseRepository<T extends BaseEntity> {
   }
 
   async delete(id: number, tx?: TransactionType): Promise<void> {
+    const { db } = getConnection();
     const executor = tx || db;
     try {
       const [result] = await executor

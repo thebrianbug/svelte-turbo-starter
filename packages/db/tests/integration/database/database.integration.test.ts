@@ -1,7 +1,7 @@
 import { sql } from 'drizzle-orm';
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 
-import { db, client, checkDatabaseConnection } from '../../../src/database';
+import { getConnection, checkDatabaseConnection } from '../../../src/database';
 
 describe('Database Client', () => {
   beforeAll(async () => {
@@ -11,11 +11,13 @@ describe('Database Client', () => {
   });
 
   afterAll(async () => {
+    const { client } = getConnection();
     await client.end();
   });
 
   describe('Query Execution', () => {
     it('should successfully execute a query', async () => {
+      const { db } = getConnection();
       const result = await db.execute(sql`SELECT 1 as test`);
       expect(result[0]).toEqual({ test: 1 });
     });

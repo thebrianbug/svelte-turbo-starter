@@ -36,14 +36,10 @@ export const getConnection = () => {
   return _connection;
 };
 
-// For direct use when you know you need a connection
-export const db = getConnection().db;
-export const client = getConnection().client;
-
 export async function checkDatabaseConnection(): Promise<boolean> {
   try {
-    const connection = getConnection();
-    await connection.db.execute(sql`SELECT 1`);
+    const { db } = getConnection();
+    await db.execute(sql`SELECT 1`);
     return true;
   } catch (error) {
     console.error('Database connection check failed:', error);

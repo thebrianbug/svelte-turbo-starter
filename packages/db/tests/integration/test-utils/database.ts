@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { db, client } from '../../../src/database';
+import { getConnection } from '../../../src/database';
 
 // Define known tables in the system
 export const TABLES = {
@@ -15,6 +15,7 @@ export type TableName = string;
  */
 export async function cleanTable(tableName: TableName): Promise<void> {
   try {
+    const { db } = getConnection();
     await db.transaction(async (tx) => {
       // Temporarily disable foreign key constraints
       await tx.execute(sql`SET CONSTRAINTS ALL DEFERRED`);
@@ -34,6 +35,7 @@ export async function cleanRelatedTables(
   relatedTables: TableName[]
 ): Promise<void> {
   try {
+    const { db } = getConnection();
     await db.transaction(async (tx) => {
       await tx.execute(sql`SET CONSTRAINTS ALL DEFERRED`);
       for (const table of [...relatedTables, primaryTable]) {
@@ -51,6 +53,7 @@ export async function cleanRelatedTables(
  */
 export async function teardown(): Promise<void> {
   try {
+    const { client } = getConnection();
     await client.end();
   } catch (error) {
     console.error('Database teardown failed:', error);

@@ -1,6 +1,6 @@
 import { eq, sql } from 'drizzle-orm';
 
-import { db } from '../../../database';
+import { getConnection } from '../../../database';
 import { BaseRepository, type TransactionType } from '../../../infrastructure/base-repository';
 import { validateNewUser, validateUpdateUser, validateManyNewUsers } from '../models/user';
 import { DatabaseError } from '@repo/shared';
@@ -35,6 +35,7 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
   }
 
   async findByEmail(email: string, tx?: TransactionType): Promise<User> {
+    const { db } = getConnection();
     const executor = tx || db;
     try {
       const [result] = await executor
@@ -48,6 +49,7 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
   }
 
   async findActive(tx?: TransactionType): Promise<User[]> {
+    const { db } = getConnection();
     const executor = tx || db;
     try {
       const results = await executor.select().from(users).where(eq(users.status, 'active'));
@@ -69,6 +71,7 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
 
   async createMany(newUsers: NewUser[], tx?: TransactionType): Promise<User[]> {
     if (newUsers.length === 0) return [];
+    const { db } = getConnection();
     const executor = tx || db;
     try {
       const preparedUsers = newUsers.map(UserRepository.prepareUserData);
@@ -103,6 +106,7 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
     data: Partial<NewUser>,
     tx?: TransactionType
   ): Promise<number> {
+    const { db } = getConnection();
     const executor = tx || db;
     try {
       const normalizedData = UserRepository.prepareUserData(data);
@@ -121,6 +125,7 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
   }
 
   async softDelete(id: number, tx?: TransactionType): Promise<boolean> {
+    const { db } = getConnection();
     const executor = tx || db;
     try {
       const result = await executor
@@ -136,6 +141,7 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
   }
 
   async softDeleteMany(filter: { status: 'active' }, tx?: TransactionType): Promise<number> {
+    const { db } = getConnection();
     const executor = tx || db;
     try {
       const result = await executor
@@ -151,6 +157,7 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
   }
 
   async count(filter?: { status?: UserStatus }, tx?: TransactionType): Promise<number> {
+    const { db } = getConnection();
     const executor = tx || db;
     try {
       const query = executor.select({ count: sql<number>`count(*)` }).from(this.table);
