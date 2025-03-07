@@ -2,7 +2,6 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
-    setupFiles: ['./tests/integration/test-utils/test-setup.ts'],
     testTimeout: 5000,
     include: ['tests/integration/**/*.integration.test.ts'],
     exclude: [],
@@ -13,6 +12,10 @@ export default defineConfig({
       }
     },
     reporters: ['default'],
-    silent: false
+    silent: false,
+    env: {
+      NODE_ENV: 'test',
+      DATABASE_URL: 'postgres://postgres:postgres@localhost:5432/svelte_turbo_test_db'
+    }
   }
 });
