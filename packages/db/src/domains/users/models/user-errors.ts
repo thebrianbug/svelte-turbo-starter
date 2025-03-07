@@ -1,34 +1,33 @@
-export class UserError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'UserError';
-  }
-}
+import { DomainError } from '@repo/shared';
 
-export class UserNotFoundError extends UserError {
+export class UserNotFoundError extends DomainError {
+  readonly code = 'USER_NOT_FOUND';
+
   constructor(identifier: string | number) {
-    super(`User not found: ${identifier}`);
-    this.name = 'UserNotFoundError';
+    super(`User not found: ${identifier}`, { identifier });
   }
 }
 
-export class UserValidationError extends UserError {
+export class UserValidationError extends DomainError {
+  readonly code = 'USER_VALIDATION_FAILED';
+
   constructor(message: string) {
-    super(`Validation error: ${message}`);
-    this.name = 'UserValidationError';
+    super(`Validation error: ${message}`, { validationMessage: message });
   }
 }
 
-export class UserEmailExistsError extends UserError {
+export class UserEmailExistsError extends DomainError {
+  readonly code = 'USER_EMAIL_EXISTS';
+
   constructor(email: string) {
-    super(`User with email already exists: ${email}`);
-    this.name = 'UserEmailExistsError';
+    super(`User with email already exists: ${email}`, { email });
   }
 }
 
-export class UserOperationError extends UserError {
+export class UserOperationError extends DomainError {
+  readonly code = 'USER_OPERATION_FAILED';
+
   constructor(operation: string, message: string) {
-    super(`Failed to ${operation} user: ${message}`);
-    this.name = 'UserOperationError';
+    super(`Failed to ${operation} user: ${message}`, { operation, message });
   }
 }

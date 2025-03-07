@@ -19,6 +19,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@repo/shared": "*",
     "drizzle-orm": "^0.40.0",
     "postgres": "^3.4.3",
     "zod": "^3.24.2"
