@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { users } from '../domains/users/schema';
+import { users } from '../domains/users/schema/schema';
 import { getDatabaseConfig } from './config';
 import { sql } from 'drizzle-orm';
 

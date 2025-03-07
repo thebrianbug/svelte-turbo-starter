@@ -15,7 +15,7 @@ export {
 } from './models/user';
 
 // Schema
-export { users, userStatusEnum } from './schema';
+export { users, userStatusEnum } from './schema/schema';
 
 // Repository
 export type { IUserRepository } from './interfaces/i-user-repository';
