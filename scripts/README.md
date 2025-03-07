@@ -7,17 +7,20 @@ This directory contains utility scripts to help with development and maintenance
 ### output-repo-structure.sh
 
 Generates documentation of repository structure and file contents. Useful for:
+
 - Creating documentation snapshots
 - Sharing code context with team members
 - Preparing code reviews
 - Documenting changes across multiple files
 
 **Usage:**
+
 ```sh
 ./scripts/output-repo-structure.sh <output_file> <input_file1> [input_file2 ...]
 ```
 
 **Examples:**
+
 ```sh
 # Output structure and specific files
 ./scripts/output-repo-structure.sh output.txt src/main.ts src/utils.ts
@@ -30,6 +33,7 @@ Generates documentation of repository structure and file contents. Useful for:
 ```
 
 **Output Format:**
+
 ```
 === Repository Structure ===
 [Directory tree structure, excluding .git, node_modules, etc.]
@@ -44,7 +48,8 @@ Generates documentation of repository structure and file contents. Useful for:
 ```
 
 **Notes:**
+
 - First argument must be the output file path
 - Subsequent arguments are input files to include
-- Repository structure excludes: .git, node_modules, dist, build, coverage
+- Only includes files tracked by git and `.env` files
 - Requires 'tree' command (falls back to 'find' if not available)

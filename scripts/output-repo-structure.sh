@@ -41,13 +41,32 @@ write_header() {
     echo -e "\n=== $1 ===\n" >> "$output_file"
 }
 
+# Function to check if a file is ignored by git (excluding .env files)
+is_ignored() {
+    local file="$1"
+    # Always include .env files
+    if [[ "$file" == *.env* ]]; then
+        return 1  # Not ignored
+    fi
+    # Check if file is ignored by git
+    git check-ignore -q "$file"
+    return $?
+}
+
 # 1. Output repository structure
 write_header "Repository Structure"
 if command -v tree &> /dev/null; then
-    tree -a -I '.git|node_modules|dist|build|coverage' . >> "$output_file"
+    # Get list of files tracked by git or .env files
+    {
+        git ls-files
+        find . -name ".env*"
+    } | sort -u | tree --fromfile -a >> "$output_file"
 else
     # Fallback if tree is not installed
-    find . -not -path '*/\.*' -not -path '*/node_modules/*' -not -path '*/dist/*' -not -path '*/build/*' -not -path '*/coverage/*' | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/" >> "$output_file"
+    {
+        git ls-files
+        find . -name ".env*"
+    } | sort -u | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/" >> "$output_file"
 fi
 
 # 2. Loop through input files and output contents
@@ -55,8 +74,13 @@ write_header "File Contents"
 
 for file in "$@"; do
     if [ -f "$file" ]; then
-        echo -e "\n--- $file ---\n" >> "$output_file"
-        cat "$file" >> "$output_file"
+        # Only output file if it's tracked by git or is an .env file
+        if ! is_ignored "$file"; then
+            echo -e "\n--- $file ---\n" >> "$output_file"
+            cat "$file" >> "$output_file"
+        else
+            echo -e "\nSkipped ignored file - $file" >> "$output_file"
+        fi
     else
         echo -e "\nWarning: File not found - $file" >> "$output_file"
     fi
