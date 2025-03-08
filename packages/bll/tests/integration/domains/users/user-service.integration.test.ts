@@ -49,7 +49,7 @@ describe('UserService Integration Tests', () => {
       // Deactivate
       await userService.deactivateUser(createdUser.id);
       const activeUsers = await userService.getActiveUsers();
-      expect(activeUsers.find(u => u.id === createdUser.id)).toBeUndefined();
+      expect(activeUsers.find((u) => u.id === createdUser.id)).toBeUndefined();
     });
 
     it('should detect duplicate users correctly', async () => {
