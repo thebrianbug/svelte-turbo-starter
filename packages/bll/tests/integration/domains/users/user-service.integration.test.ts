@@ -11,10 +11,14 @@ const TEST_DATA = {
 } as const;
 
 describe('UserService Integration Tests', () => {
-  const userService = createTestUserService();
+  // Create service instance for each test to ensure clean state
+  let userService: ReturnType<typeof createTestUserService>;
 
   beforeEach(async () => {
+    // Clean table first
     await cleanTable(TABLES.USERS);
+    // Then create fresh service instance
+    userService = createTestUserService();
   });
 
   afterAll(async () => {
