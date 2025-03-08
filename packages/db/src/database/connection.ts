@@ -1,13 +1,12 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { users } from '../domains/users/schema/schema';
-import { getDatabaseConfig, loadEnvConfig } from './config';
+import { getDatabaseConfig, loadEnvConfigForNonTestEnv } from './config';
 import { sql } from 'drizzle-orm';
 
 // Create a function to initialize the database connection when needed
 export const createDbConnection = () => {
-  // Only load environment variables when explicitly connecting
-  loadEnvConfig();
+  loadEnvConfigForNonTestEnv();
 
   const client = postgres(getDatabaseConfig(), {
     transform: { undefined: null },

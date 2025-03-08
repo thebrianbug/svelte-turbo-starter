@@ -28,9 +28,10 @@ describe('Database Configuration', () => {
     expect(() => getDatabaseConfig()).toThrow('DATABASE_URL environment variable is required');
   });
 
-  it('should use test database when NODE_ENV is test', () => {
+  it('should use DATABASE_URL as-is in test environment', () => {
     process.env.NODE_ENV = 'test';
+    process.env.DATABASE_URL = 'postgresql://postgres:postgres@localhost:5432/custom_test_db';
     const config = getDatabaseConfig();
-    expect(config).toBe('postgresql://postgres:postgres@localhost:5432/svelte_turbo_test_db');
+    expect(config).toBe('postgresql://postgres:postgres@localhost:5432/custom_test_db');
   });
 });
