@@ -38,14 +38,14 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
     };
   }
 
-  async findByEmail(email: string, tx?: TransactionType): Promise<User> {
+  async findByEmail(email: string, tx?: TransactionType): Promise<User | undefined> {
     const executor = tx || this.getExecutor();
     try {
       const [result] = await executor
         .select()
         .from(users)
         .where(eq(users.email, UserRepository.normalizeEmail(email)));
-      return this.mapToEntity(result);
+      return result ? this.mapToEntity(result) : undefined;
     } catch (error) {
       throw DatabaseError.from(this.entityType, error, 'findByEmail');
     }

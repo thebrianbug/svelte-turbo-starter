@@ -34,6 +34,28 @@ describe('User Integration Tests', () => {
     status: 'active'
   };
 
+  describe('findByEmail', () => {
+    it('should find a user by email', async () => {
+      const created = await userRepository.create(testUser);
+      const found = await userRepository.findByEmail(testUser.email);
+      expect(found).toBeDefined();
+      expect(found?.id).toBe(created.id);
+      expect(found?.email).toBe(testUser.email.toLowerCase());
+    });
+
+    it('should normalize email before searching', async () => {
+      const created = await userRepository.create(testUser);
+      const found = await userRepository.findByEmail('  ' + testUser.email.toUpperCase() + '  ');
+      expect(found).toBeDefined();
+      expect(found?.id).toBe(created.id);
+    });
+
+    it('should return undefined for non-existent email', async () => {
+      const found = await userRepository.findByEmail('nonexistent@example.com');
+      expect(found).toBeUndefined();
+    });
+  });
+
   describe('User Lifecycle', () => {
     it('should handle complete user lifecycle (create, read, update, delete)', async () => {
       // Create
