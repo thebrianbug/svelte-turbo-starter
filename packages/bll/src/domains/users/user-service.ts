@@ -30,11 +30,14 @@ export class UserService {
   async updateUser(id: number, updateData: unknown): Promise<User> {
     const validatedData = validateUpdateUser(updateData);
 
-    const user = await this.userRepository.findById(id);
-    if (!user) {
-      throw new EntityNotFoundError('User', id);
+    try {
+      return await this.userRepository.update(id, validatedData);
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('NOT_FOUND')) {
+        throw new EntityNotFoundError('User', id);
+      }
+      throw error;
     }
-    return this.userRepository.update(id, validatedData);
   }
 
   async deactivateUser(id: number): Promise<void> {

@@ -130,17 +130,11 @@ describe('UserService', () => {
       };
 
       const validatedData = validateUpdateUser(updateData);
-      const existingUser = createMockUser({
-        id: userId,
-        name: 'Original Name'
-      });
-
       const updatedUser = createMockUser({
-        ...existingUser,
-        ...validatedData
+        id: userId,
+        name: TEST_DATA.UPDATED_NAME
       });
 
-      when(userRepositoryMock.findById(userId)).thenResolve(existingUser);
       when(userRepositoryMock.update(userId, deepEqual(validatedData))).thenResolve(updatedUser);
 
       const result = await userService.updateUser(userId, updateData);
@@ -150,7 +144,10 @@ describe('UserService', () => {
     });
 
     it('should throw error if user not found', async () => {
-      when(userRepositoryMock.findById(1)).thenResolve(undefined);
+      const validatedData = validateUpdateUser({ name: TEST_DATA.UPDATED_NAME });
+      when(userRepositoryMock.update(1, deepEqual(validatedData))).thenReject(
+        new Error('NOT_FOUND: User not found with id 1')
+      );
 
       await expect(userService.updateUser(1, { name: TEST_DATA.UPDATED_NAME })).rejects.toThrow(
         EntityNotFoundError
