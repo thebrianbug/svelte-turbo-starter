@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterAll } from 'vitest';
 import { cleanTable, teardown, TABLES } from '../../test-utils/database';
 import { createTestUserService } from '../../test-utils/factory';
+import { DuplicateEntityError } from '@repo/shared';
 
 const TEST_DATA = {
   EMAIL: 'test-integration@example.com',
@@ -65,7 +66,7 @@ describe('UserService Integration Tests', () => {
           email: TEST_DATA.DUPLICATE_EMAIL,
           name: 'Different Name'
         })
-      ).rejects.toThrow(/duplicate/i);
+      ).rejects.toThrow(DuplicateEntityError);
     });
   });
 
