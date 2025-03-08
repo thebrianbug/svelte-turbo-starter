@@ -3,26 +3,31 @@ import postgres from 'postgres';
 import { users } from '../domains/users/schema/schema';
 import { getDatabaseConfig, loadEnvConfigForNonTestEnv } from './config';
 import { sql } from 'drizzle-orm';
+import { DatabaseError } from '@repo/shared/src/errors/database.error';
 
 // Create a function to initialize the database connection when needed
 export const createDbConnection = () => {
   loadEnvConfigForNonTestEnv();
 
-  const client = postgres(getDatabaseConfig(), {
-    transform: { undefined: null },
-    max: 1,
-    idle_timeout: 5,
-    connect_timeout: 5,
-    max_lifetime: 15
-  });
+  try {
+    const client = postgres(getDatabaseConfig(), {
+      transform: { undefined: null },
+      max: 1,
+      idle_timeout: 5,
+      connect_timeout: 5,
+      max_lifetime: 15
+    });
 
-  return {
-    db: drizzle(client, {
-      schema: { users },
-      logger: process.env.NODE_ENV !== 'test'
-    }),
-    client
-  };
+    return {
+      db: drizzle(client, {
+        schema: { users },
+        logger: process.env.NODE_ENV !== 'test'
+      }),
+      client
+    };
+  } catch (error) {
+    throw DatabaseError.from('Database', error, 'createConnection');
+  }
 };
 
 // Lazy initialization of the database
@@ -41,7 +46,6 @@ export async function checkDatabaseConnection(): Promise<boolean> {
     await db.execute(sql`SELECT 1`);
     return true;
   } catch (error) {
-    console.error('Database connection check failed:', error);
-    return false;
+    throw DatabaseError.from('Database', error, 'checkConnection');
   }
 }
