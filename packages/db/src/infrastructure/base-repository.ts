@@ -43,17 +43,14 @@ export abstract class BaseRepository<T extends BaseEntity> {
     }
   }
 
-  async findById(id: number, tx?: TransactionType): Promise<T> {
+  async findById(id: number, tx?: TransactionType): Promise<T | undefined> {
     const executor = tx || this.getExecutor();
     try {
       const [result] = await executor
         .select()
         .from(this.table)
         .where(sql`${this.table}.id = ${id}`);
-      if (!result) {
-        throw new DatabaseError('NOT_FOUND', `Record not found in ${this.entityType}`, { id });
-      }
-      return this.mapToEntity(result);
+      return result ? this.mapToEntity(result) : undefined;
     } catch (error) {
       throw DatabaseError.from(this.entityType, error, 'findById');
     }
@@ -91,7 +88,7 @@ export abstract class BaseRepository<T extends BaseEntity> {
     id: number,
     data: Partial<Omit<T, keyof BaseEntity>>,
     tx?: TransactionType
-  ): Promise<T> {
+  ): Promise<T | undefined> {
     const executor = tx || this.getExecutor();
     try {
       const [result] = await executor
@@ -102,25 +99,20 @@ export abstract class BaseRepository<T extends BaseEntity> {
         })
         .where(sql`${this.table}.id = ${id}`)
         .returning();
-      if (!result) {
-        throw new DatabaseError('NOT_FOUND', `Record not found in ${this.entityType}`, { id });
-      }
-      return this.mapToEntity(result);
+      return result ? this.mapToEntity(result) : undefined;
     } catch (error) {
       throw DatabaseError.from(this.entityType, error, 'update');
     }
   }
 
-  async delete(id: number, tx?: TransactionType): Promise<void> {
+  async delete(id: number, tx?: TransactionType): Promise<boolean> {
     const executor = tx || this.getExecutor();
     try {
       const [result] = await executor
         .delete(this.table)
         .where(sql`${this.table}.id = ${id}`)
         .returning();
-      if (!result) {
-        throw new DatabaseError('NOT_FOUND', `Record not found in ${this.entityType}`, { id });
-      }
+      return !!result;
     } catch (error) {
       throw DatabaseError.from(this.entityType, error, 'delete');
     }
