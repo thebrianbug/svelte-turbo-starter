@@ -15,15 +15,7 @@ const TEST_DATA = {
   EMAIL: 'test@example.com',
   NAME: 'Test User',
   UPDATED_NAME: 'Updated Name',
-  EXISTING_EMAIL: 'existing@example.com',
-  USER_NOT_FOUND_MESSAGE: 'User not found: 1',
-  EMAIL_EXISTS_MESSAGE: 'email already exists',
-  CREATE_USER_PREFIX: 'Failed to createUser User:',
-  GET_USER_PREFIX: 'Failed to getUserById User:',
-  UPDATE_USER_PREFIX: 'Failed to updateUser User:',
-  UPDATE_USER_FIND_PREFIX: 'Failed to updateUser.findById User:',
-  DEACTIVATE_USER_PREFIX: 'Failed to deactivateUser User:',
-  GET_ACTIVE_USERS_PREFIX: 'Failed to getActiveUsers User:'
+  EXISTING_EMAIL: 'existing@example.com'
 } as const;
 
 // Error codes
@@ -46,7 +38,16 @@ const ERROR_MESSAGES = {
   VALIDATION_FAILED: 'Validation failed',
   DUPLICATE_KEY_VIOLATION: 'Duplicate key violation',
   USER_NOT_FOUND: 'User not found',
-  UNKNOWN_DATABASE_ERROR: 'Unknown database error'
+  UNKNOWN_DATABASE_ERROR: 'Unknown database error',
+  USER_VALIDATION_ERROR: 'User validation error',
+  USER_NOT_FOUND_MESSAGE: 'User not found: 1',
+  EMAIL_EXISTS_MESSAGE: 'email already exists',
+  CREATE_USER_PREFIX: 'Failed to createUser User:',
+  GET_USER_PREFIX: 'Failed to getUserById User:',
+  UPDATE_USER_PREFIX: 'Failed to updateUser User:',
+  UPDATE_USER_FIND_PREFIX: 'Failed to updateUser.findById User:',
+  DEACTIVATE_USER_PREFIX: 'Failed to deactivateUser User:',
+  GET_ACTIVE_USERS_PREFIX: 'Failed to getActiveUsers User:'
 } as const;
 
 // Database operations
@@ -152,7 +153,7 @@ describe('UserService', () => {
 
       await expect(userService.createUser(userData)).rejects.toThrow(DuplicateEntityError);
       await expect(userService.createUser(userData)).rejects.toThrow(
-        TEST_DATA.EMAIL_EXISTS_MESSAGE
+        ERROR_MESSAGES.EMAIL_EXISTS_MESSAGE
       );
     });
 
@@ -170,7 +171,9 @@ describe('UserService', () => {
       when(userRepositoryMock.findByEmail(userData.email)).thenReject(dbError);
 
       await expect(userService.createUser(userData)).rejects.toThrow(OperationError);
-      await expect(userService.createUser(userData)).rejects.toThrow(TEST_DATA.CREATE_USER_PREFIX);
+      await expect(userService.createUser(userData)).rejects.toThrow(
+        ERROR_MESSAGES.CREATE_USER_PREFIX
+      );
     });
 
     it('should handle database errors during user creation', async () => {
@@ -192,7 +195,9 @@ describe('UserService', () => {
       when(userRepositoryMock.create(deepEqual(validateNewUser(userData)))).thenReject(dbError);
 
       await expect(userService.createUser(userData)).rejects.toThrow(OperationError);
-      await expect(userService.createUser(userData)).rejects.toThrow(TEST_DATA.CREATE_USER_PREFIX);
+      await expect(userService.createUser(userData)).rejects.toThrow(
+        ERROR_MESSAGES.CREATE_USER_PREFIX
+      );
     });
 
     it('should throw validation error for invalid data', async () => {
@@ -202,7 +207,9 @@ describe('UserService', () => {
       };
 
       await expect(userService.createUser(invalidData)).rejects.toThrow(ValidationError);
-      await expect(userService.createUser(invalidData)).rejects.toThrow('User validation error');
+      await expect(userService.createUser(invalidData)).rejects.toThrow(
+        ERROR_MESSAGES.USER_VALIDATION_ERROR
+      );
     });
   });
 
@@ -222,7 +229,9 @@ describe('UserService', () => {
       when(userRepositoryMock.findById(1)).thenResolve(undefined);
 
       await expect(userService.getUserById(1)).rejects.toThrow(EntityNotFoundError);
-      await expect(userService.getUserById(1)).rejects.toThrow(TEST_DATA.USER_NOT_FOUND_MESSAGE);
+      await expect(userService.getUserById(1)).rejects.toThrow(
+        ERROR_MESSAGES.USER_NOT_FOUND_MESSAGE
+      );
     });
 
     it('should map database errors during getUserById', async () => {
@@ -236,7 +245,7 @@ describe('UserService', () => {
       when(userRepositoryMock.findById(1)).thenReject(dbError);
 
       await expect(userService.getUserById(1)).rejects.toThrow(OperationError);
-      await expect(userService.getUserById(1)).rejects.toThrow(TEST_DATA.GET_USER_PREFIX);
+      await expect(userService.getUserById(1)).rejects.toThrow(ERROR_MESSAGES.GET_USER_PREFIX);
     });
   });
 
@@ -274,7 +283,7 @@ describe('UserService', () => {
         EntityNotFoundError
       );
       await expect(userService.updateUser(1, { name: TEST_DATA.UPDATED_NAME })).rejects.toThrow(
-        TEST_DATA.USER_NOT_FOUND_MESSAGE
+        ERROR_MESSAGES.USER_NOT_FOUND_MESSAGE
       );
     });
 
@@ -292,7 +301,7 @@ describe('UserService', () => {
         OperationError
       );
       await expect(userService.updateUser(1, { name: TEST_DATA.UPDATED_NAME })).rejects.toThrow(
-        /updateUser\.findById/
+        ERROR_MESSAGES.UPDATE_USER_FIND_PREFIX
       );
     });
 
@@ -316,7 +325,7 @@ describe('UserService', () => {
 
       await expect(userService.updateUser(userId, updateData)).rejects.toThrow(OperationError);
       await expect(userService.updateUser(userId, updateData)).rejects.toThrow(
-        TEST_DATA.UPDATE_USER_PREFIX
+        ERROR_MESSAGES.UPDATE_USER_PREFIX
       );
     });
 
@@ -330,7 +339,7 @@ describe('UserService', () => {
 
       await expect(userService.updateUser(userId, invalidData)).rejects.toThrow(ValidationError);
       await expect(userService.updateUser(userId, invalidData)).rejects.toThrow(
-        /User validation error/
+        ERROR_MESSAGES.USER_VALIDATION_ERROR
       );
     });
   });
@@ -347,7 +356,9 @@ describe('UserService', () => {
       when(userRepositoryMock.softDelete(1)).thenResolve(false);
 
       await expect(userService.deactivateUser(1)).rejects.toThrow(OperationError);
-      await expect(userService.deactivateUser(1)).rejects.toThrow(/deactivateUser/);
+      await expect(userService.deactivateUser(1)).rejects.toThrow(
+        ERROR_MESSAGES.DEACTIVATE_USER_PREFIX
+      );
     });
 
     it('should map database errors during deactivation', async () => {
@@ -361,7 +372,9 @@ describe('UserService', () => {
       when(userRepositoryMock.softDelete(1)).thenReject(dbError);
 
       await expect(userService.deactivateUser(1)).rejects.toThrow(OperationError);
-      await expect(userService.deactivateUser(1)).rejects.toThrow(/deactivateUser/);
+      await expect(userService.deactivateUser(1)).rejects.toThrow(
+        ERROR_MESSAGES.DEACTIVATE_USER_PREFIX
+      );
     });
   });
 
@@ -432,7 +445,7 @@ describe('UserService', () => {
 
       await expect(userService.createUser(userData)).rejects.toThrow(DuplicateEntityError);
       await expect(userService.createUser(userData)).rejects.toThrow(
-        TEST_DATA.EMAIL_EXISTS_MESSAGE
+        ERROR_MESSAGES.EMAIL_EXISTS_MESSAGE
       );
     });
 
@@ -460,7 +473,9 @@ describe('UserService', () => {
       when(userRepositoryMock.findByEmail(userData.email)).thenReject(dbError);
 
       await expect(userService.createUser(userData)).rejects.toThrow(OperationError);
-      await expect(userService.createUser(userData)).rejects.toThrow(TEST_DATA.CREATE_USER_PREFIX);
+      await expect(userService.createUser(userData)).rejects.toThrow(
+        ERROR_MESSAGES.CREATE_USER_PREFIX
+      );
     });
 
     it('should handle non-database errors properly', async () => {
@@ -468,7 +483,7 @@ describe('UserService', () => {
       when(userRepositoryMock.findById(1)).thenReject(randomError);
 
       await expect(userService.getUserById(1)).rejects.toThrow(OperationError);
-      await expect(userService.getUserById(1)).rejects.toThrow(/Random system error/);
+      await expect(userService.getUserById(1)).rejects.toThrow(ERROR_MESSAGES.GET_USER_PREFIX);
     });
   });
 });
