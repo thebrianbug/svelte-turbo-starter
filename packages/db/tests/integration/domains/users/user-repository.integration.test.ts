@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, afterAll } from 'vitest';
 
-import { createUserRepository } from '../../../..';
 import { DatabaseError } from '@repo/shared';
 import {
   createTestContext,
@@ -8,6 +7,7 @@ import {
   TABLES,
   closeTestConnection
 } from '../../test-utils/database';
+import { ErrorAssertions } from '../../test-utils/test-assertions';
 
 import type { NewUser, ValidatedUpdateUser } from '../../../../src/domains/users/models/user';
 import type { IUserRepository } from '../../../../src/domains/users';
@@ -31,7 +31,8 @@ describe('User Integration Tests', () => {
 
   beforeEach(async () => {
     testCtx = createTestContext();
-    userRepository = createUserRepository(testCtx.connection);
+    // Use the test repository from the test context
+    userRepository = testCtx.repositories.users;
     await cleanTable(TABLES.USERS, testCtx.db);
   });
 
@@ -74,11 +75,9 @@ describe('User Integration Tests', () => {
       expect(notFound).toBeUndefined();
 
       // update should throw NOT_FOUND for non-existent id
-      const updateError = await userRepository
-        .update(999999, { name: 'New Name' } as ValidatedUpdateUser)
-        .catch((e) => e);
-      expect(updateError).toBeInstanceOf(DatabaseError);
-      expect(updateError.code).toBe('NOT_FOUND');
+      await ErrorAssertions.assertNotFound(() =>
+        userRepository.update(999999, { name: 'New Name' } as ValidatedUpdateUser)
+      );
 
       // delete should return false for non-existent id
       const notDeleted = await userRepository.delete(999999);
@@ -102,11 +101,9 @@ describe('User Integration Tests', () => {
       expect(foundById?.id).toBe(created.id);
 
       // Update non-existent should throw NOT_FOUND
-      const updateError = await userRepository
-        .update(999999, { name: TEST_NAMES.UPDATED } as ValidatedUpdateUser)
-        .catch((e) => e);
-      expect(updateError).toBeInstanceOf(DatabaseError);
-      expect(updateError.code).toBe('NOT_FOUND');
+      await ErrorAssertions.assertNotFound(() =>
+        userRepository.update(999999, { name: TEST_NAMES.UPDATED } as ValidatedUpdateUser)
+      );
 
       const foundByEmail = await userRepository.findByEmail(testUser.email);
       expect(foundByEmail).toBeDefined();
@@ -146,9 +143,12 @@ describe('User Integration Tests', () => {
   describe('Database Constraints', () => {
     it('should enforce unique email constraint', async () => {
       await userRepository.create(testUser);
+
+      // Use the error assertion utility
+      await ErrorAssertions.assertUniqueViolation(() => userRepository.create(testUser));
+
+      // Additional metadata checks if needed
       const error = await userRepository.create(testUser).catch((e) => e);
-      expect(error).toBeInstanceOf(DatabaseError);
-      expect(error.code).toBe('UNIQUE_VIOLATION');
       expect(error.metadata?.operation).toBe('create');
       expect(error.metadata?.entityType).toBe('user');
     });
@@ -158,10 +158,15 @@ describe('User Integration Tests', () => {
         ...testUser,
         email: 'invalid-email'
       };
+
+      // Use the error assertion utility
+      await ErrorAssertions.assertValidationFailed(
+        () => userRepository.create(invalidUser),
+        'email'
+      );
+
+      // Additional metadata checks if needed
       const error = await userRepository.create(invalidUser).catch((e) => e);
-      expect(error).toBeInstanceOf(DatabaseError);
-      expect(error.code).toBe('VALIDATION_FAILED');
-      expect(error.metadata?.field).toBe('email');
       expect(error.metadata?.entityType).toBe('user');
     });
 
@@ -169,17 +174,21 @@ describe('User Integration Tests', () => {
       const emptyNameUser = { ...testUser, name: '' };
       const longNameUser = { ...testUser, name: 'a'.repeat(101) };
 
-      const emptyError = await userRepository.create(emptyNameUser).catch((e) => e);
-      expect(emptyError).toBeInstanceOf(DatabaseError);
-      expect(emptyError.code).toBe('VALIDATION_FAILED');
-      expect(emptyError.metadata?.field).toBe('name');
-      expect(emptyError.metadata?.entityType).toBe('user');
+      // Use the error assertion utility for empty name
+      await ErrorAssertions.assertValidationFailed(
+        () => userRepository.create(emptyNameUser),
+        'name'
+      );
 
-      const longError = await userRepository.create(longNameUser).catch((e) => e);
-      expect(longError).toBeInstanceOf(DatabaseError);
-      expect(longError.code).toBe('VALIDATION_FAILED');
-      expect(longError.metadata?.field).toBe('name');
-      expect(longError.metadata?.entityType).toBe('user');
+      // Use the error assertion utility for long name
+      await ErrorAssertions.assertValidationFailed(
+        () => userRepository.create(longNameUser),
+        'name'
+      );
+
+      // Additional metadata checks if needed
+      const error = await userRepository.create(emptyNameUser).catch((e) => e);
+      expect(error.metadata?.entityType).toBe('user');
     });
   });
 
