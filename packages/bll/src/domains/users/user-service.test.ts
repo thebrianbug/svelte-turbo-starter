@@ -170,9 +170,7 @@ describe('UserService', () => {
       when(userRepositoryMock.findByEmail(userData.email)).thenReject(dbError);
 
       await expect(userService.createUser(userData)).rejects.toThrow(OperationError);
-      await expect(userService.createUser(userData)).rejects.toThrow(
-        TEST_DATA.CREATE_USER_PREFIX
-      );
+      await expect(userService.createUser(userData)).rejects.toThrow(TEST_DATA.CREATE_USER_PREFIX);
     });
 
     it('should handle database errors during user creation', async () => {
@@ -194,9 +192,7 @@ describe('UserService', () => {
       when(userRepositoryMock.create(deepEqual(validateNewUser(userData)))).thenReject(dbError);
 
       await expect(userService.createUser(userData)).rejects.toThrow(OperationError);
-      await expect(userService.createUser(userData)).rejects.toThrow(
-        TEST_DATA.CREATE_USER_PREFIX
-      );
+      await expect(userService.createUser(userData)).rejects.toThrow(TEST_DATA.CREATE_USER_PREFIX);
     });
 
     it('should throw validation error for invalid data', async () => {
@@ -206,7 +202,7 @@ describe('UserService', () => {
       };
 
       await expect(userService.createUser(invalidData)).rejects.toThrow(ValidationError);
-      await expect(userService.createUser(invalidData)).rejects.toThrow(/User validation error/);
+      await expect(userService.createUser(invalidData)).rejects.toThrow('User validation error');
     });
   });
 
@@ -331,7 +327,9 @@ describe('UserService', () => {
       when(userRepositoryMock.findById(userId)).thenResolve(createMockUser());
 
       await expect(userService.updateUser(userId, invalidData)).rejects.toThrow(ValidationError);
-      await expect(userService.updateUser(userId, invalidData)).rejects.toThrow(/User validation error/);
+      await expect(userService.updateUser(userId, invalidData)).rejects.toThrow(
+        /User validation error/
+      );
     });
   });
 
@@ -460,9 +458,7 @@ describe('UserService', () => {
       when(userRepositoryMock.findByEmail(userData.email)).thenReject(dbError);
 
       await expect(userService.createUser(userData)).rejects.toThrow(OperationError);
-      await expect(userService.createUser(userData)).rejects.toThrow(
-        TEST_DATA.CREATE_USER_PREFIX
-      );
+      await expect(userService.createUser(userData)).rejects.toThrow(TEST_DATA.CREATE_USER_PREFIX);
     });
 
     it('should handle non-database errors properly', async () => {
