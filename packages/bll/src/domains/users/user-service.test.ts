@@ -315,7 +315,9 @@ describe('UserService', () => {
       when(userRepositoryMock.update(userId, deepEqual(validatedData))).thenReject(dbError);
 
       await expect(userService.updateUser(userId, updateData)).rejects.toThrow(OperationError);
-      await expect(userService.updateUser(userId, updateData)).rejects.toThrow(/updateUser/);
+      await expect(userService.updateUser(userId, updateData)).rejects.toThrow(
+        TEST_DATA.UPDATE_USER_PREFIX
+      );
     });
 
     it('should throw validation error for invalid update data', async () => {
