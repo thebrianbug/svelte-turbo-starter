@@ -11,7 +11,7 @@ describe('Database Connection', () => {
   afterAll(async () => {
     await closeTestConnection();
   });
-  
+
   it('should successfully connect to database', async () => {
     const isConnected = await checkDatabaseConnection();
     expect(isConnected).toBe(true);

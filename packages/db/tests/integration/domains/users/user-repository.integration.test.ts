@@ -2,7 +2,12 @@ import { describe, it, expect, beforeEach, afterAll } from 'vitest';
 
 import { createUserRepository } from '../../../..';
 import { DatabaseError } from '@repo/shared';
-import { createTestContext, cleanTable, TABLES, closeTestConnection } from '../../test-utils/database';
+import {
+  createTestContext,
+  cleanTable,
+  TABLES,
+  closeTestConnection
+} from '../../test-utils/database';
 
 import type { NewUser, ValidatedUpdateUser } from '../../../../src/domains/users/models/user';
 import type { IUserRepository } from '../../../../src/domains/users';
