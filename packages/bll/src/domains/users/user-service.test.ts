@@ -18,7 +18,12 @@ const TEST_DATA = {
   EXISTING_EMAIL: 'existing@example.com',
   USER_NOT_FOUND_MESSAGE: 'User not found: 1',
   EMAIL_EXISTS_MESSAGE: 'email already exists',
-  OPERATION_ERROR_PREFIX: 'Failed to createUser User:'
+  CREATE_USER_PREFIX: 'Failed to createUser User:',
+  GET_USER_PREFIX: 'Failed to getUserById User:',
+  UPDATE_USER_PREFIX: 'Failed to updateUser User:',
+  UPDATE_USER_FIND_PREFIX: 'Failed to updateUser.findById User:',
+  DEACTIVATE_USER_PREFIX: 'Failed to deactivateUser User:',
+  GET_ACTIVE_USERS_PREFIX: 'Failed to getActiveUsers User:'
 } as const;
 
 // Error codes
@@ -141,7 +146,7 @@ describe('UserService', () => {
       when(userRepositoryMock.findByEmail(userData.email)).thenResolve(
         createMockUser({
           email: userData.email,
-          name: 'Existing User'
+          name: TEST_DATA.NAME
         })
       );
 
@@ -166,7 +171,7 @@ describe('UserService', () => {
 
       await expect(userService.createUser(userData)).rejects.toThrow(OperationError);
       await expect(userService.createUser(userData)).rejects.toThrow(
-        TEST_DATA.OPERATION_ERROR_PREFIX
+        TEST_DATA.CREATE_USER_PREFIX
       );
     });
 
@@ -190,7 +195,7 @@ describe('UserService', () => {
 
       await expect(userService.createUser(userData)).rejects.toThrow(OperationError);
       await expect(userService.createUser(userData)).rejects.toThrow(
-        TEST_DATA.OPERATION_ERROR_PREFIX
+        TEST_DATA.CREATE_USER_PREFIX
       );
     });
 
@@ -200,7 +205,8 @@ describe('UserService', () => {
         name: ''
       };
 
-      await expect(userService.createUser(invalidData)).rejects.toThrow();
+      await expect(userService.createUser(invalidData)).rejects.toThrow(ValidationError);
+      await expect(userService.createUser(invalidData)).rejects.toThrow(/User validation error/);
     });
   });
 
@@ -224,13 +230,17 @@ describe('UserService', () => {
     });
 
     it('should map database errors during getUserById', async () => {
-      const dbError = new DatabaseError('CONNECTION_ERROR', 'Database connection failed', {
-        operation: DB_OPERATIONS.FIND_BY_ID
-      });
+      const dbError = new DatabaseError(
+        ERROR_CODES.CONNECTION_ERROR,
+        ERROR_MESSAGES.DATABASE_CONNECTION_FAILED,
+        {
+          operation: DB_OPERATIONS.FIND_BY_ID
+        }
+      );
       when(userRepositoryMock.findById(1)).thenReject(dbError);
 
       await expect(userService.getUserById(1)).rejects.toThrow(OperationError);
-      await expect(userService.getUserById(1)).rejects.toThrow(/getUserById/);
+      await expect(userService.getUserById(1)).rejects.toThrow(TEST_DATA.GET_USER_PREFIX);
     });
   });
 
@@ -273,9 +283,13 @@ describe('UserService', () => {
     });
 
     it('should map database errors during findById in updateUser', async () => {
-      const dbError = new DatabaseError('CONNECTION_ERROR', 'Database connection failed', {
-        operation: DB_OPERATIONS.FIND_BY_ID
-      });
+      const dbError = new DatabaseError(
+        ERROR_CODES.CONNECTION_ERROR,
+        ERROR_MESSAGES.DATABASE_CONNECTION_FAILED,
+        {
+          operation: DB_OPERATIONS.FIND_BY_ID
+        }
+      );
       when(userRepositoryMock.findById(1)).thenReject(dbError);
 
       await expect(userService.updateUser(1, { name: TEST_DATA.UPDATED_NAME })).rejects.toThrow(
@@ -316,7 +330,8 @@ describe('UserService', () => {
 
       when(userRepositoryMock.findById(userId)).thenResolve(createMockUser());
 
-      await expect(userService.updateUser(userId, invalidData)).rejects.toThrow();
+      await expect(userService.updateUser(userId, invalidData)).rejects.toThrow(ValidationError);
+      await expect(userService.updateUser(userId, invalidData)).rejects.toThrow(/User validation error/);
     });
   });
 
@@ -324,7 +339,7 @@ describe('UserService', () => {
     it('should deactivate user successfully', async () => {
       when(userRepositoryMock.softDelete(1)).thenResolve(true);
 
-      await expect(userService.deactivateUser(1)).resolves.not.toThrow();
+      await userService.deactivateUser(1);
       verify(userRepositoryMock.softDelete(1)).once();
     });
 
@@ -446,7 +461,7 @@ describe('UserService', () => {
 
       await expect(userService.createUser(userData)).rejects.toThrow(OperationError);
       await expect(userService.createUser(userData)).rejects.toThrow(
-        TEST_DATA.OPERATION_ERROR_PREFIX
+        TEST_DATA.CREATE_USER_PREFIX
       );
     });
 
