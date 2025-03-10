@@ -12,11 +12,9 @@ describe('db package exports', () => {
     expect(dbExports.users).toBeDefined();
     expect(dbExports.userStatusEnum).toBeDefined();
 
-    // Repository instance
-    expect(dbExports.userRepository).toBeDefined();
-    expect(typeof dbExports.userRepository).toBe('object'); // Should be an instance
-    expect(dbExports.userRepository.create).toBeDefined();
-    expect(dbExports.userRepository.findById).toBeDefined();
+    // Repository factory
+    expect(dbExports.createUserRepository).toBeDefined();
+    expect(typeof dbExports.createUserRepository).toBe('function');
 
     // Validation
     expect(dbExports.newUserSchema).toBeDefined();
@@ -24,5 +22,15 @@ describe('db package exports', () => {
     expect(dbExports.validateNewUser).toBeDefined();
     expect(dbExports.validateUpdateUser).toBeDefined();
     expect(dbExports.validateManyNewUsers).toBeDefined();
+  });
+
+  it('should create a working user repository instance', () => {
+    const userRepository = dbExports.createUserRepository();
+    expect(userRepository).toBeDefined();
+    expect(typeof userRepository.create).toBe('function');
+    expect(typeof userRepository.findById).toBe('function');
+    expect(typeof userRepository.findByEmail).toBe('function');
+    expect(typeof userRepository.findActive).toBe('function');
+    expect(typeof userRepository.findAll).toBe('function');
   });
 });

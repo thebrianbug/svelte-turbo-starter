@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import { getConnection } from '../../../src/database';
+import type { DatabaseType } from '../../../src/infrastructure/base-repository';
 
 // Define known tables in the system
 export const TABLES = {
@@ -7,15 +8,44 @@ export const TABLES = {
   // Add other tables as they are created
 } as const;
 
-// Allow string values for table names
-export type TableName = string;
+export type TableName = (typeof TABLES)[keyof typeof TABLES];
+
+// Shared connection for tests to avoid connection churn
+let sharedConnection: ReturnType<typeof getConnection> | null = null;
+
+/**
+ * Get a shared database connection for tests
+ * This prevents creating too many connections during tests
+ */
+export function getSharedConnection() {
+  if (!sharedConnection) {
+    sharedConnection = getConnection();
+  }
+  return sharedConnection;
+}
+
+/**
+ * Creates a test context that uses the shared connection
+ */
+export function createTestContext() {
+  const connection = getSharedConnection();
+  return {
+    connection,
+    db: connection.db,
+    // No-op cleanup to maintain API compatibility
+    // Real cleanup happens in afterAll hook
+    async cleanup() {}
+  };
+}
 
 /**
  * Cleans a specific table while handling foreign key constraints
  */
-export async function cleanTable(tableName: TableName): Promise<void> {
+export async function cleanTable(
+  tableName: TableName,
+  db: DatabaseType = getSharedConnection().db
+): Promise<void> {
   try {
-    const { db } = getConnection();
     await db.transaction(async (tx) => {
       // Temporarily disable foreign key constraints
       await tx.execute(sql`SET CONSTRAINTS ALL DEFERRED`);
@@ -32,10 +62,10 @@ export async function cleanTable(tableName: TableName): Promise<void> {
  */
 export async function cleanRelatedTables(
   primaryTable: TableName,
-  relatedTables: TableName[]
+  relatedTables: TableName[],
+  db: DatabaseType = getSharedConnection().db
 ): Promise<void> {
   try {
-    const { db } = getConnection();
     await db.transaction(async (tx) => {
       await tx.execute(sql`SET CONSTRAINTS ALL DEFERRED`);
       for (const table of [...relatedTables, primaryTable]) {
@@ -49,14 +79,16 @@ export async function cleanRelatedTables(
 }
 
 /**
- * Closes database connection during teardown
+ * Close the shared database connection
+ * This should be called in afterAll hooks
  */
-export async function teardown(): Promise<void> {
-  try {
-    const { client } = getConnection();
-    await client.end();
-  } catch (error) {
-    console.error('Database teardown failed:', error);
-    throw error;
+export async function closeTestConnection(): Promise<void> {
+  if (sharedConnection) {
+    try {
+      await sharedConnection.client.end();
+      sharedConnection = null;
+    } catch (error) {
+      console.error('Failed to close test database connection:', error);
+    }
   }
 }

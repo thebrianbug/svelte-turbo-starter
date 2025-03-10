@@ -2,63 +2,57 @@ import postgres from 'postgres';
 import { describe, it, expect, afterAll } from 'vitest';
 
 import { checkDatabaseConnection, getDatabaseConfig } from '../../../src/database';
-import { teardown } from '../test-utils/database';
+import { closeTestConnection } from '../test-utils/database';
 
 const databaseUrl = getDatabaseConfig();
 
 describe('Database Connection', () => {
-  // Clean up and close all connections after tests
+  // Close shared connection after all tests
   afterAll(async () => {
-    await teardown();
+    await closeTestConnection();
   });
-
+  
   it('should successfully connect to database', async () => {
     const isConnected = await checkDatabaseConnection();
     expect(isConnected).toBe(true);
   });
 
   it('should handle connection timeout', async () => {
-    let timeoutClient: postgres.Sql | null = null;
-    try {
-      // Create a new client with a very short timeout
-      timeoutClient = postgres(databaseUrl, {
-        connect_timeout: 0.001, // 1ms timeout for testing
-        max: 1,
-        idle_timeout: 0
-      });
+    // Create a new client with a very short timeout
+    const timeoutClient = postgres(databaseUrl, {
+      connect_timeout: 0.001, // 1ms timeout for testing
+      max: 1,
+      idle_timeout: 0
+    });
 
+    try {
       await timeoutClient`SELECT 1`;
       expect(true).toBe(false); // Should not reach here
     } catch (error) {
       expect(error).toBeDefined();
     } finally {
-      if (timeoutClient) {
-        await timeoutClient.end({ timeout: 5 }).catch(() => {
-          // Ignore cleanup errors
-        });
-      }
+      await timeoutClient.end({ timeout: 5 }).catch(() => {
+        // Ignore cleanup errors
+      });
     }
   });
 
   it('should handle invalid credentials', async () => {
-    let invalidClient: postgres.Sql | null = null;
-    try {
-      // Create a new client with invalid credentials
-      invalidClient = postgres('postgresql://invalid:invalid@localhost:5432/invalid_db', {
-        max: 1,
-        idle_timeout: 0
-      });
+    // Create a new client with invalid credentials
+    const invalidClient = postgres('postgresql://invalid:invalid@localhost:5432/invalid_db', {
+      max: 1,
+      idle_timeout: 0
+    });
 
+    try {
       await invalidClient`SELECT 1`;
       expect(true).toBe(false); // Should not reach here
     } catch (error) {
       expect(error).toBeDefined();
     } finally {
-      if (invalidClient) {
-        await invalidClient.end({ timeout: 5 }).catch(() => {
-          // Ignore cleanup errors
-        });
-      }
+      await invalidClient.end({ timeout: 5 }).catch(() => {
+        // Ignore cleanup errors
+      });
     }
   });
 

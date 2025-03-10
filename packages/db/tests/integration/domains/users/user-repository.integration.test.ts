@@ -1,10 +1,11 @@
 import { describe, it, expect, beforeEach, afterAll } from 'vitest';
 
-import { userRepository } from '../../../..';
+import { createUserRepository } from '../../../..';
 import { DatabaseError } from '@repo/shared';
-import { teardown, cleanTable, TABLES } from '../../test-utils/database';
+import { createTestContext, cleanTable, TABLES, closeTestConnection } from '../../test-utils/database';
 
 import type { NewUser, ValidatedUpdateUser } from '../../../../src/domains/users/models/user';
+import type { IUserRepository } from '../../../../src/domains/users';
 
 const TEST_EMAILS = {
   MAIN: 'test@example.com',
@@ -20,12 +21,17 @@ const TEST_NAMES = {
 } as const;
 
 describe('User Integration Tests', () => {
+  let testCtx: ReturnType<typeof createTestContext>;
+  let userRepository: IUserRepository;
+
   beforeEach(async () => {
-    await cleanTable(TABLES.USERS);
+    testCtx = createTestContext();
+    userRepository = createUserRepository(testCtx.connection);
+    await cleanTable(TABLES.USERS, testCtx.db);
   });
 
   afterAll(async () => {
-    await teardown();
+    await closeTestConnection();
   });
 
   const testUser: NewUser = {
@@ -102,18 +108,17 @@ describe('User Integration Tests', () => {
       expect(foundByEmail?.email).toBe(testUser.email);
 
       // Update
-      const updatedName = 'Updated Name';
       const updated = await userRepository.update(created.id, { name: TEST_NAMES.UPDATED });
       expect(updated).toBeDefined();
-      expect(updated?.name).toBe(updatedName);
+      expect(updated?.name).toBe(TEST_NAMES.UPDATED);
       expect(updated?.updatedAt).not.toBe(created.updatedAt);
 
-      // Soft Delete
-      const deleted = await userRepository.softDelete(created.id);
+      // Hard Delete
+      const deleted = await userRepository.delete(created.id);
       expect(deleted).toBe(true);
 
       const foundAfterDelete = await userRepository.findById(created.id);
-      expect(foundAfterDelete?.status).toBe('inactive');
+      expect(foundAfterDelete).toBeUndefined();
     });
   });
 
@@ -196,7 +201,7 @@ describe('User Integration Tests', () => {
       // Find all users
       const allUsers = await userRepository.findAll();
       expect(allUsers).toHaveLength(3);
-      expect(allUsers.map((u) => u.email).sort()).toEqual(
+      expect(allUsers.map((user) => user.email).sort()).toEqual(
         [TEST_EMAILS.MAIN, TEST_EMAILS.SECONDARY, TEST_EMAILS.THIRD].sort()
       );
       allUsers.forEach((user) => {
