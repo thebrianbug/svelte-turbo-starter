@@ -4,7 +4,7 @@ import { userRepository } from '../../../..';
 import { DatabaseError } from '@repo/shared';
 import { teardown, cleanTable, TABLES } from '../../test-utils/database';
 
-import type { NewUser } from '../../../../src/domains/users/models/user';
+import type { NewUser, ValidatedUpdateUser } from '../../../../src/domains/users/models/user';
 
 const TEST_EMAILS = {
   MAIN: 'test@example.com',
@@ -34,7 +34,46 @@ describe('User Integration Tests', () => {
     status: 'active'
   };
 
+  describe('findByEmail', () => {
+    it('should find a user by email', async () => {
+      const created = await userRepository.create(testUser);
+      const found = await userRepository.findByEmail(testUser.email);
+      expect(found).toBeDefined();
+      expect(found?.id).toBe(created.id);
+      expect(found?.email).toBe(testUser.email.toLowerCase());
+    });
+
+    it('should normalize email before searching', async () => {
+      const created = await userRepository.create(testUser);
+      const found = await userRepository.findByEmail('  ' + testUser.email.toUpperCase() + '  ');
+      expect(found).toBeDefined();
+      expect(found?.id).toBe(created.id);
+    });
+
+    it('should return undefined for non-existent email', async () => {
+      const found = await userRepository.findByEmail('nonexistent@example.com');
+      expect(found).toBeUndefined();
+    });
+  });
+
   describe('User Lifecycle', () => {
+    it('should handle not found cases properly', async () => {
+      // findById should return undefined for non-existent id
+      const notFound = await userRepository.findById(999999);
+      expect(notFound).toBeUndefined();
+
+      // update should throw NOT_FOUND for non-existent id
+      const updateError = await userRepository
+        .update(999999, { name: 'New Name' } as ValidatedUpdateUser)
+        .catch((e) => e);
+      expect(updateError).toBeInstanceOf(DatabaseError);
+      expect(updateError.code).toBe('NOT_FOUND');
+
+      // delete should return false for non-existent id
+      const notDeleted = await userRepository.delete(999999);
+      expect(notDeleted).toBe(false);
+    });
+
     it('should handle complete user lifecycle (create, read, update, delete)', async () => {
       // Create
       const created = await userRepository.create(testUser);
@@ -50,6 +89,13 @@ describe('User Integration Tests', () => {
       const foundById = await userRepository.findById(created.id);
       expect(foundById).toBeDefined();
       expect(foundById?.id).toBe(created.id);
+
+      // Update non-existent should throw NOT_FOUND
+      const updateError = await userRepository
+        .update(999999, { name: TEST_NAMES.UPDATED } as ValidatedUpdateUser)
+        .catch((e) => e);
+      expect(updateError).toBeInstanceOf(DatabaseError);
+      expect(updateError.code).toBe('NOT_FOUND');
 
       const foundByEmail = await userRepository.findByEmail(testUser.email);
       expect(foundByEmail).toBeDefined();
@@ -286,8 +332,8 @@ describe('User Integration Tests', () => {
       const updatedUser1 = await userRepository.findById(result.user1Id);
       const user2 = await userRepository.findById(result.user2Id);
 
-      expect(updatedUser1.name).toBe(TEST_NAMES.UPDATED);
-      expect(user2.email).toBe(TEST_EMAILS.SECONDARY);
+      expect(updatedUser1?.name).toBe(TEST_NAMES.UPDATED);
+      expect(user2?.email).toBe(TEST_EMAILS.SECONDARY);
     });
 
     it('should rollback transaction on error', async () => {

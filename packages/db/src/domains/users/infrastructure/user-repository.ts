@@ -6,7 +6,13 @@ import { validateNewUser, validateUpdateUser, validateManyNewUsers } from '../mo
 import { DatabaseError } from '@repo/shared';
 
 import { users } from '../schema/schema';
-import type { User, NewUser, UserStatus } from '../models/user';
+import type {
+  User,
+  NewUser,
+  UserStatus,
+  ValidatedNewUser,
+  ValidatedUpdateUser
+} from '../models/user';
 import type { IUserRepository } from '../interfaces/i-user-repository';
 
 class UserRepository extends BaseRepository<User> implements IUserRepository {
@@ -38,14 +44,14 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
     };
   }
 
-  async findByEmail(email: string, tx?: TransactionType): Promise<User> {
+  async findByEmail(email: string, tx?: TransactionType): Promise<User | undefined> {
     const executor = tx || this.getExecutor();
     try {
       const [result] = await executor
         .select()
         .from(users)
         .where(eq(users.email, UserRepository.normalizeEmail(email)));
-      return this.mapToEntity(result);
+      return result ? this.mapToEntity(result) : undefined;
     } catch (error) {
       throw DatabaseError.from(this.entityType, error, 'findByEmail');
     }
@@ -61,7 +67,7 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
     }
   }
 
-  async create(data: NewUser, tx?: TransactionType): Promise<User> {
+  async create(data: ValidatedNewUser, tx?: TransactionType): Promise<User> {
     try {
       const normalizedData = UserRepository.prepareUserData(data);
       const validatedData = validateNewUser(normalizedData);
@@ -93,11 +99,22 @@ class UserRepository extends BaseRepository<User> implements IUserRepository {
     }
   }
 
-  async update(id: number, data: Partial<NewUser>, tx?: TransactionType): Promise<User> {
+  async update(id: number, data: ValidatedUpdateUser, tx?: TransactionType): Promise<User> {
+    const executor = tx || this.getExecutor();
     try {
-      const normalizedData = UserRepository.prepareUserData(data);
-      const validatedData = validateUpdateUser(normalizedData);
-      return await super.update(id, validatedData, tx);
+      const [result] = await executor
+        .update(this.table)
+        .set({
+          ...UserRepository.prepareUserData(data),
+          updatedAt: new Date()
+        })
+        .where(sql`${this.table}.id = ${id}`)
+        .returning();
+
+      if (!result) {
+        throw new DatabaseError('NOT_FOUND', `User not found with id ${id}`, { id });
+      }
+      return this.mapToEntity(result);
     } catch (error) {
       throw DatabaseError.from(this.entityType, error, 'update');
     }
