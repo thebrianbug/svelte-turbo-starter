@@ -1,207 +1,181 @@
 # Turborepo Svelte Starter
 
-A full-featured monorepo starter template using [Turborepo](https://turbo.build/) and [SvelteKit 2](https://kit.svelte.dev/) with [Svelte 5](https://svelte.dev/docs/svelte/overview). This template provides a scalable foundation for building modern web applications with shared components, consistent tooling, and efficient workflows.
+A full-featured monorepo starter template using [Turborepo](https://turbo.build/) and [SvelteKit 2](https://kit.svelte.dev/) with [Svelte 5](https://svelte.dev/docs/svelte/overview).
 
-## Features
+## Table of Contents
 
-- 📦 Monorepo management with [Turborepo](https://turbo.build/)
-- ⚡ [SvelteKit 2](https://kit.svelte.dev/) with [Svelte 5](https://svelte.dev/) for both main app and documentation
-- 🚀 [Vercel](https://vercel.com/) adapter pre-configured
-- 🎨 [Tailwind CSS](https://tailwindcss.com/) v3 for styling
-- 📚 Shared UI component library
-- 🔍 [TypeScript](https://www.typescriptlang.org/) v5 for type safety
-- 🧪 Testing setup with [Vitest](https://vitest.dev/) and [Playwright](https://playwright.dev/)
-- 📝 Consistent code style with [ESLint](https://eslint.org/) and [Prettier](https://prettier.io/)
-- 🗄️ PostgreSQL with [Drizzle ORM](https://orm.drizzle.team/) for type-safe database operations
-- 🏗️ Domain-driven design architecture with clear separation of concerns
-- 🔄 Fast CI pipeline with:
-  - Static analysis (format and lint checks)
-  - Unit testing with [Vitest](https://vitest.dev/)
-  - End-to-end testing with [Playwright](https://playwright.dev/)
-  - Optimized caching for dependencies and browsers
-  - Smart concurrency to cancel redundant runs
+- [Quick Start](#quick-start)
+- [Features](#features)
+- [Development](#development)
+- [Project Structure](#project-structure)
+- [Architecture](#architecture)
+- [Testing](#testing)
+- [Available Scripts](#available-scripts)
 
-## TODO
+## Quick Start
 
-- [ ] Finish example users list CRUD UI
-- [ ] Integrate with [Svelte-Clerk](https://github.com/wobsoriano/svelte-clerk) for Auth
-- [ ] 📚 Add [Storybook](https://storybook.js.org/) support in UI package with [Svelte 5](https://storybook.js.org/blog/storybook-8-4/)
-- [ ] Upgrade Tailwind to v4, after [with-tailwind example](https://github.com/vercel/turborepo/issues/9895) is done
-  - See [StackOverflow issue](https://stackoverflow.com/questions/79416157/how-to-enable-tailwind-css-v4-0-for-the-packages-ui-components-in-turborepo)
+### Prerequisites
 
-## Prerequisites
+- Node.js >= 18 ([download](https://nodejs.org/))
+- npm >= 10 (upgrade: `npm install -g npm@latest`)
+- [Docker](https://www.docker.com/) or [Podman](https://podman.io/) with compose plugin
 
-- [Node.js](https://nodejs.org/) >= 18
-  - Download from: https://nodejs.org/
-  - Verify installation: `node --version`
-- npm >= 10 (comes with Node.js)
-  - Upgrade to latest version: `npm install -g npm@latest`
-  - Verify installation: `npm --version`
-- Either [Docker](https://www.docker.com/) or [Podman](https://podman.io/) with compose plugin
-  - For Docker: Install Docker Desktop or Docker Engine with Docker Compose
-  - For Podman: Install Podman and podman-compose
+### Setup
 
-## Getting Started
-
-1. Clone the repository:
+1. Clone and install:
 
    ```sh
    git clone git@github.com:thebrianbug/svelte-turbo-starter.git
    cd svelte-turbo-starter
-   ```
-
-2. Install dependencies:
-
-   ```sh
    npm install
    ```
 
-3. Start the development server:
+2. Start development:
    ```sh
    npm run dev
    ```
 
-## Architecture
+## Features
 
-### Domain-Driven Design
+- 📦 [Turborepo](https://turbo.build/) monorepo management
+- ⚡ [SvelteKit 2](https://kit.svelte.dev/) with [Svelte 5](https://svelte.dev/)
+- 🎨 [Tailwind CSS](https://tailwindcss.com/) v3
+- 🔍 [TypeScript](https://www.typescriptlang.org/) v5
+- 🗄️ PostgreSQL with [Drizzle ORM](https://orm.drizzle.team/)
+- 🧪 [Vitest](https://vitest.dev/) and [Playwright](https://playwright.dev/) testing
+- 📝 [ESLint](https://eslint.org/) and [Prettier](https://prettier.io/)
+- 🚀 [Vercel](https://vercel.com/) deployment ready
+- 🏗️ Domain-driven design architecture
+- 🔄 Fast CI pipeline with caching and smart concurrency
 
-The project follows DDD principles with clear separation of concerns:
+### Roadmap
 
-1. **Domain Models** (`packages/db/src/models/`):
+- [ ] Example users list CRUD UI
+- [ ] [Svelte-Clerk](https://github.com/wobsoriano/svelte-clerk) auth integration
+- [ ] [Storybook](https://storybook.js.org/) with [Svelte 5](https://storybook.js.org/blog/storybook-8-4/)
+- [ ] Tailwind v4 upgrade ([tracking issue](https://github.com/vercel/turborepo/issues/9895))
 
-   - Entity definitions and value objects
-   - Aggregate roots and domain events
-   - Rich domain models over anemic data structures
+## Development
 
-2. **Domain Services** (`packages/bll/src/domains/`):
+### Available Scripts
 
-   - Complex domain operations
-   - Business rules implementation
-   - Coordination between aggregates
+#### Main Commands
 
-3. **Repository Layer** (`packages/db/src/repositories/`):
-   - Data access patterns
-   - Transaction handling
-   - Query implementations
+- `npm run dev` - Development mode
+- `npm run build` - Build all apps
+- `npm run preview` - Preview builds
+- `npm run clean` - Clean outputs
+- `npm run format` - Format code
+- `npm run check` - Type check
+- `npm run lint` - Lint code
 
-### Error Handling
+#### Testing
 
-The application implements a layered error handling approach:
+- `npm run test` - All tests
+- `npm run test:unit` - Unit tests
+- `npm run test:e2e` - E2E tests
+- `npm run kill:e2e` - Kill test browsers
 
-1. **DB Layer** (`packages/db`):
+#### Database
 
-   - Wraps database errors in `DatabaseError`
-   - Uses try-catch in repository methods
-   - Includes operation context in errors
-   - Handles data validation
-
-2. **BLL Layer** (`packages/bll`):
-
-   - Uses domain-specific errors (EntityNotFoundError, DuplicateEntityError)
-   - Focuses on business rule violations
-   - Maps database errors to domain errors
-   - Handles domain validation
-
-3. **Shared Layer** (`packages/shared`):
-   - Defines base DomainError class
-   - Provides common error types
-   - Includes error metadata and timestamps
-   - Ensures proper error serialization
-
-### Testing Strategy
-
-1. **Integration Tests** (`packages/*/tests/integration/`):
-
-   - Service Test Context:
-
-     - Uses transaction-based repositories
-     - Creates services through factory functions
-     - Injects repositories into services
-     - All operations automatically rolled back
-
-   - Test Organization:
-     - Tests organized by domain
-     - Located in `tests/integration/domains/`
-     - Follows same structure as source code
-     - One test file per service
-
-2. **Unit Tests** (`packages/*/src/**/*.test.ts`):
-
-   - Located next to source files
-   - Uses ts-mockito for mocking
-   - Follows TDD principles
-   - Tests business logic in isolation
-
-3. **E2E Tests** (`apps/*/tests/`):
-   - Full application testing
-   - Uses Playwright
-   - Tests user workflows
-   - Verifies integration points
+- `npm run docker:up` - Start PostgreSQL
+- `npm run docker:down` - Stop PostgreSQL
 
 ## Project Structure
 
 ```
 .
 ├── apps/
-│   ├── docs/              # Documentation site built with SvelteKit
-│   └── web/              # Main web application
+│   ├── docs/              # Documentation site
+│   └── web/              # Main application
 ├── packages/
-│   ├── bll/              # Business Logic Layer (DDD patterns)
-│   │   └── src/
-│   │       └── domains/  # Domain-specific business logic
-│   ├── db/               # Database Layer with Drizzle ORM
-│   │   ├── drizzle/     # Database migrations
-│   │   └── src/
-│   │       ├── database/ # Database configuration
-│   │       └── domains/  # Domain-specific repositories
-│   ├── eslint-config/    # Shared ESLint configuration
-│   ├── tailwind-config/  # Shared Tailwind CSS configuration
-│   ├── typescript-config/ # Shared TypeScript configuration
-│   └── ui/              # Shared UI component library
+│   ├── bll/              # Business Logic Layer
+│   ├── db/               # Database Layer
+│   ├── ui/               # Shared components
+│   ├── eslint-config/    # ESLint config
+│   ├── tailwind-config/  # Tailwind config
+│   └── typescript-config/ # TypeScript config
 ```
 
-### Apps
+### Package Details
 
-- `web`: The main SvelteKit application
-- `docs`: A documentation site also built with SvelteKit, perfect for component documentation and guides
+- `web`: Main SvelteKit application
+- `docs`: Documentation site with SvelteKit
+- `bll`: Business Logic Layer with DDD patterns
+- `db`: Database layer with Drizzle ORM
+- `ui`: Shared Svelte component library
+- `*-config`: Shared tooling configurations
 
-### Packages
+## Architecture
 
-- `bll`: Business Logic Layer implementing domain-driven design patterns
-- `db`: Database layer using Drizzle ORM for PostgreSQL operations
-- `ui`: A shared [Svelte](https://svelte.dev/) component library used by both applications
-- `eslint-config`: Common ESLint configuration with security, promise, sonar, and unicorn plugins
-- `tailwind-config`: Shared Tailwind CSS configuration
-- `typescript-config`: Shared TypeScript configuration for consistent type checking
+### Domain-Driven Design
 
-## Available Scripts
+1. **Domain Models** (`packages/db/src/models/`)
 
-- `npm run dev` - Start all applications in development mode using [Vite](https://vitejs.dev/) v6
-- `npm run build` - Build all applications and packages
-- `npm run preview` - Preview the built applications
-- `npm run clean` - Clean build outputs and node_modules directories
-- `npm run format` - Format all files using [Prettier](https://prettier.io/) with Svelte plugin
-- `npm run check` - Run [SvelteKit](https://kit.svelte.dev/) sync, type checking, and format verification
-- `npm run lint` - Run [ESLint](https://eslint.org/) across all projects
+   - Entity definitions and value objects
+   - Aggregate roots and domain events
+   - Rich domain models over anemic data structures
 
-### Testing Scripts
+2. **Domain Services** (`packages/bll/src/domains/`)
 
-- `npm run test` - Run all tests (unit and e2e) across all applications
-- `npm run test:unit` - Run [Vitest](https://vitest.dev/) unit tests across all applications
-- `npm run test:e2e` - Run [Playwright](https://playwright.dev/) end-to-end tests for both apps
-- `npm run kill:e2e` - Kill any hanging Playwright browser processes
-- `npm run docker:up` - Start PostgreSQL database in Docker/Podman
-- `npm run docker:down` - Stop and remove PostgreSQL container
+   - Complex domain operations
+   - Business rules implementation
+   - Aggregate coordination
 
-## Development Guidelines
+3. **Repository Layer** (`packages/db/src/repositories/`)
+   - Data access patterns
+   - Transaction handling
+   - Query implementations
 
-### Repository Pattern
+### Error Handling
 
-1. **Factory Pattern for Repository Creation**:
+1. **DB Layer** (`packages/db`)
 
-   - Repositories created through factory functions
-   - BLL services receive repository interfaces through DI
-   - Enables proper mocking in unit tests
+   - DatabaseError wrapping
+   - Operation context tracking
+   - Data validation
+   - Repository method error handling
+
+2. **BLL Layer** (`packages/bll`)
+
+   - Domain-specific errors
+   - Business rule validation
+   - Error mapping from DB layer
+   - Domain validation
+
+3. **Shared Layer** (`packages/shared`)
+   - Base error classes
+   - Common error types
+   - Error metadata and timestamps
+   - Error serialization
+
+## Testing
+
+### Integration Tests
+
+- Located in `packages/*/tests/integration/`
+- Transaction-based repositories
+- Factory function service creation
+- Automatic operation rollback
+- Domain-organized test structure
+
+### Unit Tests
+
+- Located next to source files (`*.test.ts`)
+- ts-mockito for mocking
+- TDD principles
+- Isolated business logic testing
+
+### E2E Tests
+
+- Located in `apps/*/tests/`
+- Playwright-based
+- Full workflow testing
+- Integration verification
+
+  - Repositories created through factory functions
+  - BLL services receive repository interfaces through DI
+  - Enables proper mocking in unit tests
 
 2. **Transaction Management**:
 
