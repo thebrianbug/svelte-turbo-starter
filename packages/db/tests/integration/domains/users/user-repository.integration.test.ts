@@ -6,7 +6,7 @@ import {
   createMigratedTestContext,
   cleanTable,
   closeTestConnection,
-  executeTestInTransaction,
+  withTransactionTest,
   createTransactionTestContext
 } from '../../test-utils/database';
 import { SCHEMA_OBJECTS } from '../../test-utils/database-migrations';
@@ -48,6 +48,17 @@ describe('User Integration Tests', () => {
   afterAll(async () => {
     await closeTestConnection();
   });
+
+  // Helper function that uses the shared withTransactionTest with the user repository
+  function withUserTransactionTest(
+    testFn: (repo: IUserRepository) => Promise<void>
+  ): Promise<void> {
+    return withTransactionTest(
+      testFn,
+      (tx) => createTransactionTestContext(tx).repositories.users,
+      testCtx.db
+    );
+  }
 
   const testUser: NewUser = {
     name: 'Test User',
@@ -94,12 +105,9 @@ describe('User Integration Tests', () => {
     });
 
     it('should handle complete user lifecycle (create, read, update, delete)', async () => {
-      await executeTestInTransaction(async (tx) => {
-        const txContext = createTransactionTestContext(tx);
-        const userRepository = txContext.repositories.users;
-
+      await withUserTransactionTest(async (transactionRepo) => {
         // Create
-        const created = await userRepository.create(testUser);
+        const created = await transactionRepo.create(testUser);
         expect(created).toBeDefined();
         expect(created.name).toBe(testUser.name);
         expect(created.email).toBe(testUser.email);
@@ -109,30 +117,30 @@ describe('User Integration Tests', () => {
         expect(created.updatedAt).toBeDefined();
 
         // Read
-        const foundById = await userRepository.findById(created.id);
+        const foundById = await transactionRepo.findById(created.id);
         expect(foundById).toBeDefined();
         expect(foundById?.id).toBe(created.id);
 
         // Update non-existent should throw NOT_FOUND
         await ErrorAssertions.assertNotFound(() =>
-          userRepository.update(999999, { name: TEST_NAMES.UPDATED } as ValidatedUpdateUser)
+          transactionRepo.update(999999, { name: TEST_NAMES.UPDATED } as ValidatedUpdateUser)
         );
 
-        const foundByEmail = await userRepository.findByEmail(testUser.email);
+        const foundByEmail = await transactionRepo.findByEmail(testUser.email);
         expect(foundByEmail).toBeDefined();
         expect(foundByEmail?.email).toBe(testUser.email);
 
         // Update
-        const updated = await userRepository.update(created.id, { name: TEST_NAMES.UPDATED });
+        const updated = await transactionRepo.update(created.id, { name: TEST_NAMES.UPDATED });
         expect(updated).toBeDefined();
         expect(updated?.name).toBe(TEST_NAMES.UPDATED);
         expect(updated?.updatedAt).not.toBe(created.updatedAt);
 
         // Hard Delete
-        const deleted = await userRepository.delete(created.id);
+        const deleted = await transactionRepo.delete(created.id);
         expect(deleted).toBe(true);
 
-        const foundAfterDelete = await userRepository.findById(created.id);
+        const foundAfterDelete = await transactionRepo.findById(created.id);
         expect(foundAfterDelete).toBeUndefined();
       });
     });

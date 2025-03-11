@@ -164,5 +164,22 @@ export async function executeTestInTransaction<T>(
   return result!;
 }
 
+/**
+ * Helper function to run a test within a transaction for better isolation
+ * @param testFn Function containing test logic that receives a repository
+ * @param repoGetter Function that returns a repository from a transaction
+ * @param db Database connection to use (defaults to shared connection)
+ */
+export async function withTransactionTest<R>(
+  testFn: (repo: R) => Promise<void>,
+  repoGetter: (tx: TransactionType) => R,
+  db: DatabaseType = getSharedConnection().db
+): Promise<void> {
+  await executeTestInTransaction(async (tx) => {
+    const repository = repoGetter(tx);
+    await testFn(repository);
+  }, db);
+}
+
 // Error assertions have been moved to test-assertions.ts
 export { ErrorAssertions } from './test-assertions';
