@@ -6,8 +6,9 @@
   "main": "./index.ts",
   "types": "./index.ts",
   "scripts": {
-    "test": "npm run test:unit",
+    "test": "npm run test:unit && npm run test:integration",
     "test:unit": "vitest run --config ./vitest.unit.config.ts",
+    "test:integration": "vitest run --config ./vitest.integration.config.ts",
     "lint": "eslint .",
     "clean": "rimraf node_modules",
     "format": "prettier --write .",
