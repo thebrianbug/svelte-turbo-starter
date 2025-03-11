@@ -1,15 +1,12 @@
-import { describe, it, expect, beforeEach, afterAll, beforeAll } from 'vitest';
+import { describe, it, expect, afterAll, beforeAll } from 'vitest';
 
 import { DatabaseError } from '@repo/shared';
 import {
-  createTestContext,
   createMigratedTestContext,
-  cleanTable,
   closeTestConnection,
   withTransactionTest,
   createTransactionTestContext
 } from '../../test-utils/database';
-import { SCHEMA_OBJECTS } from '../../test-utils/database-migrations';
 import { ErrorAssertions } from '../../test-utils/test-assertions';
 
 import type { NewUser, ValidatedUpdateUser } from '../../../../src/domains/users/models/user';
@@ -29,17 +26,10 @@ const TEST_NAMES = {
 } as const;
 
 describe('User Integration Tests', () => {
-  let testCtx: ReturnType<typeof createTestContext>;
-
   // Initialize database with migrations before all tests
   beforeAll(async () => {
     // Ensure database schema is properly initialized with migrations
     await createMigratedTestContext();
-  });
-
-  beforeEach(async () => {
-    testCtx = createTestContext();
-    await cleanTable(SCHEMA_OBJECTS.USERS, testCtx.db);
   });
 
   afterAll(async () => {
@@ -52,8 +42,7 @@ describe('User Integration Tests', () => {
   ): Promise<void> {
     return withTransactionTest(
       testFn,
-      (tx) => createTransactionTestContext(tx).repositories.users,
-      testCtx.db
+      (tx) => createTransactionTestContext(tx).repositories.users
     );
   }
 

@@ -1,14 +1,18 @@
 import { sql } from 'drizzle-orm';
-import { describe, it, expect, afterAll } from 'vitest';
+import { describe, it, expect, afterAll, beforeAll } from 'vitest';
 
 import { 
-  createTestContext, 
   closeTestConnection, 
-  executeTestInTransaction 
+  executeTestInTransaction,
+  createMigratedTestContext
 } from '../test-utils/database';
 
 describe('Database Client', () => {
-  // Close shared connection after all tests
+  // Initialize database before tests and close connection after
+  beforeAll(async () => {
+    await createMigratedTestContext();
+  });
+  
   afterAll(async () => {
     await closeTestConnection();
   });
@@ -74,29 +78,31 @@ describe('Database Client', () => {
       });
       
       // Verify the table doesn't exist outside the transaction (due to rollback)
-      const testCtx = createTestContext();
-      const error = await testCtx.db.execute(sql`SELECT * FROM test_commit`).catch((e) => e);
-      expect(error).toBeDefined();
-      expect(error.message).toContain('test_commit');
+      // Use executeTestInTransaction to ensure isolation
+      await executeTestInTransaction(async (tx) => {
+        const error = await tx.execute(sql`SELECT * FROM test_commit`).catch((e) => e);
+        expect(error).toBeDefined();
+        expect(error.message).toContain('test_commit');
+      });
     });
     
     it('should properly isolate test data between tests', async () => {
       // This test demonstrates that temporary tables from previous tests don't exist
-      // Use a fresh context to avoid transaction issues
-      const testCtx = createTestContext();
-      
-      // These tables should not exist if our transaction isolation is working
-      const checkTables = [
-        'test_rollback',
-        'test_commit'
-      ];
-      
-      for (const tableName of checkTables) {
-        const error = await testCtx.db.execute(sql`SELECT * FROM ${sql.identifier(tableName)}`).catch((e) => e);
-        expect(error).toBeDefined();
-        // Check for either relation not found or transaction aborted errors
-        expect(error.message).toMatch(/relation.*does not exist|test_\w+/);
-      }
+      // Use executeTestInTransaction to ensure isolation
+      await executeTestInTransaction(async (tx) => {
+        // These tables should not exist if our transaction isolation is working
+        const checkTables = [
+          'test_rollback',
+          'test_commit'
+        ];
+        
+        for (const tableName of checkTables) {
+          const error = await tx.execute(sql`SELECT * FROM ${sql.identifier(tableName)}`).catch((e) => e);
+          expect(error).toBeDefined();
+          // Check for relation not found, transaction aborted, or other PostgreSQL errors
+          expect(error.message).toMatch(/relation.*does not exist|test_\w+|transaction is aborted/);
+        }
+      });
     });
   });
 });

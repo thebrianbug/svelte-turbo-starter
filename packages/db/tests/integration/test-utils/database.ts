@@ -1,11 +1,12 @@
-import { sql } from 'drizzle-orm';
+// No longer need sql import after removing cleanup functions
 import { getConnection } from '../../../src/database';
 import type { DatabaseType, TransactionType } from '../../../src/infrastructure/base-repository';
 import { createTestUserRepository, createTransactionUserRepository } from './repository-factories';
-import { initializeTestDatabase, type SchemaObject } from './database-migrations';
+import { initializeTestDatabase } from './database-migrations';
 
 /**
  * Type for test context that includes database connection and repositories
+ * Simplified to remove unnecessary cleanup function
  */
 export type TestContext = {
   connection: ReturnType<typeof getConnection>;
@@ -13,7 +14,6 @@ export type TestContext = {
   repositories: {
     users: ReturnType<typeof createTestUserRepository>;
   };
-  cleanup: () => Promise<void>;
 };
 
 /**
@@ -43,6 +43,7 @@ export function getSharedConnection() {
 /**
  * Creates a test context that uses the shared connection
  * and provides access to test repositories
+ * Simplified to remove unnecessary cleanup function
  */
 export function createTestContext(): TestContext {
   const connection = getSharedConnection();
@@ -52,8 +53,7 @@ export function createTestContext(): TestContext {
     db: connection.db,
     repositories: {
       users: createTestUserRepository(connection)
-    },
-    async cleanup() {}
+    }
   };
 }
 
@@ -64,48 +64,6 @@ export function createTestContext(): TestContext {
 export async function createMigratedTestContext() {
   await initializeTestDatabase();
   return createTestContext();
-}
-
-/**
- * Cleans a specific table while handling foreign key constraints
- */
-export async function cleanTable(
-  table: SchemaObject,
-  db: DatabaseType = getSharedConnection().db
-): Promise<void> {
-  try {
-    await db.transaction(async (tx) => {
-      // Temporarily disable foreign key constraints
-      await tx.execute(sql`SET CONSTRAINTS ALL DEFERRED`);
-      // Use Drizzle's type-safe delete
-      await tx.delete(table);
-    });
-  } catch (error) {
-    console.error(`Failed to clean table ${table.name}:`, error);
-    throw error;
-  }
-}
-
-/**
- * Cleans multiple related tables in a single transaction
- */
-export async function cleanRelatedTables(
-  primaryTable: SchemaObject,
-  relatedTables: SchemaObject[],
-  db: DatabaseType = getSharedConnection().db
-): Promise<void> {
-  try {
-    await db.transaction(async (tx) => {
-      await tx.execute(sql`SET CONSTRAINTS ALL DEFERRED`);
-      // Delete related tables first, then primary table
-      for (const table of [...relatedTables, primaryTable]) {
-        await tx.delete(table);
-      }
-    });
-  } catch (error) {
-    console.error(`Failed to clean related tables for ${primaryTable.name}:`, error);
-    throw error;
-  }
 }
 
 /**
