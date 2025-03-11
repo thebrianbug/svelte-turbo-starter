@@ -7,11 +7,13 @@ This directory contains integration tests for the Business Logic Layer (BLL) ser
 Integration tests in this directory follow these key patterns:
 
 1. **Transaction-Based Testing**
+
    - All tests run within database transactions
    - Automatic rollback ensures test isolation
    - No test data persists between test runs
 
 2. **Real Repository Usage**
+
    - Tests use actual repositories (not mocks)
    - Database interactions are real but isolated
    - Tests verify proper error translation from DB to domain layer
