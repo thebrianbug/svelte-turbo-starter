@@ -28,12 +28,14 @@ import type { TransactionType } from '../../../src/infrastructure/base-repositor
  *
  * 1. createTest[Domain]Repository:
  *    - Creates a repository with a new or provided connection
- *    - Used for tests that don't require transaction isolation
+ *    - Used for specialized tests that need direct database access
+ *    - Useful for testing repository extensions or custom database behaviors
  *    - Returns the domain's repository interface type
+ *    - Note: For integration tests, prefer transaction-based repositories
  *
  * 2. createTransaction[Domain]Repository:
  *    - Creates a repository that uses a provided transaction
- *    - Used for test isolation through transaction rollback
+ *    - Preferred approach for test isolation through transaction rollback
  *    - Enables testing transaction flows across repositories
  *    - Returns the domain's repository interface type
  *
@@ -52,6 +54,13 @@ import type { TransactionType } from '../../../src/infrastructure/base-repositor
 
 /**
  * Creates a test user repository with the test database connection
+ *
+ * Note: For integration tests, prefer createTransactionUserRepository for better
+ * test isolation. This function should be used primarily for:
+ * - Tests that need to examine database state between operations
+ * - Testing repository extensions with custom behavior
+ * - Specialized database behavior testing
+ *
  * @param connection - Optional database connection (defaults to new connection)
  * @returns IUserRepository implementation
  */
@@ -63,6 +72,9 @@ export function createTestUserRepository(
 
 /**
  * Creates a test user repository that uses a transaction
+ * This is the preferred approach for integration tests as it provides
+ * better isolation through automatic rollback.
+ *
  * @param tx - Transaction to use for all database operations
  * @returns IUserRepository implementation using the provided transaction
  */
@@ -98,6 +110,6 @@ export function createTransactionUserRepository(tx: TransactionType): IUserRepos
  * When adding a new domain:
  * 1. Create a new section with domain-specific header
  * 2. Import required types and implementations
- * 3. Implement both factory functions
- * 4. Update TestContext and TransactionTestContext in database.ts
+ * 3. Implement both factory functions, emphasizing transaction-based testing
+ * 4. Update TransactionTestContext in database.ts
  */
