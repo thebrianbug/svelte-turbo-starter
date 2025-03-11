@@ -49,7 +49,9 @@ describe('UserService Integration', () => {
           name: TEST_DATA.NAME
         };
 
-        await expect(userService.createUser(invalidData)).rejects.toMatchObject(VALIDATION_ERROR_MATCHER);
+        await expect(userService.createUser(invalidData)).rejects.toMatchObject(
+          VALIDATION_ERROR_MATCHER
+        );
       });
     });
 
@@ -62,7 +64,9 @@ describe('UserService Integration', () => {
           // name is missing
         };
 
-        await expect(userService.createUser(incompleteData)).rejects.toMatchObject(VALIDATION_ERROR_MATCHER);
+        await expect(userService.createUser(incompleteData)).rejects.toMatchObject(
+          VALIDATION_ERROR_MATCHER
+        );
       });
     });
 
@@ -75,7 +79,9 @@ describe('UserService Integration', () => {
           name: TEST_DATA.VERY_LONG_NAME
         };
 
-        await expect(userService.createUser(invalidData)).rejects.toMatchObject(VALIDATION_ERROR_MATCHER);
+        await expect(userService.createUser(invalidData)).rejects.toMatchObject(
+          VALIDATION_ERROR_MATCHER
+        );
       });
     });
     it('should create a new user successfully', async () => {
@@ -172,7 +178,9 @@ describe('UserService Integration', () => {
           name: TEST_DATA.VERY_LONG_NAME
         };
 
-        await expect(userService.updateUser(createdUser.id, invalidData)).rejects.toMatchObject(VALIDATION_ERROR_MATCHER);
+        await expect(userService.updateUser(createdUser.id, invalidData)).rejects.toMatchObject(
+          VALIDATION_ERROR_MATCHER
+        );
       });
     });
 
@@ -304,7 +312,7 @@ describe('UserService Integration', () => {
 
         // Verify pagination and ordering
         expect(activeUsers).toHaveLength(2);
-        expect(activeUsers.map(u => u.email)).toEqual(
+        expect(activeUsers.map((u) => u.email)).toEqual(
           expect.arrayContaining(['user1@example.com', 'user3@example.com'])
         );
       });
@@ -331,12 +339,12 @@ describe('UserService Integration', () => {
         const userService = createUserService(context.deps);
 
         // Create 10 users
-        const createPromises = Array.from({ length: 10 }, (_, i) => (
+        const createPromises = Array.from({ length: 10 }, (_, i) =>
           userService.createUser({
             email: `user${i}@example.com`,
             name: `User ${i}`
           })
-        ));
+        );
 
         await Promise.all(createPromises);
 
