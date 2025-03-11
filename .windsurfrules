@@ -1,0 +1,15 @@
+Tech Stack:
+
+- Frontend: Svelte 5 (Svelte 5 syntax only) + TypeScript, Vite v6, TailwindCSS v3
+- Backend: PostgreSQL with Docker/Podman, Drizzle ORM
+- Architecture: Domain-driven design, Modular structure (UI, BLL, DB layers)
+- Testing: Vitest for unit/integration, Playwright for E2E
+- Quality: TypeScript v5, ESLint (security, promise, sonar, unicorn plugins), Prettier with Svelte plugin
+- Node.js >=18, NPM 10
+
+Testing Notes:
+
+- ts-mockito is used for mocking in unit tests
+- Follow TDD principles: write tests first, then implementation
+- Place unit tests next to source files with .test.ts extension
+- E2E tests go in the tests/ directory of each app
