@@ -2,7 +2,7 @@ import { sql } from 'drizzle-orm';
 import { getConnection } from '../../../src/database';
 import type { DatabaseType } from '../../../src/infrastructure/base-repository';
 import { createTestUserRepository } from './repository-factories';
-import { initializeTestDatabase, type TableName } from './database-migrations';
+import { initializeTestDatabase, type SchemaObject } from './database-migrations';
 
 // Shared connection for tests to avoid connection churn
 let sharedConnection: ReturnType<typeof getConnection> | null = null;
@@ -48,17 +48,18 @@ export async function createMigratedTestContext() {
  * Cleans a specific table while handling foreign key constraints
  */
 export async function cleanTable(
-  tableName: TableName,
+  table: SchemaObject,
   db: DatabaseType = getSharedConnection().db
 ): Promise<void> {
   try {
     await db.transaction(async (tx) => {
       // Temporarily disable foreign key constraints
       await tx.execute(sql`SET CONSTRAINTS ALL DEFERRED`);
-      await tx.execute(sql`TRUNCATE TABLE ${sql.identifier(tableName)} CASCADE`);
+      // Use Drizzle's type-safe delete
+      await tx.delete(table);
     });
   } catch (error) {
-    console.error(`Failed to clean table ${tableName}:`, error);
+    console.error(`Failed to clean table ${table.name}:`, error);
     throw error;
   }
 }
@@ -67,19 +68,20 @@ export async function cleanTable(
  * Cleans multiple related tables in a single transaction
  */
 export async function cleanRelatedTables(
-  primaryTable: TableName,
-  relatedTables: TableName[],
+  primaryTable: SchemaObject,
+  relatedTables: SchemaObject[],
   db: DatabaseType = getSharedConnection().db
 ): Promise<void> {
   try {
     await db.transaction(async (tx) => {
       await tx.execute(sql`SET CONSTRAINTS ALL DEFERRED`);
+      // Delete related tables first, then primary table
       for (const table of [...relatedTables, primaryTable]) {
-        await tx.execute(sql`TRUNCATE TABLE ${sql.identifier(table)} CASCADE`);
+        await tx.delete(table);
       }
     });
   } catch (error) {
-    console.error(`Failed to clean related tables for ${primaryTable}:`, error);
+    console.error(`Failed to clean related tables for ${primaryTable.name}:`, error);
     throw error;
   }
 }

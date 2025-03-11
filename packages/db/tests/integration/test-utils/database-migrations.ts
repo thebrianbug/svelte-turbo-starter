@@ -2,17 +2,17 @@ import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { join } from 'path';
 import { existsSync } from 'fs';
-import { sql } from 'drizzle-orm';
 import { getSharedConnection } from './database';
 import { DatabaseError } from '@repo/shared';
+import * as schema from '../../../src/domains/users/schema/schema';
 
-// Define known tables in the system
-export const TABLES = {
-  USERS: 'users'
-  // Add other tables as they are created
+// Schema objects for introspection
+export const SCHEMA_OBJECTS = {
+  USERS: schema.users
+  // Add other schema objects as they are created
 } as const;
 
-export type TableName = (typeof TABLES)[keyof typeof TABLES];
+export type SchemaObject = (typeof SCHEMA_OBJECTS)[keyof typeof SCHEMA_OBJECTS];
 
 const MAIN_MIGRATIONS_DIR = join(__dirname, '../../../../src/migrations');
 const MIGRATIONS_AVAILABLE =
@@ -34,34 +34,120 @@ export async function applyTestMigrations(): Promise<void> {
   }
 }
 
+/**
+ * Categorize schema validation errors into domain-specific types
+ */
+function categorizeSchemaError(error: unknown): {
+  code: string;
+  type: string;
+  message: string;
+} {
+  const errorMessage =
+    error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
+
+  if (errorMessage.includes('schema')) {
+    return {
+      code: 'SCHEMA_VALIDATION_FAILED',
+      type: 'schema_mismatch',
+      message: 'Schema structure does not match expected definition'
+    };
+  }
+
+  if (errorMessage.includes('permission') || errorMessage.includes('access')) {
+    return {
+      code: 'SCHEMA_ACCESS_DENIED',
+      type: 'access_control',
+      message: 'Insufficient permissions to validate schema'
+    };
+  }
+
+  if (errorMessage.includes('connection') || errorMessage.includes('timeout')) {
+    return {
+      code: 'DATABASE_CONNECTIVITY_ERROR',
+      type: 'infrastructure',
+      message: 'Unable to connect to database for schema validation'
+    };
+  }
+
+  return {
+    code: 'SCHEMA_VALIDATION_ERROR',
+    type: 'unknown',
+    message: 'Unexpected error during schema validation'
+  };
+}
+
 export async function verifyMigratedSchema(
-  tableNames: string[] = Object.values(TABLES)
+  schemaObjects: SchemaObject[] = Object.values(SCHEMA_OBJECTS)
 ): Promise<boolean> {
   const connection = getSharedConnection();
   const db = connection.db;
 
   try {
-    const tableChecks = tableNames.map(async (tableName) => {
-      const result = await db.execute(sql`
-        SELECT EXISTS (
-          SELECT FROM information_schema.tables 
-          WHERE table_schema = 'public' AND table_name = ${tableName}
-        )
-      `);
+    // Verify each schema object by attempting a simple query
+    const schemaChecks = await Promise.all(
+      schemaObjects.map(async (table) => {
+        try {
+          // Use Drizzle's type-safe query builder to verify table structure
+          // Using limit(0) is more efficient as we only need to verify schema, not fetch data
+          await db.select().from(table).limit(0);
+          return { table: table.name, valid: true };
+        } catch (error) {
+          const errorInfo = categorizeSchemaError(error);
 
-      return !!result[0]?.exists;
-    });
+          const dbError = new DatabaseError(
+            errorInfo.code,
+            `Failed to validate ${table.name} schema: ${errorInfo.message}`,
+            {
+              operation: 'verifyMigratedSchema',
+              domain: 'schema_management',
+              entity: table.name,
+              errorType: errorInfo.type,
+              validationType: 'structure',
+              originalError: error instanceof Error ? error.message : String(error)
+            }
+          );
 
-    return (await Promise.all(tableChecks)).every(Boolean);
-  } catch {
-    return false;
+          return {
+            table: table.name,
+            valid: false,
+            error: dbError
+          };
+        }
+      })
+    );
+
+    const failedTables = schemaChecks.filter((check) => !check.valid);
+    if (failedTables.length > 0) {
+      // Log detailed error information for debugging
+      console.error(
+        'Schema verification failed:',
+        failedTables.map((t) => ({
+          table: t.table,
+          error: t.error instanceof DatabaseError ? t.error.message : String(t.error)
+        }))
+      );
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    // Handle unexpected errors during verification process
+    throw new DatabaseError(
+      'SCHEMA_VERIFICATION_ERROR',
+      'Unexpected error during schema verification process',
+      {
+        operation: 'verifyMigratedSchema',
+        context: 'verification_process',
+        originalError: error instanceof Error ? error.message : String(error)
+      }
+    );
   }
 }
 
 export async function initializeTestDatabase(): Promise<void> {
   try {
     await applyTestMigrations();
-    const isValid = await verifyMigratedSchema();
+    const isValid = await verifyMigratedSchema(Object.values(SCHEMA_OBJECTS));
 
     if (!isValid && MIGRATIONS_AVAILABLE) {
       throw new DatabaseError(

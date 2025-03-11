@@ -7,7 +7,7 @@ import {
   cleanTable,
   closeTestConnection
 } from '../../test-utils/database';
-import { TABLES } from '../../test-utils/database-migrations';
+import { SCHEMA_OBJECTS } from '../../test-utils/database-migrations';
 import { ErrorAssertions } from '../../test-utils/test-assertions';
 
 import type { NewUser, ValidatedUpdateUser } from '../../../../src/domains/users/models/user';
@@ -40,7 +40,7 @@ describe('User Integration Tests', () => {
     testCtx = createTestContext();
     // Use the test repository from the test context
     userRepository = testCtx.repositories.users;
-    await cleanTable(TABLES.USERS, testCtx.db);
+    await cleanTable(SCHEMA_OBJECTS.USERS, testCtx.db);
   });
 
   afterAll(async () => {
