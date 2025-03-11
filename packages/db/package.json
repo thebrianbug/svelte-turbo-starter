@@ -12,7 +12,7 @@
     "db:up": "drizzle-kit up",
     "test": "npm run test:unit && npm run test:integration",
     "test:unit": "vitest run --config ./vitest.unit.config.ts",
-    "test:integration": "cross-env NODE_ENV=test vitest run --config ./vitest.integration.config.ts",
+    "test:integration": "vitest run --config ./vitest.integration.config.ts",
     "clean": "rimraf coverage node_modules",
     "format": "prettier --write .",
     "check": "tsc --noEmit && prettier --check .",
@@ -26,7 +26,6 @@
   },
   "devDependencies": {
     "@repo/typescript-config": "*",
-    "cross-env": "^7.0.3",
     "drizzle-kit": "^0.30.5"
   }
 }
