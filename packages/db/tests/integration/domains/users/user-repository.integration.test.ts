@@ -5,10 +5,12 @@ import {
   createTestContext,
   createMigratedTestContext,
   cleanTable,
-  closeTestConnection
+  closeTestConnection,
+  executeTestInTransaction
 } from '../../test-utils/database';
 import { SCHEMA_OBJECTS } from '../../test-utils/database-migrations';
 import { ErrorAssertions } from '../../test-utils/test-assertions';
+import { createTransactionUserRepository } from '../../test-utils/repository-factories';
 
 import type { NewUser, ValidatedUpdateUser } from '../../../../src/domains/users/models/user';
 import type { IUserRepository } from '../../../../src/domains/users';
@@ -52,6 +54,43 @@ describe('User Integration Tests', () => {
     email: TEST_EMAILS.MAIN,
     status: 'active'
   };
+
+  describe('Transaction-based Isolation', () => {
+    it('should execute test in transaction and automatically roll back changes', async () => {
+      // This test verifies that our transaction-based isolation approach works
+      // The user created inside the transaction should not persist after the test
+      
+      // First, verify the user doesn't exist
+      const initialUser = await userRepository.findByEmail(TEST_EMAILS.THIRD);
+      expect(initialUser).toBeUndefined();
+      
+      // Run a test in a transaction that creates a user
+      await executeTestInTransaction(async (tx) => {
+        // Create a repository that uses the transaction
+        const txUserRepo = createTransactionUserRepository(tx);
+        
+        // Create a user within the transaction
+        const created = await txUserRepo.create({
+          name: TEST_NAMES.THIRD_USER,
+          email: TEST_EMAILS.THIRD,
+          status: 'active'
+        });
+        
+        // Verify the user exists within the transaction
+        const found = await txUserRepo.findByEmail(TEST_EMAILS.THIRD);
+        expect(found).toBeDefined();
+        expect(found?.id).toBe(created.id);
+        expect(found?.email).toBe(TEST_EMAILS.THIRD.toLowerCase());
+        
+        // Return any value to satisfy the type system
+        return found;
+      });
+      
+      // After the transaction is rolled back, the user should not exist
+      const userAfterRollback = await userRepository.findByEmail(TEST_EMAILS.THIRD);
+      expect(userAfterRollback).toBeUndefined();
+    });
+  });
 
   describe('findByEmail', () => {
     it('should find a user by email', async () => {
