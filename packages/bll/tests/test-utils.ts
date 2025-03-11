@@ -1,7 +1,7 @@
 import { executeTestInTransaction, createTransactionTestContext } from '@repo/db/tests';
 import type { DatabaseType, TransactionType } from '@repo/db/src/infrastructure/base-repository';
 import { getConnection } from '@repo/db/src/database';
-import type { ServiceDependencies } from '../../src/infrastructure/types';
+import type { ServiceDependencies } from '../src/infrastructure/types';
 
 /**
  * Service test context that provides access to repositories and services
@@ -35,7 +35,7 @@ function createServiceTestContext(tx: TransactionType): ServiceTestContext {
 /**
  * Executes a service test within a transaction
  * Provides automatic rollback for test isolation
- * 
+ *
  * @param testFn Test function that receives the service test context
  * @param db Optional database connection (defaults to shared connection)
  */
@@ -52,7 +52,7 @@ export async function executeServiceTest<T>(
 /**
  * Helper function to run a test with a specific service
  * Useful when only testing a single service in isolation
- * 
+ *
  * @param testFn Test function that receives a service instance
  * @param serviceGetter Function to get service from context
  * @param db Optional database connection
