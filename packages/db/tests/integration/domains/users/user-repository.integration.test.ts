@@ -40,10 +40,7 @@ describe('User Integration Tests', () => {
   function withUserTransactionTest(
     testFn: (repo: IUserRepository) => Promise<void>
   ): Promise<void> {
-    return withTransactionTest(
-      testFn,
-      (tx) => createTransactionTestContext(tx).repositories.users
-    );
+    return withTransactionTest(testFn, (tx) => createTransactionTestContext(tx).repositories.users);
   }
 
   const testUser: NewUser = {

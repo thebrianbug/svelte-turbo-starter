@@ -1,20 +1,8 @@
 // No longer need sql import after removing cleanup functions
 import { getConnection } from '../../../src/database';
 import type { DatabaseType, TransactionType } from '../../../src/infrastructure/base-repository';
-import { createTestUserRepository, createTransactionUserRepository } from './repository-factories';
+import { createTransactionUserRepository } from './repository-factories';
 import { initializeTestDatabase } from './database-migrations';
-
-/**
- * Type for test context that includes database connection and repositories
- * Simplified to remove unnecessary cleanup function
- */
-export type TestContext = {
-  connection: ReturnType<typeof getConnection>;
-  db: DatabaseType;
-  repositories: {
-    users: ReturnType<typeof createTestUserRepository>;
-  };
-};
 
 /**
  * Type for transaction-based test context
@@ -41,29 +29,12 @@ export function getSharedConnection() {
 }
 
 /**
- * Creates a test context that uses the shared connection
- * and provides access to test repositories
- * Simplified to remove unnecessary cleanup function
- */
-export function createTestContext(): TestContext {
-  const connection = getSharedConnection();
-
-  return {
-    connection,
-    db: connection.db,
-    repositories: {
-      users: createTestUserRepository(connection)
-    }
-  };
-}
-
-/**
- * Creates a test context with guaranteed schema initialization via migrations
- * This is the preferred way to create a test context for integration tests
+ * Initializes the database schema via migrations and returns the shared connection
+ * This is the preferred way to setup the database for integration tests
  */
 export async function createMigratedTestContext() {
   await initializeTestDatabase();
-  return createTestContext();
+  return getSharedConnection();
 }
 
 /**

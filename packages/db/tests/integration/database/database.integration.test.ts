@@ -1,8 +1,8 @@
 import { sql } from 'drizzle-orm';
 import { describe, it, expect, afterAll, beforeAll } from 'vitest';
 
-import { 
-  closeTestConnection, 
+import {
+  closeTestConnection,
   executeTestInTransaction,
   createMigratedTestContext
 } from '../test-utils/database';
@@ -12,7 +12,7 @@ describe('Database Client', () => {
   beforeAll(async () => {
     await createMigratedTestContext();
   });
-  
+
   afterAll(async () => {
     await closeTestConnection();
   });
@@ -28,7 +28,7 @@ describe('Database Client', () => {
 
     it('should handle transaction rollback', async () => {
       let tableCreated = false;
-      
+
       // First transaction - will be rolled back due to error
       await executeTestInTransaction(async (tx) => {
         // Create temporary table within transaction
@@ -36,20 +36,20 @@ describe('Database Client', () => {
           sql`CREATE TEMPORARY TABLE test_rollback (id serial primary key, value text)`
         );
         await tx.execute(sql`INSERT INTO test_rollback (value) VALUES (${'test'})`);
-        
+
         // Verify data exists within transaction
         const result = await tx.execute(sql`SELECT value FROM test_rollback`);
         expect(result[0]).toEqual({ value: 'test' });
         tableCreated = true;
-        
+
         // Simulate rollback by throwing error
         throw new Error('Force rollback');
       }).catch((error) => {
         expect(error.message).toBe('Force rollback');
       });
-      
+
       expect(tableCreated).toBe(true);
-      
+
       // Second transaction - verify table doesn't exist after rollback
       await executeTestInTransaction(async (tx) => {
         const error = await tx.execute(sql`SELECT * FROM test_rollback`).catch((e) => e);
@@ -66,17 +66,17 @@ describe('Database Client', () => {
         await tx.execute(
           sql`CREATE TEMPORARY TABLE test_commit (id serial primary key, value text)`
         );
-        
+
         // Nested transaction that will be committed within the outer transaction
         await tx.transaction(async (nestedTx) => {
           await nestedTx.execute(sql`INSERT INTO test_commit (value) VALUES (${'test'})`);
         });
-        
+
         // Verify data exists after nested transaction commit
         const result = await tx.execute(sql`SELECT value FROM test_commit`);
         expect(result[0]).toEqual({ value: 'test' });
       });
-      
+
       // Verify the table doesn't exist outside the transaction (due to rollback)
       // Use executeTestInTransaction to ensure isolation
       await executeTestInTransaction(async (tx) => {
@@ -85,19 +85,18 @@ describe('Database Client', () => {
         expect(error.message).toContain('test_commit');
       });
     });
-    
+
     it('should properly isolate test data between tests', async () => {
       // This test demonstrates that temporary tables from previous tests don't exist
       // Use executeTestInTransaction to ensure isolation
       await executeTestInTransaction(async (tx) => {
         // These tables should not exist if our transaction isolation is working
-        const checkTables = [
-          'test_rollback',
-          'test_commit'
-        ];
-        
+        const checkTables = ['test_rollback', 'test_commit'];
+
         for (const tableName of checkTables) {
-          const error = await tx.execute(sql`SELECT * FROM ${sql.identifier(tableName)}`).catch((e) => e);
+          const error = await tx
+            .execute(sql`SELECT * FROM ${sql.identifier(tableName)}`)
+            .catch((e) => e);
           expect(error).toBeDefined();
           // Check for relation not found, transaction aborted, or other PostgreSQL errors
           expect(error.message).toMatch(/relation.*does not exist|test_\w+|transaction is aborted/);
