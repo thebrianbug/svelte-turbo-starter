@@ -61,6 +61,83 @@ A full-featured monorepo starter template using [Turborepo](https://turbo.build/
    npm run dev
    ```
 
+## Architecture
+
+### Domain-Driven Design
+
+The project follows DDD principles with clear separation of concerns:
+
+1. **Domain Models** (`packages/db/src/models/`):
+
+   - Entity definitions and value objects
+   - Aggregate roots and domain events
+   - Rich domain models over anemic data structures
+
+2. **Domain Services** (`packages/bll/src/domains/`):
+
+   - Complex domain operations
+   - Business rules implementation
+   - Coordination between aggregates
+
+3. **Repository Layer** (`packages/db/src/repositories/`):
+   - Data access patterns
+   - Transaction handling
+   - Query implementations
+
+### Error Handling
+
+The application implements a layered error handling approach:
+
+1. **DB Layer** (`packages/db`):
+
+   - Wraps database errors in `DatabaseError`
+   - Uses try-catch in repository methods
+   - Includes operation context in errors
+   - Handles data validation
+
+2. **BLL Layer** (`packages/bll`):
+
+   - Uses domain-specific errors (EntityNotFoundError, DuplicateEntityError)
+   - Focuses on business rule violations
+   - Maps database errors to domain errors
+   - Handles domain validation
+
+3. **Shared Layer** (`packages/shared`):
+   - Defines base DomainError class
+   - Provides common error types
+   - Includes error metadata and timestamps
+   - Ensures proper error serialization
+
+### Testing Strategy
+
+1. **Integration Tests** (`packages/*/tests/integration/`):
+
+   - Service Test Context:
+
+     - Uses transaction-based repositories
+     - Creates services through factory functions
+     - Injects repositories into services
+     - All operations automatically rolled back
+
+   - Test Organization:
+     - Tests organized by domain
+     - Located in `tests/integration/domains/`
+     - Follows same structure as source code
+     - One test file per service
+
+2. **Unit Tests** (`packages/*/src/**/*.test.ts`):
+
+   - Located next to source files
+   - Uses ts-mockito for mocking
+   - Follows TDD principles
+   - Tests business logic in isolation
+
+3. **E2E Tests** (`apps/*/tests/`):
+   - Full application testing
+   - Uses Playwright
+   - Tests user workflows
+   - Verifies integration points
+
 ## Project Structure
 
 ```
@@ -115,6 +192,50 @@ A full-featured monorepo starter template using [Turborepo](https://turbo.build/
 - `npm run kill:e2e` - Kill any hanging Playwright browser processes
 - `npm run docker:up` - Start PostgreSQL database in Docker/Podman
 - `npm run docker:down` - Stop and remove PostgreSQL container
+
+## Development Guidelines
+
+### Repository Pattern
+
+1. **Factory Pattern for Repository Creation**:
+
+   - Repositories created through factory functions
+   - BLL services receive repository interfaces through DI
+   - Enables proper mocking in unit tests
+
+2. **Transaction Management**:
+
+   - Use transaction-based repositories for test isolation
+   - All operations within a test are rolled back
+   - Proper error propagation through layers
+
+3. **Error Handling Best Practices**:
+   - Always use appropriate error types from shared layer
+   - Include relevant context in error metadata
+   - Map low-level errors to domain errors
+   - Validate input at domain boundaries
+
+### Testing Best Practices
+
+1. **Integration Tests**:
+
+   - Test complete workflows
+   - Verify error scenarios
+   - Test concurrent operations
+   - Use transaction isolation
+
+2. **Unit Tests**:
+
+   - Mock external dependencies
+   - Test edge cases
+   - Verify error handling
+   - Focus on business logic
+
+3. **Test Data Management**:
+   - Use factory functions for test data
+   - Clean up test data automatically
+   - Maintain test isolation
+   - Use meaningful test names
 
 ## Development Workflow
 
