@@ -1,8 +1,30 @@
 import { sql } from 'drizzle-orm';
 import { getConnection } from '../../../src/database';
 import type { DatabaseType, TransactionType } from '../../../src/infrastructure/base-repository';
-import { createTestUserRepository } from './repository-factories';
+import { createTestUserRepository, createTransactionUserRepository } from './repository-factories';
 import { initializeTestDatabase, type SchemaObject } from './database-migrations';
+
+/**
+ * Type for test context that includes database connection and repositories
+ */
+export type TestContext = {
+  connection: ReturnType<typeof getConnection>;
+  db: DatabaseType;
+  repositories: {
+    users: ReturnType<typeof createTestUserRepository>;
+  };
+  cleanup: () => Promise<void>;
+};
+
+/**
+ * Type for transaction-based test context
+ */
+export type TransactionTestContext = {
+  tx: TransactionType;
+  repositories: {
+    users: ReturnType<typeof createTransactionUserRepository>;
+  };
+};
 
 // Shared connection for tests to avoid connection churn
 let sharedConnection: ReturnType<typeof getConnection> | null = null;
@@ -22,7 +44,7 @@ export function getSharedConnection() {
  * Creates a test context that uses the shared connection
  * and provides access to test repositories
  */
-export function createTestContext() {
+export function createTestContext(): TestContext {
   const connection = getSharedConnection();
 
   return {
@@ -99,6 +121,19 @@ export async function closeTestConnection(): Promise<void> {
       console.error('Failed to close test database connection:', error);
     }
   }
+}
+
+/**
+ * Creates a test context that uses a transaction
+ * All operations performed through this context will be rolled back
+ */
+export function createTransactionTestContext(tx: TransactionType): TransactionTestContext {
+  return {
+    tx,
+    repositories: {
+      users: createTransactionUserRepository(tx)
+    }
+  };
 }
 
 /**

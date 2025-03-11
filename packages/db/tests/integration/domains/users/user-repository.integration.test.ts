@@ -6,11 +6,11 @@ import {
   createMigratedTestContext,
   cleanTable,
   closeTestConnection,
-  executeTestInTransaction
+  executeTestInTransaction,
+  createTransactionTestContext
 } from '../../test-utils/database';
 import { SCHEMA_OBJECTS } from '../../test-utils/database-migrations';
 import { ErrorAssertions } from '../../test-utils/test-assertions';
-import { createTransactionUserRepository } from '../../test-utils/repository-factories';
 
 import type { NewUser, ValidatedUpdateUser } from '../../../../src/domains/users/models/user';
 import type { IUserRepository } from '../../../../src/domains/users';
@@ -66,18 +66,18 @@ describe('User Integration Tests', () => {
 
       // Run a test in a transaction that creates a user
       await executeTestInTransaction(async (tx) => {
-        // Create a repository that uses the transaction
-        const txUserRepo = createTransactionUserRepository(tx);
+        // Get a context with repositories that use this transaction
+        const txContext = createTransactionTestContext(tx);
 
         // Create a user within the transaction
-        const created = await txUserRepo.create({
+        const created = await txContext.repositories.users.create({
           name: TEST_NAMES.THIRD_USER,
           email: TEST_EMAILS.THIRD,
           status: 'active'
         });
 
         // Verify the user exists within the transaction
-        const found = await txUserRepo.findByEmail(TEST_EMAILS.THIRD);
+        const found = await txContext.repositories.users.findByEmail(TEST_EMAILS.THIRD);
         expect(found).toBeDefined();
         expect(found?.id).toBe(created.id);
         expect(found?.email).toBe(TEST_EMAILS.THIRD.toLowerCase());
