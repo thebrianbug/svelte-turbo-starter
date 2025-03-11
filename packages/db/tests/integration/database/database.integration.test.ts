@@ -5,7 +5,7 @@ import {
   closeTestConnection,
   executeTestInTransaction,
   createMigratedTestContext
-} from '../test-utils/database';
+} from '../../test-utils/database';
 
 describe('Database Client', () => {
   // Initialize database before tests and close connection after

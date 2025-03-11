@@ -1,6 +1,6 @@
 // No longer need sql import after removing cleanup functions
-import { getConnection } from '../../../src/database';
-import type { DatabaseType, TransactionType } from '../../../src/infrastructure/base-repository';
+import { getConnection } from '../../src/database';
+import type { DatabaseType, TransactionType } from '../../src/infrastructure/base-repository';
 import { createTransactionUserRepository } from './repository-factories';
 import { initializeTestDatabase } from './database-migrations';
 

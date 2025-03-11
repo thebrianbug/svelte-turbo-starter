@@ -1,5 +1,5 @@
 // Export test utilities for BLL layer integration tests
-export * from './integration/test-utils/database';
-export * from './integration/test-utils/test-assertions';
-export * from './integration/test-utils/repository-factories';
-export * from './integration/test-utils/database-migrations';
+export * from './test-utils/database';
+export * from './test-utils/test-assertions';
+export * from './test-utils/repository-factories';
+export * from './test-utils/database-migrations';

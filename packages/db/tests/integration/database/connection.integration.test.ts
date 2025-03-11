@@ -2,7 +2,7 @@ import postgres from 'postgres';
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 
 import { checkDatabaseConnection, getDatabaseConfig } from '../../../src/database';
-import { closeTestConnection, createMigratedTestContext } from '../test-utils/database';
+import { closeTestConnection, createMigratedTestContext } from '../../test-utils/database';
 
 const databaseUrl = getDatabaseConfig();
 

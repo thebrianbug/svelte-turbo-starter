@@ -4,7 +4,7 @@ import { join } from 'path';
 import { existsSync } from 'fs';
 import { getSharedConnection } from './database';
 import { DatabaseError } from '@repo/shared';
-import * as schema from '../../../src/domains/users/schema/schema';
+import * as schema from '../../src/domains/users/schema/schema';
 
 // Schema objects for introspection
 export const SCHEMA_OBJECTS = {

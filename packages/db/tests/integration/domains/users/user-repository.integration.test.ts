@@ -6,8 +6,8 @@ import {
   closeTestConnection,
   withTransactionTest,
   createTransactionTestContext
-} from '../../test-utils/database';
-import { ErrorAssertions } from '../../test-utils/test-assertions';
+} from '../../../test-utils/database';
+import { ErrorAssertions } from '../../../test-utils/test-assertions';
 
 import type { NewUser, ValidatedUpdateUser } from '../../../../src/domains/users/models/user';
 import type { IUserRepository } from '../../../../src/domains/users';

@@ -1,7 +1,7 @@
-import { getConnection } from '../../../src/database';
-import { UserRepository } from '../../../src/domains/users/infrastructure/user-repository';
-import type { IUserRepository } from '../../../src/domains/users';
-import type { TransactionType } from '../../../src/infrastructure/base-repository';
+import { getConnection } from '../../src/database';
+import { UserRepository } from '../../src/domains/users/infrastructure/user-repository';
+import type { IUserRepository } from '../../src/domains/users';
+import type { TransactionType } from '../../src/infrastructure/base-repository';
 
 /**
  * Repository Factory Module for Integration Tests
