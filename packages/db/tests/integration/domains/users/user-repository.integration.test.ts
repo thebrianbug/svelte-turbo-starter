@@ -131,42 +131,47 @@ describe('User Integration Tests', () => {
     });
 
     it('should handle complete user lifecycle (create, read, update, delete)', async () => {
-      // Create
-      const created = await userRepository.create(testUser);
-      expect(created).toBeDefined();
-      expect(created.name).toBe(testUser.name);
-      expect(created.email).toBe(testUser.email);
-      expect(created.status).toBe('active');
-      expect(created.id).toBeDefined();
-      expect(created.createdAt).toBeDefined();
-      expect(created.updatedAt).toBeDefined();
+      await executeTestInTransaction(async (tx) => {
+        const txContext = createTransactionTestContext(tx);
+        const userRepository = txContext.repositories.users;
 
-      // Read
-      const foundById = await userRepository.findById(created.id);
-      expect(foundById).toBeDefined();
-      expect(foundById?.id).toBe(created.id);
+        // Create
+        const created = await userRepository.create(testUser);
+        expect(created).toBeDefined();
+        expect(created.name).toBe(testUser.name);
+        expect(created.email).toBe(testUser.email);
+        expect(created.status).toBe('active');
+        expect(created.id).toBeDefined();
+        expect(created.createdAt).toBeDefined();
+        expect(created.updatedAt).toBeDefined();
 
-      // Update non-existent should throw NOT_FOUND
-      await ErrorAssertions.assertNotFound(() =>
-        userRepository.update(999999, { name: TEST_NAMES.UPDATED } as ValidatedUpdateUser)
-      );
+        // Read
+        const foundById = await userRepository.findById(created.id);
+        expect(foundById).toBeDefined();
+        expect(foundById?.id).toBe(created.id);
 
-      const foundByEmail = await userRepository.findByEmail(testUser.email);
-      expect(foundByEmail).toBeDefined();
-      expect(foundByEmail?.email).toBe(testUser.email);
+        // Update non-existent should throw NOT_FOUND
+        await ErrorAssertions.assertNotFound(() =>
+          userRepository.update(999999, { name: TEST_NAMES.UPDATED } as ValidatedUpdateUser)
+        );
 
-      // Update
-      const updated = await userRepository.update(created.id, { name: TEST_NAMES.UPDATED });
-      expect(updated).toBeDefined();
-      expect(updated?.name).toBe(TEST_NAMES.UPDATED);
-      expect(updated?.updatedAt).not.toBe(created.updatedAt);
+        const foundByEmail = await userRepository.findByEmail(testUser.email);
+        expect(foundByEmail).toBeDefined();
+        expect(foundByEmail?.email).toBe(testUser.email);
 
-      // Hard Delete
-      const deleted = await userRepository.delete(created.id);
-      expect(deleted).toBe(true);
+        // Update
+        const updated = await userRepository.update(created.id, { name: TEST_NAMES.UPDATED });
+        expect(updated).toBeDefined();
+        expect(updated?.name).toBe(TEST_NAMES.UPDATED);
+        expect(updated?.updatedAt).not.toBe(created.updatedAt);
 
-      const foundAfterDelete = await userRepository.findById(created.id);
-      expect(foundAfterDelete).toBeUndefined();
+        // Hard Delete
+        const deleted = await userRepository.delete(created.id);
+        expect(deleted).toBe(true);
+
+        const foundAfterDelete = await userRepository.findById(created.id);
+        expect(foundAfterDelete).toBeUndefined();
+      });
     });
   });
 
