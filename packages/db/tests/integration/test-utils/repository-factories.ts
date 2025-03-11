@@ -1,7 +1,7 @@
 import { getConnection } from '../../../src/database';
-import { createUserRepository } from '../../../src/domains/users';
+import { UserRepository } from '../../../src/domains/users/infrastructure/user-repository';
 import type { IUserRepository } from '../../../src/domains/users';
-import type { DatabaseType } from '../../../src/infrastructure/base-repository';
+import type { TransactionType } from '../../../src/infrastructure/base-repository';
 
 /**
  * Repository factory for integration tests
@@ -24,22 +24,15 @@ import type { DatabaseType } from '../../../src/infrastructure/base-repository';
 export function createTestUserRepository(
   connection: ReturnType<typeof getConnection> = getConnection()
 ): IUserRepository {
-  return createUserRepository(connection);
+  return new UserRepository(connection);
 }
 
 /**
  * Creates a test user repository that uses a transaction
  * This is used for transaction-based test isolation
  */
-export function createTransactionUserRepository(
-  tx: DatabaseType
-): IUserRepository {
-  // Create a repository that uses the transaction instead of the connection
-  // Note: We're using a workaround to pass the transaction as the db property
-  return createUserRepository({
-    db: tx,
-    // We only need to provide the db property for the transaction to work
-    // The client property is needed by the type system but not used in tests
-    client: {} as any
-  });
+export function createTransactionUserRepository(tx: TransactionType): IUserRepository {
+  // Create a repository that uses the transaction directly
+  // We pass undefined as the connection and the transaction as the second parameter
+  return new UserRepository(undefined, tx);
 }

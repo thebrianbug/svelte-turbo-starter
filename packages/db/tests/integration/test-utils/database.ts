@@ -1,6 +1,6 @@
 import { sql } from 'drizzle-orm';
 import { getConnection } from '../../../src/database';
-import type { DatabaseType } from '../../../src/infrastructure/base-repository';
+import type { DatabaseType, TransactionType } from '../../../src/infrastructure/base-repository';
 import { createTestUserRepository } from './repository-factories';
 import { initializeTestDatabase, type SchemaObject } from './database-migrations';
 
@@ -106,24 +106,26 @@ export async function closeTestConnection(): Promise<void> {
  * This provides isolation without explicit cleanup
  */
 export async function executeTestInTransaction<T>(
-  testFn: (tx: any) => Promise<T>,
+  testFn: (tx: TransactionType) => Promise<T>,
   db: DatabaseType = getSharedConnection().db
 ): Promise<T> {
   let result: T;
-  
-  await db.transaction(async (tx) => {
-    // Run the test with the transaction
-    result = await testFn(tx);
-    
-    // Always roll back by throwing a special error that we can catch
-    throw new Error('__ROLLBACK_TRANSACTION__');
-  }).catch(err => {
-    // Ignore our special rollback error
-    if (err.message !== '__ROLLBACK_TRANSACTION__') {
-      throw err;
-    }
-  });
-  
+
+  await db
+    .transaction(async (tx) => {
+      // Run the test with the transaction
+      result = await testFn(tx);
+
+      // Always roll back by throwing a special error that we can catch
+      throw new Error('__ROLLBACK_TRANSACTION__');
+    })
+    .catch((err) => {
+      // Ignore our special rollback error
+      if (err.message !== '__ROLLBACK_TRANSACTION__') {
+        throw err;
+      }
+    });
+
   return result!;
 }
 
