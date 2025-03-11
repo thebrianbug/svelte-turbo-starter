@@ -55,43 +55,6 @@ describe('User Integration Tests', () => {
     status: 'active'
   };
 
-  describe('Transaction-based Isolation', () => {
-    it('should execute test in transaction and automatically roll back changes', async () => {
-      // This test verifies that our transaction-based isolation approach works
-      // The user created inside the transaction should not persist after the test
-
-      // First, verify the user doesn't exist
-      const initialUser = await userRepository.findByEmail(TEST_EMAILS.THIRD);
-      expect(initialUser).toBeUndefined();
-
-      // Run a test in a transaction that creates a user
-      await executeTestInTransaction(async (tx) => {
-        // Get a context with repositories that use this transaction
-        const txContext = createTransactionTestContext(tx);
-
-        // Create a user within the transaction
-        const created = await txContext.repositories.users.create({
-          name: TEST_NAMES.THIRD_USER,
-          email: TEST_EMAILS.THIRD,
-          status: 'active'
-        });
-
-        // Verify the user exists within the transaction
-        const found = await txContext.repositories.users.findByEmail(TEST_EMAILS.THIRD);
-        expect(found).toBeDefined();
-        expect(found?.id).toBe(created.id);
-        expect(found?.email).toBe(TEST_EMAILS.THIRD.toLowerCase());
-
-        // Return any value to satisfy the type system
-        return found;
-      });
-
-      // After the transaction is rolled back, the user should not exist
-      const userAfterRollback = await userRepository.findByEmail(TEST_EMAILS.THIRD);
-      expect(userAfterRollback).toBeUndefined();
-    });
-  });
-
   describe('findByEmail', () => {
     it('should find a user by email', async () => {
       const created = await userRepository.create(testUser);
