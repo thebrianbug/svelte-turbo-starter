@@ -1,12 +1,17 @@
 import postgres from 'postgres';
-import { describe, it, expect, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 
 import { checkDatabaseConnection, getDatabaseConfig } from '../../../src/database';
-import { closeTestConnection } from '../test-utils/database';
+import { closeTestConnection, createMigratedTestContext } from '../test-utils/database';
 
 const databaseUrl = getDatabaseConfig();
 
 describe('Database Connection', () => {
+  // Initialize database with migrations before tests
+  beforeAll(async () => {
+    await createMigratedTestContext();
+  });
+
   // Close shared connection after all tests
   afterAll(async () => {
     await closeTestConnection();
