@@ -39,7 +39,7 @@ You can preview the production build with `npm run preview`.
 
 ## E2E Testing with Database Access
 
-This project plans to use a hybrid approach for managing database state in end-to-end tests, leveraging the existing infrastructure from the `packages/db` module.
+This project uses a hybrid approach for managing database state in end-to-end tests, leveraging the existing infrastructure from the `packages/db` module.
 
 ### Database Strategy Overview
 
@@ -73,7 +73,9 @@ import { test as base } from '@playwright/test';
 import {
   initializeTestDatabase,
   closeTestConnection,
-  executeTestInTransaction
+  executeTestInTransaction,
+  createTestDataFactories,
+  verifyDatabaseState
 } from '../path/to/db-utils';
 
 // Define custom test fixture with database access
@@ -90,18 +92,90 @@ const test = base.extend({
   }
 });
 
-// Example test with transaction
+// Example test with transaction and data factories
 test('should create and verify user data', async ({ page, dbContext }) => {
   // Create test data in a transaction that will be rolled back
-  await executeTestInTransaction(async (tx) => {
-    // Create test user via repository
-    // This data will be automatically rolled back after the test
+  const { userId } = await executeTestInTransaction(async (tx) => {
+    // Use data factories for consistent test data creation
+    const factories = createTestDataFactories(tx);
+    const user = await factories.users.create({ name: 'Test User' });
+    
+    return { userId: user.id };
   });
 
   // Perform UI interactions that use the test data
   await page.goto('/users');
-  // Verify UI elements reflect database state
+  await page.getByText('Test User').click();
+  await page.getByRole('button', { name: 'Edit' }).click();
+  await page.getByLabel('Name').fill('Updated User');
+  await page.getByRole('button', { name: 'Save' }).click();
+  
+  // Verify database state matches UI actions
+  await verifyDatabaseState(async (tx) => {
+    const userRepo = createTransactionUserRepository(tx);
+    const user = await userRepo.getUserById(userId);
+    expect(user.name).toBe('Updated User');
+  });
 });
+```
+
+### Enhanced Testing Utilities
+
+#### 1. Error Assertion Utilities
+
+```typescript
+// Extend existing error assertions from DB layer
+import { ErrorAssertions } from '@repo/db/tests/test-utils/test-assertions';
+
+// E2E-specific error assertions
+export const E2EErrorAssertions = {
+  ...ErrorAssertions,
+  // Add E2E-specific assertions
+  expectValidationErrorInUI: async (page, fieldName) => {
+    await expect(page.getByTestId(`error-${fieldName}`)).toBeVisible();
+  }
+};
+```
+
+#### 2. Data Factory Pattern
+
+```typescript
+// Create consistent test data factories
+export function createTestDataFactories(tx) {
+  return {
+    users: {
+      create: async (overrides = {}) => {
+        const userRepo = createTransactionUserRepository(tx);
+        return userRepo.createUser({
+          email: `user-${Date.now()}@example.com`,
+          name: 'Test User',
+          status: 'active',
+          ...overrides
+        });
+      }
+    },
+    // Add more entity factories as needed
+  };
+}
+```
+
+#### 3. Combined UI and Database Operations
+
+```typescript
+// Helper to perform UI actions and verify database state
+export async function performActionAndVerifyState({
+  page,
+  uiAction,
+  dbVerification
+}) {
+  // Perform UI action
+  await uiAction(page);
+  
+  // Verify database state
+  await executeTestInTransaction(async (tx) => {
+    await dbVerification(tx);
+  });
+}
 ```
 
 ### Benefits of This Approach
@@ -111,13 +185,18 @@ test('should create and verify user data', async ({ page, dbContext }) => {
 - **Performance**: Baseline data is seeded once, reducing setup time
 - **Maintainability**: Leverages existing database utilities from `packages/db`
 - **Domain Integrity**: Respects the Domain-Driven Design principles of the codebase
+- **Consistency**: Maintains the same error handling and testing patterns across all layers
+- **Readability**: Data factories and helper functions make tests more concise and focused
 
 ### Implementation Steps
 
 1. Create database utilities in `/apps/web/tests/utils/database.ts`
-2. Configure Playwright to use these utilities in `playwright.config.ts`
-3. Create seed data scripts in `/apps/web/tests/fixtures/`
-4. Update e2e tests to use database transactions for test-specific data
+2. Implement data factories in `/apps/web/tests/utils/factories.ts`
+3. Add error assertion utilities in `/apps/web/tests/utils/assertions.ts`
+4. Configure Playwright to use these utilities in `playwright.config.ts`
+5. Create seed data scripts in `/apps/web/tests/fixtures/`
+6. Document test data dependencies in `/apps/web/tests/fixtures/README.md`
+7. Update e2e tests to use database transactions for test-specific data
 
 ### Running E2E Tests with Database Access
 
