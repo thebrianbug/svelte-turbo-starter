@@ -23,8 +23,7 @@ npm run dev
 
 ### Roadmap
 
-- [ ] Extend the BLL test utils to support creating context for reuse in e2e tests
-- [ ] Hook up e2e tests to data via shared factories, tracked entities for cleanup, etc.
+- [ ] Set up e2e tests according to [README](apps/web/README.md#e2e-testing-with-database-access)
 - [ ] Users CRUD UI
 - [ ] [Svelte-Clerk](https://github.com/wobsoriano/svelte-clerk) auth
 - [ ] [Storybook](https://storybook.js.org/)
