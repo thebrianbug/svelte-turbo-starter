@@ -99,7 +99,7 @@ test('should create and verify user data', async ({ page, dbContext }) => {
     // Use data factories for consistent test data creation
     const factories = createTestDataFactories(tx);
     const user = await factories.users.create({ name: 'Test User' });
-    
+
     return { userId: user.id };
   });
 
@@ -109,7 +109,7 @@ test('should create and verify user data', async ({ page, dbContext }) => {
   await page.getByRole('button', { name: 'Edit' }).click();
   await page.getByLabel('Name').fill('Updated User');
   await page.getByRole('button', { name: 'Save' }).click();
-  
+
   // Verify database state matches UI actions
   await verifyDatabaseState(async (tx) => {
     const userRepo = createTransactionUserRepository(tx);
@@ -153,7 +153,7 @@ export function createTestDataFactories(tx) {
           ...overrides
         });
       }
-    },
+    }
     // Add more entity factories as needed
   };
 }
@@ -163,14 +163,10 @@ export function createTestDataFactories(tx) {
 
 ```typescript
 // Helper to perform UI actions and verify database state
-export async function performActionAndVerifyState({
-  page,
-  uiAction,
-  dbVerification
-}) {
+export async function performActionAndVerifyState({ page, uiAction, dbVerification }) {
   // Perform UI action
   await uiAction(page);
-  
+
   // Verify database state
   await executeTestInTransaction(async (tx) => {
     await dbVerification(tx);
