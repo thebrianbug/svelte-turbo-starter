@@ -24,6 +24,7 @@
     "@repo/eslint-config": "*",
     "@repo/svelte-config": "*",
     "@repo/tailwind-config": "*",
+    "@repo/test-utils": "*",
     "@repo/typescript-config": "*"
   }
 }
