@@ -11,6 +11,16 @@ import { fileURLToPath } from 'node:url';
 // Use DatabaseType from @repo/db
 export type TestDbConnection = DatabaseType;
 
+// Export context types for test database operations
+export type TestDatabaseContext = {
+  db: DatabaseType;
+  client: Sql;
+};
+
+export type TestTransactionContext = {
+  tx: TransactionType;
+};
+
 // Hold the singleton connection and client
 let testDbConnection: TestDbConnection | null = null;
 let testClient: Sql | null = null;
