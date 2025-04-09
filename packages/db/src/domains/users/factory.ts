@@ -1,5 +1,6 @@
 import { UserRepository } from './infrastructure/user-repository';
 import type { IUserRepository } from './interfaces/i-user-repository';
+import type { TransactionType } from '../../infrastructure/base-repository';
 
 import { getConnection } from '../../database';
 
@@ -20,7 +21,13 @@ import { getConnection } from '../../database';
  * not be reused across multiple requests/operations.
  */
 export const createUserRepository = (
-  dbConnection?: ReturnType<typeof getConnection>
+  context?: ReturnType<typeof getConnection> | TransactionType
 ): IUserRepository => {
-  return new UserRepository(dbConnection);
+  // Check if the provided context is a transaction or a full connection
+  if (context && 'query' in context && typeof context.query === 'function') {
+    // It looks like a TransactionType (duck typing)
+    return new UserRepository(undefined, context as TransactionType);
+  }
+  // Otherwise, assume it's a full connection object or undefined
+  return new UserRepository(context as ReturnType<typeof getConnection> | undefined);
 };
