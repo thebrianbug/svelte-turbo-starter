@@ -90,12 +90,10 @@ export async function initializeTestDatabase(): Promise<void> {
 
     console.log('Running migrations on test database...');
     // Construct path relative to the current file
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const __filename = fileURLToPath(import.meta.url);
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const __dirname = path.dirname(__filename);
+    const currentFilePath = fileURLToPath(import.meta.url);
+    const currentDirPath = path.dirname(currentFilePath);
     // Go up one level from src, then expect db package as sibling
-    const migrationsPath = path.resolve(__dirname, '..', '..', 'db', 'migrations');
+    const migrationsPath = path.resolve(currentDirPath, '..', '..', 'db', 'migrations');
     await migrate(testDbConnection, { migrationsFolder: migrationsPath });
 
     console.log('Test database initialized successfully.');
