@@ -2,13 +2,12 @@ import { drizzle, type PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import postgres, { type Sql } from 'postgres';
 import { DatabaseError } from '@repo/shared/src/errors/database.error';
-// Import only the schema elements needed for test context type
-import { users } from '@repo/db'; // Assuming users table is directly exported
+// Import the full schema object from the db package
+import * as schema from '@repo/db';
 
 // Define types for Drizzle connection and transaction contexts
-// Use specific imported schema elements
-const testSchema = { users }; // Reconstruct schema object for typing
-export type TestDatabaseContext = PostgresJsDatabase<typeof testSchema>;
+// Use the imported schema for accurate typing
+export type TestDatabaseContext = PostgresJsDatabase<typeof schema>;
 export type TestTransactionContext = Parameters<
   Parameters<TestDatabaseContext['transaction']>[0]
 >[0];
@@ -53,7 +52,7 @@ const createTestDbConnection = () => {
 
     // Initialize Drizzle
     testDbConnection = drizzle(testClient, {
-      schema: testSchema // Use the reconstructed schema object
+      schema // Use the imported schema object
       // logger: true, // Uncomment for debugging
     });
 
