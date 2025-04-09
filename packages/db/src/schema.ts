@@ -8,7 +8,7 @@ import { users } from './domains/users/schema/schema';
  * Includes all tables from different domains.
  */
 export const schema = {
-  users,
+  users
   // products, // Add other imported schemas here
 };
 
