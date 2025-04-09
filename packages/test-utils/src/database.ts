@@ -1,4 +1,4 @@
-import { DatabaseError } from '@repo/shared/src/errors/database.error';
+import { DatabaseError } from '@repo/shared';
 import { schema, type TransactionType, type DatabaseType } from '@repo/db';
 import postgres from 'postgres';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
