@@ -2,7 +2,7 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { getDatabaseConfig, loadEnvConfigForNonTestEnv } from './config';
 import { sql } from 'drizzle-orm';
-import { DatabaseError } from '@repo/shared/src/errors/database.error';
+import { DatabaseError } from '@repo/shared';
 import { schema } from '../schema';
 
 // Create a function to initialize the database connection when needed
