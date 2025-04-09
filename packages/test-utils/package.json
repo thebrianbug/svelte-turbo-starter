@@ -8,8 +8,10 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc -b",
-    "lint": "eslint . --max-warnings 0",
-    "typecheck": "tsc --noEmit"
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "clean": "rimraf node_modules",
+    "check": "tsc --noEmit && prettier --check ."
   },
   "dependencies": {
     "@repo/db": "*",
