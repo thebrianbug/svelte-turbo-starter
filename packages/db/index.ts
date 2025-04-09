@@ -1,5 +1,6 @@
 // Export core database connection and schema
 export * from './src/database';
+export { schema, type DBSchema } from './src/schema';
 
 // Export infrastructure types
 export { type DatabaseType, type TransactionType } from './src/infrastructure/base-repository';

@@ -1,9 +1,9 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { users } from '../domains/users/schema/schema';
 import { getDatabaseConfig, loadEnvConfigForNonTestEnv } from './config';
 import { sql } from 'drizzle-orm';
 import { DatabaseError } from '@repo/shared/src/errors/database.error';
+import { schema } from '../schema';
 
 // Create a function to initialize the database connection when needed
 export const createDbConnection = () => {
@@ -20,7 +20,7 @@ export const createDbConnection = () => {
 
     return {
       db: drizzle(client, {
-        schema: { users },
+        schema,
         logger: process.env.NODE_ENV !== 'test'
       }),
       client
