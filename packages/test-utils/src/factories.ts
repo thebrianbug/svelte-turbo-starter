@@ -1,6 +1,6 @@
 import type { TestTransactionContext } from './database';
 // Use the main package entry point for imports from db
-import { UserRepository, type NewUser } from '@repo/db';
+import { UserRepository, type NewUser, type TransactionType } from '@repo/db';
 
 /**
  * Creates data factories bound to a specific database transaction.
@@ -12,7 +12,8 @@ import { UserRepository, type NewUser } from '@repo/db';
 export function createTestDataFactories(tx: TestTransactionContext) {
   // Instantiate repositories directly with the transaction context
   // Pass undefined for the non-transactional DB connection as it's not needed here
-  const userRepo = new UserRepository(undefined, tx);
+  // Use type assertion for 'tx' to match the expected TransactionType
+  const userRepo = new UserRepository(undefined, tx as unknown as TransactionType);
 
   return {
     /**

@@ -1,7 +1,10 @@
-// Database utilities
-export { checkDatabaseConnection } from './src/database';
+// Export core database connection and schema
+export * from './src/database';
 
-// Domain models
+// Export infrastructure types
+export { type DatabaseType, type TransactionType } from './src/infrastructure/base-repository';
+
+// Export domain-specific modules (e.g., repositories, models)
 export * from './src/domains/users';
 
 // Repository factories
