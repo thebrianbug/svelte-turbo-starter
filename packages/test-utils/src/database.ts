@@ -1,22 +1,18 @@
-import { drizzle, type PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { migrate } from 'drizzle-orm/postgres-js/migrator';
-import postgres, { type Sql } from 'postgres';
 import { DatabaseError } from '@repo/shared/src/errors/database.error';
-// Import the full schema object from the db package
-import * as schema from '@repo/db';
-// Import path utils
+import { schema, type TransactionType, type DatabaseType } from '@repo/db';
+import postgres from 'postgres';
+import { migrate } from 'drizzle-orm/postgres-js/migrator';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import type { Sql } from 'postgres';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-// Define types for Drizzle connection and transaction contexts
-// Use the imported schema for accurate typing
-export type TestDatabaseContext = PostgresJsDatabase<typeof schema>;
-export type TestTransactionContext = Parameters<
-  Parameters<TestDatabaseContext['transaction']>[0]
->[0];
+// Define types for Drizzle connection
+// Use DatabaseType from @repo/db
+export type TestDbConnection = DatabaseType;
 
 // Hold the singleton connection and client
-let testDbConnection: TestDatabaseContext | null = null;
+let testDbConnection: TestDbConnection | null = null;
 let testClient: Sql | null = null;
 
 // Error specifically for forcing rollbacks in tests
@@ -121,7 +117,7 @@ export async function closeTestConnection(): Promise<void> {
  * @returns The result of the callback function (though typically undefined due to rollback).
  */
 export async function executeTestInTransaction<T>(
-  callback: (tx: TestTransactionContext) => Promise<T>
+  callback: (tx: TransactionType) => Promise<T>
 ): Promise<T> {
   if (!testDbConnection) {
     throw new Error('Test database not initialized. Call initializeTestDatabase first.');
@@ -153,7 +149,7 @@ export async function executeTestInTransaction<T>(
  * @param callback The function containing database assertions.
  */
 export async function verifyDatabaseState(
-  callback: (tx: TestTransactionContext) => Promise<void>
+  callback: (tx: TransactionType) => Promise<void>
 ): Promise<void> {
   if (!testDbConnection) {
     throw new Error('Test database not initialized. Call initializeTestDatabase first.');

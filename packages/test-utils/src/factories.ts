@@ -1,6 +1,5 @@
-import type { TestTransactionContext } from './database';
-// Use the main package entry point for imports from db
-import { UserRepository, type NewUser, type TransactionType } from '@repo/db';
+import type { TransactionType } from '@repo/db';
+import { createUserRepository, type NewUser } from '@repo/db';
 
 /**
  * Creates data factories bound to a specific database transaction.
@@ -9,11 +8,9 @@ import { UserRepository, type NewUser, type TransactionType } from '@repo/db';
  * @param tx The database transaction context provided by executeTestInTransaction or similar.
  * @returns An object containing various entity factories.
  */
-export function createTestDataFactories(tx: TestTransactionContext) {
-  // Instantiate repositories directly with the transaction context
-  // Pass undefined for the non-transactional DB connection as it's not needed here
-  // Use type assertion for 'tx' to match the expected TransactionType
-  const userRepo = new UserRepository(undefined, tx as unknown as TransactionType);
+export function createTestDataFactories(tx: TransactionType) {
+  // Use the factory function from @repo/db, passing the transaction context
+  const userRepo = createUserRepository(tx);
 
   return {
     /**
@@ -44,7 +41,7 @@ export function createTestDataFactories(tx: TestTransactionContext) {
     /*
     products: {
       create: async (overrides = {}) => {
-        const productRepo = new ProductRepository(undefined, tx);
+        const productRepo = createProductRepository(tx); // Assuming a createProductRepository exists
         // ... implementation ...
       }
     }
