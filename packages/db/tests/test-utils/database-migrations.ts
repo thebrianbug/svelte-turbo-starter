@@ -1,7 +1,8 @@
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import { drizzle } from 'drizzle-orm/postgres-js';
-import { join } from 'path';
+import { join, dirname } from 'path';
 import { existsSync } from 'fs';
+import { fileURLToPath } from 'url';
 import { getSharedConnection } from './database';
 import { DatabaseError } from '@repo/shared';
 import * as schema from '../../src/domains/users/schema/schema';
@@ -14,6 +15,9 @@ export const SCHEMA_OBJECTS = {
 
 export type SchemaObject = (typeof SCHEMA_OBJECTS)[keyof typeof SCHEMA_OBJECTS];
 
+// Get current file path and directory in ES module context
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 const MAIN_MIGRATIONS_DIR = join(__dirname, '../../../../src/migrations');
 const MIGRATIONS_AVAILABLE =
   existsSync(MAIN_MIGRATIONS_DIR) && existsSync(join(MAIN_MIGRATIONS_DIR, 'meta'));
