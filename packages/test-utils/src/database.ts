@@ -4,6 +4,9 @@ import postgres, { type Sql } from 'postgres';
 import { DatabaseError } from '@repo/shared/src/errors/database.error';
 // Import the full schema object from the db package
 import * as schema from '@repo/db';
+// Import path utils
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 // Define types for Drizzle connection and transaction contexts
 // Use the imported schema for accurate typing
@@ -80,9 +83,14 @@ export async function initializeTestDatabase(): Promise<void> {
     }
 
     console.log('Running migrations on test database...');
-    // Adjust the path relative to this file's location
-    // Assuming packages/test-utils and packages/db are siblings
-    await migrate(testDbConnection, { migrationsFolder: '../db/migrations' });
+    // Construct path relative to the current file
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const __filename = fileURLToPath(import.meta.url);
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const __dirname = path.dirname(__filename);
+    // Go up one level from src, then expect db package as sibling
+    const migrationsPath = path.resolve(__dirname, '..', '..', 'db', 'migrations');
+    await migrate(testDbConnection, { migrationsFolder: migrationsPath });
 
     console.log('Test database initialized successfully.');
   } catch (error) {
@@ -121,13 +129,11 @@ export async function executeTestInTransaction<T>(
 
   console.log('Executing test in transaction...');
   try {
-    const result = await testDbConnection.transaction(
-      async (tx) => {
-        const callbackResult = await callback(tx);
-        // Force rollback after successful execution by throwing a specific error
-        throw new RollbackTestTransaction(callbackResult); // Pass result to error
-      }
-    );
+    const result = await testDbConnection.transaction(async (tx) => {
+      const callbackResult = await callback(tx);
+      // Force rollback after successful execution by throwing a specific error
+      throw new RollbackTestTransaction(callbackResult); // Pass result to error
+    });
     // This line should not be reached due to the forced rollback
     return result; // Will be undefined/empty
   } catch (error) {
